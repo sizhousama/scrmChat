@@ -1,8 +1,9 @@
 
 export default {
   pages: [
-    'pages/login/index',
     'pages/chat/index',
+    'pages/login/index',
+    
     'pages/users/index',
     'pages/mine/index'
   ],
@@ -23,8 +24,8 @@ export default {
     {
       pagePath: 'pages/users/index',
       text: '通讯录',
-      iconPath: './assets/images/users.png',
-      selectedIconPath: './assets/images/users_act.png'
+      iconPath: './assets/images/fans.png',
+      selectedIconPath: './assets/images/fans_act.png'
     },
     {
       pagePath: 'pages/mine/index',
