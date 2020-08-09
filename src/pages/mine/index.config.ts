@@ -1,4 +1,5 @@
 export default {
   navigationBarTitleText: '我的',
-  navigationStyle:'custom'
+  navigationStyle:'custom',
+  navigationBarTextStyle:'white'
 }

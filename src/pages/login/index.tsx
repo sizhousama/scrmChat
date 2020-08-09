@@ -1,9 +1,8 @@
 import React, { useState } from 'react'
 import { View, Image, Text } from '@tarojs/components'
 import { AtInput, AtForm, AtButton } from 'taro-ui'
-import { login } from '../../api/login'
-import {Toast,SetStorageSync,SwitchTab} from '../../utils/index'
-// import Encrypt from '../../utils/encryption'
+import { login } from '@/api/login'
+import {Toast,SetStorageSync,SwitchTab} from '@/utils/index'
 import CryptoJS from 'crypto-js'
 import './index.scss'
 

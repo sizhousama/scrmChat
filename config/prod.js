@@ -1,6 +1,6 @@
 module.exports = {
   env: {
-    NODE_ENV: '"production"'
+    NODE_ENV: '"production"',
   },
   defineConstants: {
   },
@@ -24,8 +24,5 @@ module.exports = {
     patterns: [
       { from: 'sitemap.json', to: 'dist/sitemap.json' } // 指定需要 copy 的文件
     ]
-  },
-  mini: {},
-  h5: {
   }
 }

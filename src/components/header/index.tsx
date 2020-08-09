@@ -2,8 +2,8 @@ import React, { useEffect, useRef } from 'react'
 import { View, Image, Text } from '@tarojs/components'
 import './index.scss'
 import { useState, forwardRef } from 'react'
-import message from '../../assets/images/message.png'
-import fans from '../../assets/images/happy.png'
+import message from '@/assets/images/message.png'
+import fans from '@/assets/images/happy.png'
 
 const Header = (props, ref) => {
   // const childref = useRef()

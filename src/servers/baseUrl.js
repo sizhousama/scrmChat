@@ -1,4 +1,5 @@
-const getBaseUrl = (url) => {
+// 请求地址
+export const getBaseUrl = (url) => {
   let BASE_URL = '';
   if (process.env.NODE_ENV === 'development') {
     //开发环境 - 根据请求不同返回不同的BASE_URL
@@ -9,5 +10,9 @@ const getBaseUrl = (url) => {
   }
   return BASE_URL
 }
-
-export default getBaseUrl;
+// 图片地址
+export const imgUrl = (url) => {
+  let IMG_URL = '';
+  IMG_URL = process.env.NODE_ENV === 'development' ? 'https://image.hivescrm.cn/image_test':'https://image.hivescrm.cn/image'
+  return IMG_URL
+}

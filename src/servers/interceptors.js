@@ -15,13 +15,8 @@ const customInterceptor = (chain) => {
         msg,
         status
       } = data
-      const errdata = data.data
       if (status !== 1) {
-        if (errdata) {
-          Toast(errdata,'none')
-        } else {
-          Toast(msg,'none')
-        }
+        Toast(msg,'none')
         if (status === 401) {
           SetStorageSync("Token", "")
           pageToLogin()

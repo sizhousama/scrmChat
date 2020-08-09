@@ -1,11 +1,11 @@
 
 export default {
   pages: [
+    'pages/mine/index',
     'pages/chat/index',
     'pages/login/index',
+    'pages/users/index'
     
-    'pages/users/index',
-    'pages/mine/index'
   ],
   window: {
     backgroundTextStyle: 'light',

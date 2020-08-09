@@ -4,6 +4,7 @@ import React from 'react'
 import 'taro-ui/dist/style/index.scss'
 import { View } from '@tarojs/components'
 import './app.scss'
+// cnpm install taro-ui@3.0.0-alpha.3
 
 // const store = {
 //   counterStore
