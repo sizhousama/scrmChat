@@ -1,18 +1,31 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useState,useEffect, useRef } from 'react'
 import { View, Text } from '@tarojs/components'
+import { Back, getSysInfo } from '@/utils/index'
 import './index.scss'
-import { useState, forwardRef } from 'react'
+import { forwardRef } from 'react'
 
 const NavBar = (props, ref) => {
-  // const childref = useRef()
+  const [blockStyle,setStyle] = useState({})
+  
+  useEffect(() => {
+    const barHeight = getSysInfo().statusBarHeight
+    setStyle({
+      width:"100%",
+      height:barHeight+44+'px',
+      background:"#fff"
+    })
+  }, [])
   return (
-    <View className='navbar'>
-      <View className='left'>
-        <View className='at-icon at-icon-chevron-left'></View>
-        <Text>123</Text>
-      </View>
-      <View className='right'>
-        
+    <View>
+      <View style={blockStyle}></View>
+      <View className='navbar'>
+        <View className='left' onClick={Back}>
+          <View className='at-icon at-icon-chevron-left'></View>
+          <Text>{props.title}</Text>
+        </View>
+        <View className='right'>
+          {props.btn}
+        </View>
       </View>
     </View>
   )

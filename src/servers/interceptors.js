@@ -16,10 +16,10 @@ const customInterceptor = (chain) => {
         status
       } = data
       if (status !== 1) {
-        Toast(msg,'none')
-        if (status === 401) {
+        Toast(msg,'none')    
+        if (status === '401') {
           SetStorageSync("Token", "")
-          pageToLogin()
+          pageToLogin()    
         }
         return Promise.reject(msg || 'Error')
       } else {

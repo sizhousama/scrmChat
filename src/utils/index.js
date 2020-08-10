@@ -1,14 +1,36 @@
 import Taro from "@tarojs/taro";
 import pyfl from 'pyfl'
 import {IndexesArr} from "../constant/index"
-export const Toast = (title,icon) =>{
+export const Toast = (title,icon,dur) =>{
   icon = icon || 'success'
+  dur = dur || 1500
   Taro.showToast({
     title,
     icon,
     mask:true,
-    duration:1500
+    duration:dur
   })
+}
+// 返回上一页
+export const NavTo = (url) =>{
+  Taro.navigateTo({
+    url
+  })
+}
+// 返回上一页
+export const Back = () =>{
+  Taro.navigateBack()
+}
+
+// 获取系统信息
+export const getSysInfo = () =>{
+  let info = {}
+  Taro.getSystemInfo({
+    success(res){
+      info = res
+    }
+  })
+  return info
 }
 
 export const SetStorageSync = (key,data) =>{

@@ -1,8 +1,10 @@
 
 export default {
   pages: [
-    'pages/mine/index',
+    'pages/search/index',
     'pages/chat/index',
+    
+    'pages/mine/index',
     'pages/login/index',
     'pages/users/index'
     

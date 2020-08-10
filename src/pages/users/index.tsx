@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react'
-import { View } from '@tarojs/components'
+import { View,Text } from '@tarojs/components'
 import TabBar from "../tabbar";
 import Header from "@/components/header";
 import Fan from "@/components/fan";
@@ -45,7 +45,9 @@ const Users = () => {
             if (fl.items.length > 0) {
               return (
                 <View className='iarr' key={index}>
-                  <View id={fl.title} className='ititle'>{fl.title}</View>
+                  <View id={fl.title} className='ititle'>
+                    <Text className='text'>{fl.title}</Text>
+                  </View>
                   {
                     fl.items.map((fan, i) => {
                       return (
