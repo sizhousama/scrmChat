@@ -1,0 +1,45 @@
+.fltitle{
+  width:680px;
+  height:80px;
+  line-height: 80px;
+  border-bottom:2px solid #eee;
+  text{
+    margin-left:60px
+  }
+}
+.tagitem{
+  width:100%;
+  border-bottom:2px solid #eee;
+  color:#bbb;
+  font-size: 28px;
+  width:680px;
+  height:80px;
+  line-height: 80px;
+  text{
+    margin-left: 60px;
+  }
+}
+.topbox{
+  width:700px;
+}
+.tagtemp{
+  width:640px;
+  margin-left:60px;
+  display: flex;
+  flex-wrap: wrap;
+  .tag{
+    height:46px;
+    padding:0 20px;
+    line-height: 46px;
+    border-radius: 6px;
+    border:2px solid #7685FF;
+    color:#7685FF;
+    font-size: 26px;
+    margin-right:20px;
+    margin-bottom:20px;
+  }
+  
+}
+.acttag{
+  color:#7685FF;
+}

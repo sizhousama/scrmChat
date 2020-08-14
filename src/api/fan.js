@@ -8,3 +8,8 @@ export const getFans = (params) => {
 export const getRecentContacts = (data) => {
   return HTTPREQUEST.post('/scrm-message/messenging/recentContacts', data)
 }
+
+// 获取标签
+export const getAllTag = (params) => {
+  return HTTPREQUEST.get('/scrm-message/tags/getAllTagsByUserId', params)
+}

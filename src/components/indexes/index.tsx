@@ -9,6 +9,9 @@ import Taro from "@tarojs/taro";
 const Header = (props, ref) => {
   const list = IndexesArr
   const [cur,setCur] = useState('')
+  const top = {
+    top:props.top+'px'
+  }
   const clickIndex=(e)=>{
     const key = e.currentTarget.dataset.key
     setCur(key)
@@ -28,7 +31,7 @@ const Header = (props, ref) => {
     })
   }
   return (
-    <View className='indexes'>
+    <View className='indexes' style={top}>
       {
         list.map((item, index) => {
           return (
@@ -36,7 +39,7 @@ const Header = (props, ref) => {
             key={index}
             className={`indexitem ${cur===item.title?'act':''}`}
             onClick={clickIndex}
-            data-key={item.title}
+            data-key={item.key}
             >{item.title}</View>
           )
         })

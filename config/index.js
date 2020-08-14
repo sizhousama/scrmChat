@@ -68,7 +68,8 @@ const config = {
     '@/components': path.resolve(__dirname,'..', 'src/components'),
     '@/utils': path.resolve(__dirname,'..', 'src/utils'),
     '@/assets': path.resolve(__dirname,'..', 'src/asstes'),
-    '@/servers': path.resolve(__dirname,'..', 'src/servers')
+    '@/servers': path.resolve(__dirname,'..', 'src/servers'),
+    '@/store': path.resolve(__dirname,'..', 'src/store')
   }
 }
 

@@ -9,6 +9,7 @@ import { toIndexes } from '@/utils/index'
 import './index.scss'
 
 interface Us {
+  key:string,
   title: string,
   items: any[]
 }
@@ -45,7 +46,7 @@ const Users = () => {
             if (fl.items.length > 0) {
               return (
                 <View className='iarr' key={index}>
-                  <View id={fl.title} className='ititle'>
+                  <View id={fl.key} className='ititle'>
                     <Text className='text'>{fl.title}</Text>
                   </View>
                   {

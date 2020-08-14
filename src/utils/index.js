@@ -11,7 +11,7 @@ export const Toast = (title,icon,dur) =>{
     duration:dur
   })
 }
-// 返回上一页
+// 导航
 export const NavTo = (url) =>{
   Taro.navigateTo({
     url
@@ -49,8 +49,9 @@ export const SwitchTab = (url) =>{
 export const toIndexes = (list,keyword) =>{
   const arr = JSON.parse(JSON.stringify(IndexesArr))
   list.forEach(o=>{
-    const first = pyfl(o[keyword]).substring(0,1)
-    if(/[A-Z]/.test(first)){
+    let first = pyfl(o[keyword]).substring(0,1)
+    if(/[a-zA-Z]/.test(first)){
+      first = first.toUpperCase()
       arr.forEach(i=>{
         if(i.title === first){
           i.items.push(o)

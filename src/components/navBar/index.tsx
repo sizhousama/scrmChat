@@ -16,7 +16,7 @@ const NavBar = (props, ref) => {
     })
   }, [])
   return (
-    <View>
+    <View className='topnav'>
       <View style={blockStyle}></View>
       <View className='navbar'>
         <View className='left' onClick={Back}>

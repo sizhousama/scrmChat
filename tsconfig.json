@@ -45,6 +45,9 @@
       "@/servers/*":[
         "src/servers/*"
       ],
+      "@/store/*":[
+        "src/store/*"
+      ],
     }
   },
   "exclude": [
