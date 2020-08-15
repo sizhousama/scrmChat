@@ -26,7 +26,9 @@ const Login = () => {
       const token = `${data.tokenHead}${data.token}`
       SetStorageSync('Token',token)
       Toast('登录成功','none')
-      SwitchTab('/pages/mine/index')
+      setTimeout(()=>{
+        SwitchTab('/pages/mine/index')
+      },1000)     
     }).catch(err => {
       console.log(err)
     })

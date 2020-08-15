@@ -21,8 +21,9 @@ interface Ti{
 
 const Tags = () => {
   const childref = useRef();
-  const [tags, setTags] = useState([])
-  const [selectTags,setSelectTags] = useState([])
+  const [tags, setTags] = useState<any[]>([])
+  const [trueSelect,setTrueSelect] = useState<string[]>([])
+  const [selectTags,setSelectTags] = useState<string[]>([])
   const { navH } = useNavStore();
   const style = {
     marginTop: navH + 10 + 'px'
@@ -45,6 +46,30 @@ const Tags = () => {
     const i = e.currentTarget.dataset.idx
     let arr = tags
     arr[fi].items[i].act = !arr[fi].items[i].act
+    let stags:string[] = selectTags
+    let truetags:string[] = trueSelect
+    if(arr[fi].items[i].act){
+      stags = [...stags,arr[fi].items[i].tag]
+      truetags = [...truetags,arr[fi].items[i].tag]
+      if(stags.length>4){
+        const three = stags.slice(0,3)
+        const last = stags.slice(-1)
+        const newtags = [...three,'···']
+        stags = [...newtags,last[0]]
+      }
+    }else{
+      truetags = truetags.filter(item=>{return item!==arr[fi].items[i].tag})
+      if(truetags.length>4){
+        const three = truetags.slice(0,3)
+        const last = truetags.slice(-1)
+        const newtags = [...three,'···']
+        stags = [...newtags,last[0]]
+      }else{
+        stags = truetags
+      }
+    }
+    setTrueSelect(truetags.slice())
+    setSelectTags(stags.slice())
     setTags(arr.slice())
   } 
   return (
@@ -52,18 +77,12 @@ const Tags = () => {
       <NavBar title='标签' />
       <View className='topbox' style={style}>
         <View className='tagtemp'>
-          <Text className='tag'>1111</Text>
-          <Text className='tag'>11111111111</Text>
-          <Text className='tag'>1111</Text>
-          <Text className='tag'>1111</Text>
-          <Text className='tag'>111111</Text>
-          <Text className='tag'>11111111</Text>
-          <Text className='tag'>11111</Text>
-          <Text className='tag'>11</Text>
-          <Text className='tag'>11111111111</Text>
-          <Text className='tag'>11111</Text>
-
-          <View className='searchbtn'>搜索</View>
+          {
+            selectTags.map((stag,si)=>{
+            return <Text key={si} className='tag'>{stag}</Text>
+            })
+          }
+          {selectTags.length>0?<View className='searchbtn'>搜索</View>:<View className='no-data'>请添加标签</View>}  
         </View>
       </View>
       <View className='taglist'>
@@ -95,7 +114,7 @@ const Tags = () => {
             }
           })
         }
-        <Indexes ref={childref} top={navH} />
+        <Indexes ref={childref} top={navH+90} st={108} />
       </View>
 
     </View>

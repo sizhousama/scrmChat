@@ -1,10 +1,12 @@
 
 export default {
   pages: [
-    'pages/tags/index',
-    'pages/chat/index',
-    'pages/search/index',
     'pages/mine/index',
+    'pages/chat/index',
+    'pages/tags/index',
+    'pages/myInfo/index',
+    'pages/search/index',
+    
     'pages/login/index',
     'pages/users/index'
     

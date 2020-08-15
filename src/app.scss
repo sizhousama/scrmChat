@@ -14,3 +14,7 @@
   border-radius: 50px;
   margin:0 20px;
 }
+.navbtn{
+  @extend .searchbtn;
+  background:#1EA20F;
+}

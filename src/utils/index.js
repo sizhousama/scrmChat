@@ -1,6 +1,7 @@
 import Taro from "@tarojs/taro";
 import pyfl from 'pyfl'
 import {IndexesArr} from "../constant/index"
+import {getBaseUrl} from '@/servers/baseUrl'
 export const Toast = (title,icon,dur) =>{
   icon = icon || 'success'
   dur = dur || 1500
@@ -31,6 +32,31 @@ export const getSysInfo = () =>{
     }
   })
   return info
+}
+
+export const UpLoad = ()=>{
+  Taro.chooseImage({
+    count: 1,
+    sizeType: ['original', 'compressed'],
+    sourceType: ['album', 'camera'],
+    success (res) {
+      const tempFilePaths = res.tempFilePaths
+      const baseurl = getBaseUrl()
+      Taro.uploadFile({
+        url: `${baseurl}/scrm-seller/utils/uploadFile`,
+        filePath: tempFilePaths[0],
+        name: 'file',
+        formData:null,
+        header:{
+          'Authorization': Taro.getStorageSync('Token')
+        },
+        success (res){
+          const data = res.data
+          return data
+        }
+      })
+    }
+  })
 }
 
 export const SetStorageSync = (key,data) =>{

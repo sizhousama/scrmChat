@@ -2,11 +2,15 @@ import React, { useRef } from 'react'
 import { View, Image, Text } from '@tarojs/components'
 import TabBar from "../tabbar";
 import mine_w from '@/assets/images/mine_white.png'
+import {NavTo} from '@/utils/index'
 import './index.scss'
 
 const Mine = () => {
   const cur: number = 2
   const childref = useRef();
+  const editinfo =()=>{
+    NavTo('../myInfo/index')
+  }
   return (
     <View className='minebody'>
       <View className='topbox'>
@@ -21,7 +25,7 @@ const Mine = () => {
           <View className='right'>
             <View className='top'>
               <View className='name'>哈哈哈</View>
-              <View className='edit'>
+              <View className='edit' onClick={editinfo}>
                 <View className='at-icon at-icon-edit'></View>
               </View>
             </View>

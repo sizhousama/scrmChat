@@ -24,7 +24,7 @@ const Header = (props, ref) => {
         return false
       }
       Taro.pageScrollTo({
-        scrollTop: res[0].top + res[1].scrollTop - 44,
+        scrollTop: res[0].top + res[1].scrollTop - props.st,
         duration: 200
       })
       Toast(key,'none',500)
