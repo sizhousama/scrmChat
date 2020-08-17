@@ -1,0 +1,112 @@
+.chatinfo {
+  display: flex;
+  height: 88px;
+  border-bottom: 2px solid #eee;
+
+  .icon {
+    width: 80px;
+    display: flex;
+    align-items: center;
+    margin-left: 60px;
+  }
+
+  .left {
+    flex: 4;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: center;
+  }
+
+  .right {
+    @extend .left;
+    flex: 1;
+    justify-content: center;
+    align-items: flex-end;
+  }
+}
+
+.chatinfo .icon {
+  image {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+.chatinfo .left {
+  .name {
+    font-size: 36px;
+    color: #101010;
+  }
+
+  .pageid {
+    font-size: 22px;
+    color: #bbb;
+    font-weight: 500;
+  }
+}
+
+.chatinfo .right {
+  image {
+    width: 48px;
+    height: 48px;
+    margin-right: 50px;
+  }
+}
+
+.navbar {
+  border-bottom: 1px solid #eee;
+
+  .left {
+    flex: 1;
+
+    .at-icon {
+      color: #0076FF;
+    }
+  }
+}
+
+.serselect {
+  width: 200px;
+  height: 50px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  margin-right: 30px;
+  position: relative;
+
+  .at-icon-chevron-down {
+    position: absolute;
+    right: 10px;
+    font-size: 26px;
+    z-index: 99;
+  }
+}
+// 覆盖样式
+.at-list{
+  border-radius: 10px;
+  width:160px;
+  height: 100%;
+}
+.at-list__item .item-extra{
+  width:100%;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.at-list__item-content {
+  display: none;
+}
+.at-list__item .item-extra__info{
+  font-size: 24px;
+  color:#bbb;
+  margin-left:20px;
+  height: 100%;
+  line-height: 46px;
+  padding:0;
+}
+.at-list::after{display:none}
+.at-list__item{padding:0}
+.at-list__item::after{display: none;} 

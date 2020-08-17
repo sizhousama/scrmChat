@@ -6,7 +6,8 @@ export const getBaseUrl = (url) => {
     BASE_URL = 'https://back.hivemarket.top'
   } else {
     // 生产环境
-    BASE_URL = 'https://back.hivescrm.cn'
+    // BASE_URL = 'https://back.hivescrm.cn'
+    BASE_URL = 'https://back.hivemarket.top'
   }
   return BASE_URL
 }

@@ -4,6 +4,7 @@ import { AtInput, AtForm, AtButton } from 'taro-ui'
 import { login } from '@/api/login'
 import {Toast,SetStorageSync,SwitchTab} from '@/utils/index'
 import CryptoJS from 'crypto-js'
+import { observer } from 'mobx-react';
 import './index.scss'
 
 const Login = () => {
@@ -25,7 +26,7 @@ const Login = () => {
       const {data} = res
       const token = `${data.tokenHead}${data.token}`
       SetStorageSync('Token',token)
-      Toast('登录成功','none')
+      Toast('登录成功','none')  
       setTimeout(()=>{
         SwitchTab('/pages/mine/index')
       },1000)     
@@ -73,4 +74,4 @@ const Login = () => {
   )
 }
 
-export default Login
+export default observer(Login)
