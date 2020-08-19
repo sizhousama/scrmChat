@@ -14,7 +14,7 @@ module.exports = {
         url: {
           enable: true,
           config: {
-            limit: 10240 // 文件大小限制
+            limit: 1024000 // 文件大小限制
           }
         }
       }
@@ -22,7 +22,8 @@ module.exports = {
   },
   copy: {
     patterns: [
-      { from: 'sitemap.json', to: 'dist/sitemap.json' } // 指定需要 copy 的文件
+      { from: 'sitemap.json', to: 'dist/sitemap.json' }, // 指定需要 copy 的文件
+      { from: 'src/assets/icon/', to: 'dist/assets/icon/' }
     ]
   }
 }

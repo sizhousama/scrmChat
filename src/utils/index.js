@@ -6,6 +6,8 @@ import {
 import {
   getBaseUrl
 } from '@/servers/baseUrl'
+
+
 export const Toast = (title, icon, dur) => {
   icon = icon || 'success'
   dur = dur || 1500
@@ -37,14 +39,14 @@ export const getSysInfo = () => {
   })
   return info
 }
-
+// 预览
 export const previewImg = (url) => {
   Taro.previewImage({
     current:url,
     urls:[url]
   })
 }
-
+// 同步缓存
 export const SetStorageSync = (key, data) => {
   Taro.setStorageSync(key, data)
 }
@@ -54,14 +56,17 @@ export const SwitchTab = (url) => {
     url
   })
 }
-// 
+// 重定向
 export const redirectTo = (url) => {
   Taro.redirectTo({
     url,
   })
 }
 
-
+// 判断当前obj对象是否有 key 属性
+export const hasProperty = (obj, key) =>{
+  return obj.hasOwnProperty(key)
+}
 
 // 处理数据方法
 // 将列表处理成atindexes需要的数据结构

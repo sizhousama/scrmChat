@@ -2,8 +2,8 @@ import React from 'react'
 import { Provider } from 'mobx-react'
 import { stores, StoresContext } from './store';
 import 'taro-ui/dist/style/index.scss'
-import { View } from '@tarojs/components'
 import './app.scss'
+import './icon.scss'
 // cnpm install taro-ui@3.0.0-alpha.3
 
 const App = (props) => {

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { View, Text, Image, Picker } from '@tarojs/components'
 import { AtList, AtListItem } from 'taro-ui'
 import { Back, getSysInfo } from '@/utils/index'
-import livechat from '@/assets/images/message.png'
+import livechat from '@/assets/images/livechat.png'
 import user from '@/assets/images/mine.png'
 import './index.scss'
 import { forwardRef } from 'react'
@@ -23,9 +23,9 @@ const ChatHeader = (props, ref) => {
     setSelectSer(services[e.detail.value])
   }
   return (
-    <View className='topnav'>
+    <View>
       <View style={blockStyle}></View>
-      <View className='chatinfo'>
+      <View className='chatinfo' style={{height:'44px'}}>
         <View className='icon'>
           <Image src={livechat}></Image>
         </View>
@@ -37,7 +37,7 @@ const ChatHeader = (props, ref) => {
           <Image src={user}></Image>
         </View>
       </View>
-      <View className='navbar'>
+      <View className='navbar' style={{height:'44px'}}>
         <View className='left' onClick={Back}>
           <View className='at-icon at-icon-chevron-left'></View>
         </View>

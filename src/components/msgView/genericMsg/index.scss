@@ -1,0 +1,36 @@
+.generic-msg{
+  width:240px;
+  border:2px solid #eee;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 20px;
+  .swiper{
+    min-height: 286px;
+  }
+  .sitem{
+    width:100%;
+    display: flex;
+    flex-direction: column;
+    
+    .title{
+      font-size: 22px;
+      color:#666;
+      box-sizing: border-box;
+      padding:5px 10px;
+      border-top: 2px solid #eee;
+      border-bottom: 2px solid #eee;
+    }
+    .btn{
+      font-size: 24px;
+      color:#0084ff;
+      text-align: center;
+      padding:8px 0;
+      border-bottom: 2px solid #eee;
+    }
+  }
+  .simg{
+    width:100%;
+    height: auto;
+    max-height: 200px;
+  }
+}
