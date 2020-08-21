@@ -18,3 +18,10 @@ export const imgUrl = (url) => {
   IMG_URL = process.env.NODE_ENV === 'development' ? 'https://image.hivescrm.cn/image_test':'https://image.hivescrm.cn/image'
   return IMG_URL
 }
+
+// socket地址
+export const socketUrl = (url) => {
+  let SOCKET_URL = '';
+  SOCKET_URL = process.env.NODE_ENV === 'development' ? 'https://back.hivemarket.top?':'https://back.hivescrm.cn'
+  return SOCKET_URL
+}

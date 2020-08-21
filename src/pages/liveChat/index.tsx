@@ -9,45 +9,131 @@ import FileMsg from '@/components/msgView/fileMsg';
 import NotifyMsg from '@/components/msgView/notifyMsg';
 import MediaMsg from '@/components/msgView/mediaMsg';
 import ButtonMsg from '@/components/msgView/buttonMsg';
-import { View, ScrollView } from "@tarojs/components";
-import { AtInput, AtIcon } from 'taro-ui'
-import { getSysInfo } from '@/utils/index'
+import { View, Text, ScrollView } from "@tarojs/components";
+import { AtInput, AtIcon, AtActivityIndicator } from 'taro-ui'
+import { getSysInfo, genUuid } from '@/utils/index'
 import { getHistoryMsg } from '@/api/chat'
 
+import { observer } from 'mobx-react';
+import { useFanStore, useWsioStore,useUserStore } from '@/store';
 import { parseMsg } from '@/utils/parse'
 import "./index.scss";
 
 interface RI {
   timestamp?: string | number,
   status?: number,
-  type?: string
+  type?: string,
+  userId?: number,
+  userName?: string,
+  uuid?: string
 }
-
+interface MI {
+  isServe?: boolean,
+  senderId?: string,
+  recipientId?: string,
+  mid?: string,
+  status?:number
+}
 const LiveChat = () => {
   const childref = useRef()
   const barHeight = getSysInfo().statusBarHeight
+  const { fan } = useFanStore()
+  const {userInfo} = useUserStore()
+  const { wsio } = useWsioStore()
+  const [message,setMessage] = useState('')
   const [historyList, setHistory] = useState<any[]>([])
   const [fakes, setFakes] = useState<any[]>([])
-  const [curMsg,setCurMsg] = useState('')
-  var diffHeight = barHeight + 178 //176 + 2 2px为border高度
-  var keybordHeight = 0 //键盘高度
+  const [curMsg, setCurMsg] = useState('')
+  const [loading, setLoading] = useState(false) //加载更多...
+  const [initLoading,setInitLoading] = useState(false)
+  const [hasmore, setHasmore] = useState(false) //是否有更多历史记录
+  const [hisPar, setHisPar] = useState({
+    page: 1,
+    pageSize: 15,
+    pageId: fan.pageId,
+    senderId: fan.fanId,
+    userId: 0,
+    userName: '',
+    id: ''
+  })//历史记录参数
+  let diffHeight = barHeight + 178 //176 + 2 2px为border高度
+  let keybordHeight = 0 //键盘高度
   const msgViewStyle = {
     width: '100%',
     height: `calc(100vh - ${diffHeight}px)`
   }
-  // 历史记录参数
-  var hisPar = {
-    page: 1,
-    pageSize: 30,
-    pageId: "102817707970237",
-    senderId: "2730472630401161",
-  }
+
   useEffect(() => {
+    initSocket()
     historymsg()
   }, [])
+  // socket事件
+  const initSocket = () => {
+    wsio.on('SEND_MSG', (data) => {
+      const fakelist = fakes
+      console.log(fakelist)
+      let messageItem:MI = {
+        isServe: false,
+        senderId: '',
+        recipientId: '',
+        mid: '',
+        status:0
+      }
+      messageItem = { ...parseMsg(data) }
+      console.log('解析后数据:', messageItem)
+      const { isServe = true, senderId: newMsgSenderId, recipientId: newMsgRecipientId } = messageItem
+      const { fanId: fanSenderId, pageId: fanPageId } = fan
+      const message = fakelist.find(item => {
+        if (item.mid) {
+          return item.mid === messageItem.mid
+        } else {
+          return undefined
+        }
+      })
+      console.log(message)
+
+      if (!message) {
+        if (((isServe && newMsgSenderId === fanPageId) && (newMsgRecipientId === fanSenderId)) || ((!isServe && newMsgSenderId === fanSenderId) && (newMsgRecipientId === fanPageId))) {
+          console.log('当前信息不存在，并且聊天对象正确')
+          messageItem.status = 1 // 不存在的修改为 发送成功
+          fakelist.push(messageItem)
+          setFakes(fakelist.slice())
+          tobottom()
+        }
+      }
+    })
+
+    wsio.on('SEND_MSG_RESPONSE',(data)=>{
+      const fakelist = fakes
+      const { msg = '', status, uuid = '', mid = '' } = data
+      // 收到的状态为3的时候，比状态时间戳小的信息全部改为已读
+      if (status === 3) {
+        const watermark = data.watermark
+        fakelist.forEach(item => {
+          if (item.timestamp <= watermark) {
+            item.status = 3
+          }
+        })
+      } else {
+        const sendText = fakelist.find(item => item.uuid === uuid)
+        // 找到uuid 相同的信息 改变发送信息的状态
+        if (sendText) {
+          console.log(sendText)
+          // sendText.loading = false
+          sendText.status = status
+          sendText.errorText = msg
+          sendText.mid = mid
+        }
+      }
+      setFakes(fakelist.slice())
+    })
+  }
   const historymsg = async () => {
+    setInitLoading(true)
     await getHistoryMsg(hisPar).then(res => {
       const { data } = res
+      const hm = data.length > 0
+      setHasmore(hm)
       let isbreak = false // 判断返回的数据
       let hisarr = historyList
       data.forEach(item => {
@@ -56,9 +142,13 @@ const LiveChat = () => {
           isbreak = true
           return
         }
-        const { delivery, read, userName } = item
+        const { delivery, read, userName, userId } = item
+
         const parsedItem = JSON.parse(item.msg)
-        const regroupItem: RI = { ...parseMsg(parsedItem) }
+        let regroupItem: RI = { ...parseMsg(parsedItem) }
+        regroupItem.userId = userId
+        regroupItem.userName = userName
+        regroupItem.uuid = genUuid()
         if (regroupItem && regroupItem.timestamp) {
           if (regroupItem.type !== '') {
             hisarr.push(regroupItem)
@@ -78,22 +168,113 @@ const LiveChat = () => {
           }
         }
       })
+
       if (!isbreak) {
         hisarr.reverse()
         setHistory(hisarr.slice())
         tobottom()
-        console.log(historyList)
+        setInitLoading(false)
       }
     })
   }
-  const tobottom = ()=>{
-    const arr = [...historyList,...fakes]
-    const cur = `msg${arr.length - 1}`
+  const morehistorymsg = async () => {
+    if (!hasmore) {
+      return
+    }
+    let params = hisPar
+    params.page++
+    setHisPar(params)
+    setLoading(true)
+    await getHistoryMsg(hisPar).then(res => {
+      const { data } = res
+      const hm = data.length > 0
+      setHasmore(hm)
+      let hisarr = historyList
+      const len = data.length
+      data.forEach(item => {
+        if (item.msg === null) return
+        const { delivery, read, userName, userId } = item
+        const parsedItem = JSON.parse(item.msg)
+        let regroupItem: RI = { ...parseMsg(parsedItem) }
+        regroupItem.userId = userId
+        regroupItem.userName = userName
+        regroupItem.uuid = genUuid()
+        if (regroupItem && regroupItem.timestamp) {
+          if (regroupItem.type !== '') {
+            if (hasmore)
+              hisarr.unshift(regroupItem)
+            if (delivery === 0 && read === 0) {
+              regroupItem.status = 2
+            }
+            if (delivery === 1 && read === 0) {
+              regroupItem.status = 2
+            }
+            if (read === 1) {
+              regroupItem.status = 3
+            }
+          }
+        }
+      })
+      setHistory(hisarr)
+      setLoading(false)
+      const id = `msg${historyList[len].uuid}`
+      setCurMsg(id)
+    })
+  }
+  const tobottom = () => {
+    const arr = [...historyList, ...fakes]
+    console.log(arr)
+    const cur = `msg${arr[arr.length - 1].uuid}`
     setCurMsg(cur)
   }
+  //发送文本消息
+  const sendMsg =()=>{
+    // 创建uuid
+    const uuid = genUuid()
+    let msg = message
+    let fakelist = fakes
+    
+    msg = msg.trim()
+    if (msg === '') {
+      console.log('提交信息不通过')
+      return
+    }
+    const { fanId, pageId } = fan
+    // 发送参数 当前登录用户userId,聊天对象的senderId,pageId
+    const socketParams = {
+      uuid: uuid,
+      userId: userInfo.userId,
+      userName: userInfo.username,
+      senderId: fanId,
+      pageId: pageId,
+      msg: msg
+    }
+    // 假数据
+    // TODO: 目前自制的假消息类型只有text
+    const fakeText = {
+      uuid: uuid,
+      mid: '',
+      type: 'text',
+      userName: userInfo.username,
+      text: msg,
+      loading: true,
+      isServe: true,
+      timestamp: Date.now(),
+      status: 0, // 发送状态 0:发送中 1:发送成功 2:已送达 3:已读 -1:发送失败
+      errorText: '', // 错误提示信息
+      userId: userInfo.userId, // 用来显示假消息头像
+      // isTimeVisible: (Date.now() - this.lastVisibleTime > 300000) // 是否显示时间戳
+    }
+    fakelist.push(fakeText)
+    setFakes(fakelist.slice())
+    setMessage('')
+    wsio.emit('SEND_MSG', socketParams)
+    tobottom()
+  }
+
   // 输入时
   const inputMsg = (v, e) => {
-
+    setMessage(v)
   }
   // 聚焦时
   const msgInputFocus = (v, e) => {
@@ -106,46 +287,72 @@ const LiveChat = () => {
     diffHeight -= keybordHeight //软键盘高度改变，scroll高度改变
   }
   // 动态组件
-  const msgComponent = (item) =>{
-    switch(item.type){
-      case 'text' : 
+  const msgComponent = (item, idx) => {
+    switch (item.type) {
+      case 'text':
         return <TextMsg ref={childref} msgItem={item}></TextMsg>
-      case 'image' : 
+      case 'image':
         return <ImgMsg ref={childref} msgItem={item}></ImgMsg>
-      case 'postback' : 
+      case 'postback':
         return <TextMsg ref={childref} msgItem={item}></TextMsg>
-      case 'generic' : 
+      case 'generic':
         return <SwiperMsg ref={childref} msgItem={item}></SwiperMsg>
-      case 'file' : 
+      case 'file':
         return <FileMsg ref={childref} msgItem={item}></FileMsg>
-      case 'notify' : 
-        return <NotifyMsg ref={childref} msgItem={item}></NotifyMsg>
-      case 'media' : 
+      case 'notify':
+        return <NotifyMsg ref={childref} msgItem={item} i={idx}></NotifyMsg>
+      case 'media':
         return <MediaMsg ref={childref} msgItem={item}></MediaMsg>
-      case 'button' : 
+      case 'button':
         return <ButtonMsg ref={childref} msgItem={item}></ButtonMsg>
-      default:break
+      default: break
     }
   }
   return (
     <View className='live-chat'>
-      <ChatHeader ref={childref}></ChatHeader>
-      <ScrollView scrollY className='msgview' style={msgViewStyle} scrollIntoView={curMsg}>
-        <View className='topblock'></View>
+      <ChatHeader ref={childref} fan={fan}></ChatHeader>
+      <ScrollView
+        scrollY
+        className='msgview'
+        style={msgViewStyle}
+        scrollIntoView={curMsg}
+        upperThreshold={10}
+        onScrollToUpper={morehistorymsg}>
+        <AtActivityIndicator isOpened={initLoading} size={36} mode='center'></AtActivityIndicator>
+        {
+          loading ?
+            <View className='more'>
+              <AtActivityIndicator isOpened={loading} size={28} mode='center' color='#ccc'></AtActivityIndicator>
+            </View>
+            :
+            <View className='topblock'></View>
+        }
         {/* 历史消息 */}
         {
           historyList.map((msgitem, msgidx) => {
             return (
-              <View className={`history ${msgitem.isServe?'reverse':''}`} key={msgidx} id={`msg${msgidx}`}>
-                <View className={`history-content ${msgitem.isServe?'reverse':''}`}>
-                  <UserAvatar ref={childref} msgItem={msgitem}></UserAvatar>
-                  {msgComponent(msgitem)}
+              <View className={`history ${msgitem.isServe ? 'reverse' : ''}`} key={msgidx} id={`msg${msgitem.uuid}`}>
+                <View className={`history-content ${msgitem.isServe ? 'reverse' : ''}`}>
+                  <UserAvatar ref={childref} msgItem={msgitem} fan={fan}></UserAvatar>
+                  {msgComponent(msgitem, msgidx)}
                 </View>
               </View>
             )
           })
         }
-
+        {/* 假消息 */}
+        {
+          fakes.map((fakeitem, fakeidx) => {
+            return (
+              <View className={`history ${fakeitem.isServe ? 'reverse' : ''}`} key={fakeidx} id={`msg${fakeitem.uuid}`}>
+                <View className={`history-content ${fakeitem.isServe ? 'reverse' : ''}`}>
+                  <UserAvatar ref={childref} msgItem={fakeitem} fan={fan}></UserAvatar>
+                  {msgComponent(fakeitem, fakeidx)}
+                </View>
+              </View>
+            )
+          })
+        }
       </ScrollView>
 
       <View className='fooler' style={{ height: '44px', bottom: keybordHeight + 'px' }}>
@@ -162,12 +369,13 @@ const LiveChat = () => {
         <AtInput
           name='msgInput'
           className='msginput'
+          value={message}
           onChange={inputMsg}
           onFocus={msgInputFocus}
           onBlur={msgInputBlur}
         />
         {/* 发送按钮 */}
-        <View className='searchbtn send'>
+        <View className='searchbtn send' onClick={sendMsg}>
           发送
         </View>
       </View>
@@ -175,4 +383,4 @@ const LiveChat = () => {
   );
 };
 
-export default LiveChat;
+export default observer(LiveChat);

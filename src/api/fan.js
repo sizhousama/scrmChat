@@ -13,3 +13,8 @@ export const getRecentContacts = (data) => {
 export const getAllTag = (params) => {
   return HTTPREQUEST.get('/scrm-message/tags/getAllTagsByUserId', params)
 }
+
+// 获取用户主页
+export const getAllPage = () => {
+  return HTTPREQUEST.get('/scrm-message/pageConfig/getAllPageBySellerId')
+}

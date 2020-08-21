@@ -18,6 +18,7 @@ const ChatHeader = (props, ref) => {
       height: barHeight + 44 + 'px',
       background: "#fff"
     })
+    console.log(props.fan)
   }, [])
   const onChange = (e) => {
     setSelectSer(services[e.detail.value])
@@ -25,19 +26,19 @@ const ChatHeader = (props, ref) => {
   return (
     <View>
       <View style={blockStyle}></View>
-      <View className='chatinfo' style={{height:'44px'}}>
+      <View className='chatinfo' style={{ height: '44px' }}>
         <View className='icon'>
           <Image src={livechat}></Image>
         </View>
         <View className='left'>
-          <Text className='name'>阎王爷</Text>
-          <Text className='pageid'>主页ID：123123123123123</Text>
+          <Text className='name'>{props.fan.fanName}</Text>
+          <Text className='pageid'>主页ID：{props.fan.pageId}</Text>
         </View>
         <View className='right'>
           <Image src={user}></Image>
         </View>
       </View>
-      <View className='navbar' style={{height:'44px'}}>
+      <View className='navbar' style={{ height: '44px' }}>
         <View className='left' onClick={Back}>
           <View className='at-icon at-icon-chevron-left'></View>
         </View>

@@ -6,11 +6,12 @@
   align-items: center;
   position: fixed;
   bottom:0;
-  background:#ddd;
+  // background:#ddd;
   .left{
     flex:1;
     display: flex;
     margin-left:56px;
+    align-items: center;
     .at-icon{
       margin:0;
     }
@@ -74,4 +75,9 @@
     height: 0;
     color: transparent;
   }
+}
+.more{
+  width:100%;
+  height:40px;
+  position: relative;
 }

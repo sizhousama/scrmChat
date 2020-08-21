@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useState,useEffect, useRef } from 'react'
 import { View, Text, Video, Audio } from '@tarojs/components'
 import { forwardRef } from 'react'
 import Taro from "@tarojs/taro";
@@ -8,17 +8,39 @@ import './index.scss'
 const MediaMsg = (props, ref) => {
   const isV = props.msgItem.originType === 'video' ? true : false
   const url = props.msgItem.mediaUrl
+  const [playing,SetPlaying] = useState(false)
+  const myaudio = Taro.createInnerAudioContext()
+  // useEffect(()=>{
+  //   createAudio()
+  // },[])
   const createAudio = ()=>{
-    const innerAudioContext = Taro.createInnerAudioContext('')
-    innerAudioContext.autoplay = true
-    innerAudioContext.src = url
-    innerAudioContext.onPlay(() => {
-      console.log('开始播放')
+    myaudio.autoplay = false
+    myaudio.src = url
+    myaudio.onPlay(() => {
+      console.log('播放中')
     })
-    innerAudioContext.onError((res) => {
+    myaudio.onPause(() => {
+      console.log('暂停')
+    })
+    myaudio.onStop(() => {
+      console.log('停止')
+    })
+    myaudio.onEnded(() => {
+      console.log('结束')
+    })
+
+    myaudio.onError((res) => {
       console.log(res.errMsg)
       console.log(res.errCode)
     })
+  }
+  const play = ()=>{
+    myaudio.play()
+    SetPlaying(true)
+  }
+  const pause = ()=>{
+    myaudio.pause()
+    SetPlaying(false)
   }
   
   return (
@@ -30,7 +52,21 @@ const MediaMsg = (props, ref) => {
           </View>
           :
           <View className='audio'>
-            {/* <Audio className='media' poster="" name="1231" author="12312" src={url} ></Audio> */}
+            <View className='action'>
+              {
+                playing
+                ?
+                <View className='at-icon at-icon-pause' onClick={pause}></View>
+                :
+                <View className='at-icon at-icon-play' onClick={play}></View>
+              }
+            </View>
+            <View className='progress'>
+
+            </View>
+            <View className='time'>
+
+            </View>
             {createAudio()}
           </View>
       }

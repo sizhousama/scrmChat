@@ -19,7 +19,7 @@ const Mine = () => {
     NavTo('../rePassword/index')
   }
   useEffect(()=>{
-    getinfo()
+    // getinfo()
   },[])
   const getinfo= async()=>{
     await getUserInfo().then(res=>{

@@ -1,20 +1,36 @@
 .media-msg {
-  width: 200px;
-  height: 260px;
-  overflow: hidden;
-  max-width: 240px;
-  max-height: 300px;
+  margin-top: 20px;
   .video {
-    width: 100%;
-    height: 100%;
+    width: 200px;
+    height: 260px;
+    overflow: hidden;
+    max-width: 240px;
+    max-height: 300px;
+    border-radius: 10px;
 
     .media {
       width: 100%;
       height: 100%;
     }
   }
-  .audio{
-    @extend .video;
+
+  .audio {
+    width:400px;
+    height:80px;
+    background:#f4f4f4;
+    border-radius: 10px;
+    display: flex;
+    .action{
+      height: 100%;
+      width:80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      .at-icon{
+        font-size: 32px;
+        color:#333;
+      }
+    }
   }
 
 }
