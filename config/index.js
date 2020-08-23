@@ -19,6 +19,7 @@ const config = {
     options: {
     }
   },
+  devtool: "inline-source-map",
   framework: 'react',
   mini: {
     postcss: {

@@ -4,6 +4,7 @@ import { stores, StoresContext } from './store';
 import 'taro-ui/dist/style/index.scss'
 import './app.scss'
 import './icon.scss'
+import 'mobx-react-lite/batchingForReactDom'
 import { observer } from 'mobx-react';
 // cnpm install taro-ui@3.0.0-alpha.3
 

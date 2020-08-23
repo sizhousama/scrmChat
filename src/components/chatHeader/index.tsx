@@ -18,7 +18,6 @@ const ChatHeader = (props, ref) => {
       height: barHeight + 44 + 'px',
       background: "#fff"
     })
-    console.log(props.fan)
   }, [])
   const onChange = (e) => {
     setSelectSer(services[e.detail.value])

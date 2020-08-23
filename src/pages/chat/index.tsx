@@ -1,12 +1,13 @@
 import React, { useRef, useState, useEffect } from "react";
+import { useDidHide, useDidShow, useReady } from '@tarojs/taro'
 import TabBar from "../tabbar";
 import Header from "@/components/header";
 import ChatFan from "@/components/chatFan";
 import { View } from "@tarojs/components";
 import { getRecentContacts, getAllPage } from '@/api/fan'
-import {getUserInfo} from '@/api/info'
+import { getUserInfo } from '@/api/info'
 import { observer } from 'mobx-react';
-import { useFanStore, useUserStore,useWsioStore } from '@/store';
+import { useFanStore, useUserStore, useWsioStore } from '@/store';
 import { socketUrl } from '@/servers/baseUrl'
 import io from 'socket.io-mp-client'
 // import io from 'weapp.socket.io'
@@ -22,68 +23,79 @@ interface Fan {
 const Chat = () => {
   const cur: number = 0
   const childref = useRef();
-  // const [ws, setWs] = useState<any>(undefined)  //socket实例
-  const [connect, setConnect] = useState(false) //判断socket是否连接
-  const [paged,setPaged] = useState(false)
-  const [infoed,setInfoed] = useState(false)
   // store
-  const {wsio,setWsio} = useWsioStore()
+  const { wsio, setWsio } = useWsioStore()
   const { pageIds, setPageIds } = useFanStore()
-  const { userInfo,setUserInfo } = useUserStore()
+  const { userInfo, setUserInfo } = useUserStore()
   const [fanlist, setFanList] = useState([])
   const [listParams, setListParams] = useState({
     page: 1,
     pageSize: 15
   })
   // 创建socket连接
-  const conSocket = () => {
-    const query = `userId=${userInfo.userId}&pageIds=${pageIds}`
+  const conSocket = (userId, pageIdsStr) => {
+    const query = `userId=${userId}&pageIds=${pageIdsStr}`
     const surl = socketUrl()
     const socket = io(surl + query)
     setWsio(socket)
+    initWebSocket(socket)
     console.log(socket)
-    setConnect(true)
   }
+  useDidHide(() => {
+
+    // wsio.close()
+
+  })
+  useDidShow(() => {
+
+  })
 
   useEffect(() => {
-    getList()
-    getpage()
+
     getinfo()
-    if(paged&&infoed){
-      conSocket()
-    }
-    if(connect){
-      initWebSocket()
-    }
-  }, [paged,infoed,connect])
-  const initWebSocket = () => {
-    wsio.on('connect', () => {
+    getList()
+  }, [])
+  const initWebSocket = (socket) => {
+    socket.on('connect', () => {
       console.log('已连接')
     })
-    wsio.on('connect_error', () => {
+    socket.on('connect_error', () => {
       console.log('连接失败')
     })
-    wsio.on('disconnect', () => {
-      wsio.emit('connect')
+    socket.on('disconnect', () => {
       console.log('断开连接')
+      socket.emit('connect')
     })
-    wsio.on('reconnect', () => {
-      wsio.emit('connect')
+    socket.on('reconnect', () => {
       console.log('重新连接')
+      socket.emit('connect')
     })
-    wsio.on('error', () => {
+    socket.on('error', () => {
       console.log('连接错误')
     })
-    // ws.on('SEND_MSG', (data) => {
+    // socket.on('SEND_MSG', (data) => {
     //   console.log(data)
     // })
   }
   // 用户信息
-  const getinfo= async()=>{
-    await getUserInfo().then(res=>{
-      const {data} = res
+  const getinfo = async () => {
+    await getUserInfo().then(res => {
+      const { data } = res
       setUserInfo(data.sysUser)
-      setInfoed(true)
+      getpage(data.sysUser.userId)
+    })
+  }
+  // 主页
+  const getpage = async (userId) => {
+    await getAllPage().then(res => {
+      const { data } = res
+      if (data.length === 0) {
+        console.log('当前用户没有主页！')
+      } else {
+        const pageIdsStr = data.map(item => item.pageId).join(',')
+        setPageIds(pageIdsStr)
+        conSocket(userId, pageIdsStr)
+      }
     })
   }
   // 聊天会话列表
@@ -100,19 +112,7 @@ const Chat = () => {
       setFanList(list)
     })
   }
-  // 主页
-  const getpage = async () => {
-    await getAllPage().then(res => {
-      const { data } = res
-      if (data.length === 0) {
-        console.log('当前用户没有主页！')
-      } else {
-        const pageIdsStr = data.map(item => item.pageId).join(',')
-        setPageIds(pageIdsStr)
-        setPaged(true)
-      }
-    })
-  }
+
 
   return (
     <View>

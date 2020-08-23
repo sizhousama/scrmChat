@@ -4,17 +4,17 @@ export default {
     'pages/chat/index',
     'pages/liveChat/index',
     'pages/mine/index',
-    
-    
-    
+
+
+
     'pages/rePassword/index',
     'pages/tags/index',
     'pages/myInfo/index',
     'pages/search/index',
-    
+
     'pages/login/index',
     'pages/users/index'
-    
+
   ],
   window: {
     backgroundTextStyle: 'light',
@@ -23,7 +23,7 @@ export default {
     navigationBarTextStyle: 'black'
   },
   tabBar: {
-    custom:true,
+    custom: true,
     list: [{
       pagePath: 'pages/chat/index',
       text: '消息',
@@ -41,8 +41,8 @@ export default {
       text: '我的',
       iconPath: './assets/images/mine.png',
       selectedIconPath: './assets/images/mine_act.png'
-    }    
-  ],
+    }
+    ],
     color: '#8a8a8a',
     selectedColor: '#f4d231',
     backgroundColor: '#ffffff',

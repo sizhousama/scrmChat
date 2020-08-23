@@ -32,7 +32,9 @@ interface MI {
   senderId?: string,
   recipientId?: string,
   mid?: string,
-  status?:number
+  status?:number,
+  uuid?:string,
+  userId?:number
 }
 const LiveChat = () => {
   const childref = useRef()
@@ -64,6 +66,7 @@ const LiveChat = () => {
   }
 
   useEffect(() => {
+    setFakes([])
     initSocket()
     historymsg()
   }, [])
@@ -77,11 +80,13 @@ const LiveChat = () => {
         senderId: '',
         recipientId: '',
         mid: '',
-        status:0
+        status:0,
+        uuid:'',
+        userId:0
       }
       messageItem = { ...parseMsg(data) }
       console.log('解析后数据:', messageItem)
-      const { isServe = true, senderId: newMsgSenderId, recipientId: newMsgRecipientId } = messageItem
+      const { userId,isServe = true, senderId: newMsgSenderId, recipientId: newMsgRecipientId } = messageItem
       const { fanId: fanSenderId, pageId: fanPageId } = fan
       const message = fakelist.find(item => {
         if (item.mid) {
@@ -96,8 +101,11 @@ const LiveChat = () => {
         if (((isServe && newMsgSenderId === fanPageId) && (newMsgRecipientId === fanSenderId)) || ((!isServe && newMsgSenderId === fanSenderId) && (newMsgRecipientId === fanPageId))) {
           console.log('当前信息不存在，并且聊天对象正确')
           messageItem.status = 1 // 不存在的修改为 发送成功
+          messageItem.uuid = genUuid()
+          messageItem.userId = userId
           fakelist.push(messageItem)
           setFakes(fakelist.slice())
+          console.log(fakes)
           tobottom()
         }
       }
@@ -125,7 +133,6 @@ const LiveChat = () => {
           sendText.mid = mid
         }
       }
-      setFakes(fakelist.slice())
     })
   }
   const historymsg = async () => {
@@ -223,7 +230,6 @@ const LiveChat = () => {
   }
   const tobottom = () => {
     const arr = [...historyList, ...fakes]
-    console.log(arr)
     const cur = `msg${arr[arr.length - 1].uuid}`
     setCurMsg(cur)
   }
@@ -266,7 +272,7 @@ const LiveChat = () => {
       // isTimeVisible: (Date.now() - this.lastVisibleTime > 300000) // 是否显示时间戳
     }
     fakelist.push(fakeText)
-    setFakes(fakelist.slice())
+    // setFakes(fakelist.slice())
     setMessage('')
     wsio.emit('SEND_MSG', socketParams)
     tobottom()
