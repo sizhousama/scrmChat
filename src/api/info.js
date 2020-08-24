@@ -15,3 +15,8 @@ export const rePassOrAva = (data) => {
 export const removeToken = () => {
   return HTTPREQUEST.get('/scrm-admin/user/removeToken')
 }
+
+// 上传头像
+export const uploadAva = (data) => {
+  return HTTPREQUEST.post('/scrm-seller/utils/uploadFileAvatarByUrl',data)
+}

@@ -6,6 +6,7 @@ import { useNavStore, useUserStore } from '@/store';
 import { previewImg } from '@/utils/index'
 import { getBaseUrl } from '@/servers/baseUrl'
 import Taro from "@tarojs/taro";
+import { uploadAva } from '@/api/info'
 // import Taro from "@tarojs/taro";
 import "./index.scss";
 
@@ -24,20 +25,24 @@ const MyInfo = () => {
       success(res) {
         const tempFilePaths = res.tempFilePaths
         console.log(tempFilePaths[0])
-        // const baseurl = getBaseUrl()
-        // Taro.uploadFile({
-        //   url: `${baseurl}/scrm-seller/utils/uploadFileAvatarByUrl`,
-        //   filePath: tempFilePaths[0],
-        //   name: 'file',
-        //   formData:{
-        //     'url':tempFilePaths[0]
-        //   },
-        //   header: {
-        //     'Authorization': Taro.getStorageSync('Token'),
-        //   },
-        //   success(res) {
-        //   }
+        const baseurl = getBaseUrl()
+        // uploadAva({url:tempFilePaths[0]}).then(res=>{
+        //   const {data} = res
+        //   console.log(data)
         // })
+        Taro.uploadFile({
+          url: `${baseurl}/scrm-seller/utils/uploadFileAvatarImg`,
+          filePath: tempFilePaths[0],
+          name: 'file',
+          formData:{
+            'file':tempFilePaths[0]
+          },
+          header: {
+            'Authorization': Taro.getStorageSync('Token'),
+          },
+          success(res) {
+          }
+        })
       }
     })
   }

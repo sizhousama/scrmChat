@@ -1,16 +1,18 @@
-import React, { useRef, useState, useEffect } from "react";
-import { useDidHide, useDidShow, useReady } from '@tarojs/taro'
+import React, { useRef, useState, useEffect, useReducer } from "react";
+// import { useDidHide, useDidShow, useReady } from '@tarojs/taro'
 import TabBar from "../tabbar";
 import Header from "@/components/header";
 import ChatFan from "@/components/chatFan";
 import { View } from "@tarojs/components";
 import { getRecentContacts, getAllPage } from '@/api/fan'
+import { formatChatTime } from '@/utils/time'
 import { getUserInfo } from '@/api/info'
 import { observer } from 'mobx-react';
+import { parseMsg, judgeType } from '@/utils/parse'
 import { useFanStore, useUserStore, useWsioStore } from '@/store';
 import { socketUrl } from '@/servers/baseUrl'
+import { vibrate } from '@/utils/index'
 import io from 'socket.io-mp-client'
-// import io from 'weapp.socket.io'
 import "./index.scss";
 interface Fan {
   fanId: string,
@@ -20,14 +22,40 @@ interface Fan {
   msg: string,
   tagsArr: any[]
 }
+interface PM {
+  senderId?: string,
+  isServe?: boolean,
+  text?: string
+  recipientId?: string,
+  pageId?:string
+}
+const initState = {
+  fanlist: []
+}
+const listReducer = (state, action) => {
+  switch (action.type) {
+    case 'list':
+      return {
+        ...state,
+        fanlist: action.payload.list
+      }
+    case 'params':
+      return {
+        ...state,
+      }
+    default:
+      return state;
+  }
+}
 const Chat = () => {
   const cur: number = 0
   const childref = useRef();
   // store
-  const { wsio, setWsio } = useWsioStore()
-  const { pageIds, setPageIds } = useFanStore()
-  const { userInfo, setUserInfo } = useUserStore()
-  const [fanlist, setFanList] = useState([])
+  const { setWsio } = useWsioStore()
+  const { setPageIds } = useFanStore()
+  const { setUserInfo } = useUserStore()
+  const [state, dispatch] = useReducer(listReducer, initState)
+  const { fanlist } = state
   const [listParams, setListParams] = useState({
     page: 1,
     pageSize: 15
@@ -41,17 +69,8 @@ const Chat = () => {
     initWebSocket(socket)
     console.log(socket)
   }
-  useDidHide(() => {
-
-    // wsio.close()
-
-  })
-  useDidShow(() => {
-
-  })
 
   useEffect(() => {
-
     getinfo()
     getList()
   }, [])
@@ -73,9 +92,48 @@ const Chat = () => {
     socket.on('error', () => {
       console.log('连接错误')
     })
-    // socket.on('SEND_MSG', (data) => {
-    //   console.log(data)
-    // })
+    socket.on('SEND_MSG', (data) => {
+      
+      let parsedMsg: PM = {
+        senderId: '',
+        isServe: false,
+        text: '',
+        recipientId: '',
+      }
+      parsedMsg = { ...parseMsg(data) }
+      console.log(parsedMsg)
+      // let fan = {
+      //   fanId: '',
+      //   msg: '',
+      //   read: 0,
+      //   timestamp: 0
+      // }
+      const fan = fanlist.find(fan => {
+        return fan.fanId === parsedMsg.senderId
+      })
+      console.log(fan)
+      const { text, isServe, recipientId, senderId } = parsedMsg
+      // 粉丝发来的信息则进行处理
+      if (!isServe) {
+        // 如果 fan 存在
+        // console.log(fan)
+        if (fan !== undefined) {
+          fan.msg = judgeType(parsedMsg)
+          fan.read = 0
+          fan.timestamp = Date.now()
+        }
+        vibrate()
+      } else { // 客服发送消息的时候商家同时可以看到
+        const item = fanlist.find(item => {
+          return (item.pageId === parsedMsg.senderId && item.senderId === parsedMsg.recipientId)
+          ||(item.pageId === parsedMsg.senderId && item.recipientId === parsedMsg.recipientId)
+        })
+        // 当前粉丝消息实时显示客服或者商家发送消息
+        if (item.msg !== undefined) {
+          item.msg = '你: ' + text
+        }
+      }
+    })
   }
   // 用户信息
   const getinfo = async () => {
@@ -105,14 +163,17 @@ const Chat = () => {
       let list = data
       list.forEach(item => {
         item.tagsArr = []
+        item.formatTime = formatChatTime(item.timestamp)
         if (item.tags !== null) {
           item.tagsArr = item.tags.slice(1, -1).split(',').slice(-1)
         }
       })
-      setFanList(list)
+      dispatch({
+        type: 'list',
+        payload: { list }
+      });
     })
   }
-
 
   return (
     <View>

@@ -28,7 +28,7 @@ const Login = () => {
       SetStorageSync('Token',token)
       Toast('登录成功','none')  
       setTimeout(()=>{
-        SwitchTab('/pages/mine/index')
+        SwitchTab('/pages/chat/index')
       },1000)     
     }).catch(err => {
       console.log(err)

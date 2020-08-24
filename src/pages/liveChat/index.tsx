@@ -1,6 +1,7 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useReducer } from "react";
 import ChatHeader from "@/components/chatHeader";
 import UserAvatar from '@/components/userAvatar';
+import Emoji from '@/components/emoji'
 // 消息体组件
 import TextMsg from '@/components/msgView/textMsg';
 import ImgMsg from '@/components/msgView/imgMsg';
@@ -11,11 +12,10 @@ import MediaMsg from '@/components/msgView/mediaMsg';
 import ButtonMsg from '@/components/msgView/buttonMsg';
 import { View, Text, ScrollView } from "@tarojs/components";
 import { AtInput, AtIcon, AtActivityIndicator } from 'taro-ui'
-import { getSysInfo, genUuid } from '@/utils/index'
+import { getSysInfo, genUuid, setInput } from '@/utils/index'
 import { getHistoryMsg } from '@/api/chat'
-
 import { observer } from 'mobx-react';
-import { useFanStore, useWsioStore,useUserStore } from '@/store';
+import { useFanStore, useWsioStore, useUserStore } from '@/store';
 import { parseMsg } from '@/utils/parse'
 import "./index.scss";
 
@@ -32,31 +32,33 @@ interface MI {
   senderId?: string,
   recipientId?: string,
   mid?: string,
-  status?:number,
-  uuid?:string,
-  userId?:number
+  status?: number,
+  uuid?: string,
+  userId?: number
 }
+
 const LiveChat = () => {
   const childref = useRef()
   const barHeight = getSysInfo().statusBarHeight
   const { fan } = useFanStore()
-  const {userInfo} = useUserStore()
+  const { userInfo } = useUserStore()
   const { wsio } = useWsioStore()
-  const [message,setMessage] = useState('')
+  const [message, setMessage] = useState('')
+  const [showemoji, setShowEmoji] = useState(false)
   const [historyList, setHistory] = useState<any[]>([])
-  const [fakes, setFakes] = useState<any[]>([])
+  const [fakes, dispatch] = useReducer((state, action) => {
+    return state
+  }, [])
   const [curMsg, setCurMsg] = useState('')
   const [loading, setLoading] = useState(false) //加载更多...
-  const [initLoading,setInitLoading] = useState(false)
+  const [initLoading, setInitLoading] = useState(false)
   const [hasmore, setHasmore] = useState(false) //是否有更多历史记录
   const [hisPar, setHisPar] = useState({
     page: 1,
     pageSize: 15,
     pageId: fan.pageId,
     senderId: fan.fanId,
-    userId: 0,
-    userName: '',
-    id: ''
+    userId: 0
   })//历史记录参数
   let diffHeight = barHeight + 178 //176 + 2 2px为border高度
   let keybordHeight = 0 //键盘高度
@@ -66,29 +68,26 @@ const LiveChat = () => {
   }
 
   useEffect(() => {
-    setFakes([])
     initSocket()
     historymsg()
   }, [])
   // socket事件
   const initSocket = () => {
     wsio.on('SEND_MSG', (data) => {
-      const fakelist = fakes
-      console.log(fakelist)
-      let messageItem:MI = {
+      let messageItem: MI = {
         isServe: false,
         senderId: '',
         recipientId: '',
         mid: '',
-        status:0,
-        uuid:'',
-        userId:0
+        status: 0,
+        uuid: '',
+        userId: 0
       }
       messageItem = { ...parseMsg(data) }
-      console.log('解析后数据:', messageItem)
-      const { userId,isServe = true, senderId: newMsgSenderId, recipientId: newMsgRecipientId } = messageItem
+      // console.log('解析后数据:', messageItem)
+      const { userId, isServe = true, senderId: newMsgSenderId, recipientId: newMsgRecipientId } = messageItem
       const { fanId: fanSenderId, pageId: fanPageId } = fan
-      const message = fakelist.find(item => {
+      const message = fakes.find(item => {
         if (item.mid) {
           return item.mid === messageItem.mid
         } else {
@@ -103,30 +102,27 @@ const LiveChat = () => {
           messageItem.status = 1 // 不存在的修改为 发送成功
           messageItem.uuid = genUuid()
           messageItem.userId = userId
-          fakelist.push(messageItem)
-          setFakes(fakelist.slice())
+          fakes.push(messageItem)
           console.log(fakes)
           tobottom()
         }
       }
     })
 
-    wsio.on('SEND_MSG_RESPONSE',(data)=>{
-      const fakelist = fakes
+    wsio.on('SEND_MSG_RESPONSE', (data) => {
       const { msg = '', status, uuid = '', mid = '' } = data
       // 收到的状态为3的时候，比状态时间戳小的信息全部改为已读
       if (status === 3) {
         const watermark = data.watermark
-        fakelist.forEach(item => {
+        fakes.forEach(item => {
           if (item.timestamp <= watermark) {
             item.status = 3
           }
         })
       } else {
-        const sendText = fakelist.find(item => item.uuid === uuid)
+        const sendText = fakes.find(item => item.uuid === uuid)
         // 找到uuid 相同的信息 改变发送信息的状态
         if (sendText) {
-          console.log(sendText)
           // sendText.loading = false
           sendText.status = status
           sendText.errorText = msg
@@ -234,12 +230,12 @@ const LiveChat = () => {
     setCurMsg(cur)
   }
   //发送文本消息
-  const sendMsg =()=>{
+  const sendMsg = () => {
     // 创建uuid
     const uuid = genUuid()
     let msg = message
     let fakelist = fakes
-    
+
     msg = msg.trim()
     if (msg === '') {
       console.log('提交信息不通过')
@@ -272,10 +268,12 @@ const LiveChat = () => {
       // isTimeVisible: (Date.now() - this.lastVisibleTime > 300000) // 是否显示时间戳
     }
     fakelist.push(fakeText)
-    // setFakes(fakelist.slice())
+    
+    dispatch(fakelist)
     setMessage('')
     wsio.emit('SEND_MSG', socketParams)
     tobottom()
+    setShowEmoji(false)
   }
 
   // 输入时
@@ -291,6 +289,7 @@ const LiveChat = () => {
   const msgInputBlur = (v, e) => {
     keybordHeight = e.detail.height
     diffHeight -= keybordHeight //软键盘高度改变，scroll高度改变
+    console.log(e.detail.cursor)
   }
   // 动态组件
   const msgComponent = (item, idx) => {
@@ -314,6 +313,10 @@ const LiveChat = () => {
       default: break
     }
   }
+  const setemoji = (emoji) => {
+    const result = setInput('msgInput', emoji)
+    setMessage(result)
+  }
   return (
     <View className='live-chat'>
       <ChatHeader ref={childref} fan={fan}></ChatHeader>
@@ -323,7 +326,8 @@ const LiveChat = () => {
         style={msgViewStyle}
         scrollIntoView={curMsg}
         upperThreshold={10}
-        onScrollToUpper={morehistorymsg}>
+        onScrollToUpper={morehistorymsg}
+        onClick={() => { setShowEmoji(false) }}>
         <AtActivityIndicator isOpened={initLoading} size={36} mode='center'></AtActivityIndicator>
         {
           loading ?
@@ -364,8 +368,13 @@ const LiveChat = () => {
       <View className='fooler' style={{ height: '44px', bottom: keybordHeight + 'px' }}>
         {/* 左边工具栏 */}
         <View className='left'>
-          <View className='emoj'>
+          <View className='emoj' onClick={() => { setShowEmoji(!showemoji) }}>
             <AtIcon prefixClass='icon' value='smile' color='#666' className='alicon'></AtIcon>
+            {
+              showemoji ?
+                <Emoji ref={childref} msg={message} handleClick={setemoji}></Emoji>
+                : ''
+            }
           </View>
           <View className='more'>
             <AtIcon prefixClass='icon' value='add-circle' color='#666' className='alicon'></AtIcon>

@@ -42,8 +42,8 @@ export const getSysInfo = () => {
 // 预览
 export const previewImg = (url) => {
   Taro.previewImage({
-    current:url,
-    urls:[url]
+    current: url,
+    urls: [url]
   })
 }
 // 同步缓存
@@ -62,9 +62,14 @@ export const redirectTo = (url) => {
     url,
   })
 }
+// 震动
+export const vibrate = (url) => {
+  Taro.vibrateShort
+}
+
 
 // 判断当前obj对象是否有 key 属性
-export const hasProperty = (obj, key) =>{
+export const hasProperty = (obj, key) => {
   return obj.hasOwnProperty(key)
 }
 
@@ -89,11 +94,29 @@ export const toIndexes = (list, keyword) => {
   return arr
 }
 
-// 生成uuid 参数发消息带上
+// 生成uuid 
 export const genUuid = () => {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
     var r = Math.random() * 16 | 0
     var v = c === 'x' ? r : (r & 0x3 | 0x8)
     return v.toString(16)
   })
+}
+
+// 
+export const setInput = (id, data) => {
+  var elInput = document.getElementById(id) // 根据id选择器选中对象
+  var startPos = elInput.selectionStart // input 第0个字符到选中的字符
+  var endPos = elInput.selectionEnd // 选中的字符到最后的字符
+  console.log(elInput)
+  if (startPos === undefined || endPos === undefined) return elInput.value+data
+  var txt = elInput.value
+  // 将表情添加到选中的光标位置
+  var result = txt.substring(0, startPos) + data + txt.substring(endPos)
+  elInput.value = result // 赋值给input的value
+  // 重新定义光标位置
+  elInput.focus()
+  elInput.selectionStart = startPos + data.length
+  elInput.selectionEnd = startPos + data.length
+  return result
 }
