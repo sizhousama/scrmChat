@@ -62,10 +62,14 @@ export const redirectTo = (url) => {
     url,
   })
 }
-// 震动
-export const vibrate = (url) => {
-  Taro.vibrateShort
+// 提示音
+export const msgAudio = () => {
+  const msg = Taro.createInnerAudioContext()
+  msg.autoplay = true
+  msg.src = 'https://image.hivescrm.cn/image_test/2020/08/25/1598337901984/msg.mp3'
 }
+// https://image.hivescrm.cn/image_test/2020/08/25/1598337902067/mes2.mp3
+// https://image.hivescrm.cn/image_test/2020/08/25/1598337901984/msg.mp3
 
 
 // 判断当前obj对象是否有 key 属性

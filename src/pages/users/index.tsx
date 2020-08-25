@@ -6,6 +6,8 @@ import Fan from "@/components/fan";
 import Indexes from "@/components/indexes";
 import { getFans } from '@/api/fan'
 import { toIndexes } from '@/utils/index'
+import { observer } from 'mobx-react';
+import { useFanStore } from '@/store';
 import './index.scss'
 
 interface Us {
@@ -17,6 +19,7 @@ interface Us {
 const Users = () => {
   const cur: number = 1
   const childref = useRef();
+  const {hasNew} = useFanStore()
   const [fans, setFans] = useState([])
   const [listParams, setListParams] = useState({
     current: 1,
@@ -69,9 +72,9 @@ const Users = () => {
         }
         <Indexes ref={childref} st={44} />
       </View>
-      <TabBar ref={childref} cur={cur} />
+      <TabBar ref={childref} cur={cur} has={hasNew} />
     </View>
   )
 }
 
-export default Users
+export default observer(Users)

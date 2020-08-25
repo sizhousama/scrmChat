@@ -1,36 +1,45 @@
-.generic-msg{
-  width:240px;
-  border:2px solid #eee;
+.generic-msg {
+  width: 340px;
+  border: 2px solid #eee;
   border-radius: 10px;
   overflow: hidden;
   margin-top: 20px;
-  .swiper{
-    min-height: 286px;
+
+  .swiper {
+    height: 492px;
+    background:#f1f0f0;
   }
-  .sitem{
-    width:100%;
+
+  .sitem {
+    width: 100%;
     display: flex;
     flex-direction: column;
-    
-    .title{
-      font-size: 22px;
-      color:#666;
+
+    .title {
+      font-size: 24px;
+      color: #000;
       box-sizing: border-box;
-      padding:5px 10px;
+      padding: 8px 20px;
       border-top: 2px solid #eee;
       border-bottom: 2px solid #eee;
+      height: 78px;
+      font-weight: bold;
     }
-    .btn{
+
+    .btn {
       font-size: 24px;
-      color:#0084ff;
+      color: #000;
       text-align: center;
-      padding:8px 0;
-      border-bottom: 2px solid #eee;
+      padding: 10px 0;
+      margin: 10px;
+      background: #fff;
+      border-radius: 15px;
     }
   }
-  .simg{
-    width:100%;
+
+  .simg {
+    width: 100%;
     height: auto;
-    max-height: 200px;
+    max-height: 340px;
   }
 }

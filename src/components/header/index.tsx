@@ -17,8 +17,8 @@ const Header = (props, ref) => {
         { props.icon==='message'? <Image style='margin-top:5px' src={message} />:<Image src={fans} /> }
         <Text>{props.title}</Text>
       </View>
-      <View className='right'>
-        <View className='at-icon at-icon-search' onClick={navto}></View>
+      <View className='right' onClick={navto}>
+        <View className='at-icon at-icon-search'></View>
       </View>
     </View>
   )

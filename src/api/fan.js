@@ -18,3 +18,8 @@ export const getAllTag = (params) => {
 export const getAllPage = () => {
   return HTTPREQUEST.get('/scrm-message/pageConfig/getAllPageBySellerId')
 }
+
+// 更新状态
+export const upRead = (data) => {
+  return HTTPREQUEST.post('/scrm-message/messenging/contacts/updateReadStatus',data)
+}

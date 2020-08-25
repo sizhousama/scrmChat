@@ -26,10 +26,6 @@ const MyInfo = () => {
         const tempFilePaths = res.tempFilePaths
         console.log(tempFilePaths[0])
         const baseurl = getBaseUrl()
-        // uploadAva({url:tempFilePaths[0]}).then(res=>{
-        //   const {data} = res
-        //   console.log(data)
-        // })
         Taro.uploadFile({
           url: `${baseurl}/scrm-seller/utils/uploadFileAvatarImg`,
           filePath: tempFilePaths[0],
@@ -58,7 +54,7 @@ const MyInfo = () => {
         <View className='listitem head'>
           <View className='left'>头像：</View>
           <View className='right' onClick={upHead}>
-            <Image src={userInfo.avatar} onClick={viewImg}></Image>
+            <Image src={userInfo.avatar+'?v=1'} onClick={viewImg}></Image>
             <View className='at-icon at-icon-chevron-right'></View>
           </View>
         </View>

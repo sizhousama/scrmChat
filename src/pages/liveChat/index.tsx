@@ -13,6 +13,7 @@ import ButtonMsg from '@/components/msgView/buttonMsg';
 import { View, Text, ScrollView } from "@tarojs/components";
 import { AtInput, AtIcon, AtActivityIndicator } from 'taro-ui'
 import { getSysInfo, genUuid, setInput } from '@/utils/index'
+import { formatMsgStatus } from '@/utils/filter'
 import { getHistoryMsg } from '@/api/chat'
 import { observer } from 'mobx-react';
 import { useFanStore, useWsioStore, useUserStore } from '@/store';
@@ -34,21 +35,44 @@ interface MI {
   mid?: string,
   status?: number,
   uuid?: string,
-  userId?: number
+  userId?: number,
+  fake?: boolean
 }
-
+// reducer
+const initState = {
+  historyList: [],
+  fakes: []
+}
+const listReducer = (state, action) => {
+  switch (action.type) {
+    case 'his':
+      return {
+        ...state,
+        historyList: action.payload.his
+      }
+    case 'fakes':
+      return {
+        ...state,
+        fakes: action.payload.fakes
+      }
+    default:
+      return state;
+  }
+}
 const LiveChat = () => {
   const childref = useRef()
+  const hisref = useRef<any[]>([])
+  const fakeref = useRef<any[]>([])
+
   const barHeight = getSysInfo().statusBarHeight
   const { fan } = useFanStore()
   const { userInfo } = useUserStore()
   const { wsio } = useWsioStore()
   const [message, setMessage] = useState('')
   const [showemoji, setShowEmoji] = useState(false)
-  const [historyList, setHistory] = useState<any[]>([])
-  const [fakes, dispatch] = useReducer((state, action) => {
-    return state
-  }, [])
+  // const [historyList, setHistory] = useState<any[]>([])
+  const [state, dispatch] = useReducer(listReducer, initState)
+  const { historyList, fakes } = state
   const [curMsg, setCurMsg] = useState('')
   const [loading, setLoading] = useState(false) //加载更多...
   const [initLoading, setInitLoading] = useState(false)
@@ -84,26 +108,25 @@ const LiveChat = () => {
         userId: 0
       }
       messageItem = { ...parseMsg(data) }
-      // console.log('解析后数据:', messageItem)
       const { userId, isServe = true, senderId: newMsgSenderId, recipientId: newMsgRecipientId } = messageItem
       const { fanId: fanSenderId, pageId: fanPageId } = fan
-      const message = fakes.find(item => {
-        if (item.mid) {
-          return item.mid === messageItem.mid
+      const message = fakeref.current.find(item => {
+        if (item['mid']) {
+          return item['mid'] === messageItem.mid
         } else {
           return undefined
         }
       })
-      console.log(message)
 
       if (!message) {
         if (((isServe && newMsgSenderId === fanPageId) && (newMsgRecipientId === fanSenderId)) || ((!isServe && newMsgSenderId === fanSenderId) && (newMsgRecipientId === fanPageId))) {
           console.log('当前信息不存在，并且聊天对象正确')
-          messageItem.status = 1 // 不存在的修改为 发送成功
+          messageItem.status = 1 
           messageItem.uuid = genUuid()
           messageItem.userId = userId
-          fakes.push(messageItem)
-          console.log(fakes)
+          messageItem.fake = true
+          fakeref.current = [...fakeref.current,messageItem]
+          dispatch({type:'fakes',payload:{fakes:fakeref.current}})
           tobottom()
         }
       }
@@ -111,16 +134,17 @@ const LiveChat = () => {
 
     wsio.on('SEND_MSG_RESPONSE', (data) => {
       const { msg = '', status, uuid = '', mid = '' } = data
+      console.log(data)
       // 收到的状态为3的时候，比状态时间戳小的信息全部改为已读
       if (status === 3) {
         const watermark = data.watermark
-        fakes.forEach(item => {
+        fakeref.current.forEach(item => {
           if (item.timestamp <= watermark) {
             item.status = 3
           }
         })
       } else {
-        const sendText = fakes.find(item => item.uuid === uuid)
+        const sendText = fakeref.current.find(item => item.uuid === uuid)
         // 找到uuid 相同的信息 改变发送信息的状态
         if (sendText) {
           // sendText.loading = false
@@ -129,6 +153,7 @@ const LiveChat = () => {
           sendText.mid = mid
         }
       }
+      dispatch({type:'fakes',payload:{fakes:fakeref.current}})
     })
   }
   const historymsg = async () => {
@@ -138,7 +163,7 @@ const LiveChat = () => {
       const hm = data.length > 0
       setHasmore(hm)
       let isbreak = false // 判断返回的数据
-      let hisarr = historyList
+      let hisarr = hisref.current
       data.forEach(item => {
         if (isbreak || item.msg === null) return
         if (item.fanId !== hisPar.senderId) {
@@ -174,7 +199,8 @@ const LiveChat = () => {
 
       if (!isbreak) {
         hisarr.reverse()
-        setHistory(hisarr.slice())
+        dispatch({type:'his',payload:{his:hisarr}})
+        // setHistory(hisarr.slice())
         tobottom()
         setInitLoading(false)
       }
@@ -192,7 +218,7 @@ const LiveChat = () => {
       const { data } = res
       const hm = data.length > 0
       setHasmore(hm)
-      let hisarr = historyList
+      let hisarr = hisref.current
       const len = data.length
       data.forEach(item => {
         if (item.msg === null) return
@@ -218,14 +244,14 @@ const LiveChat = () => {
           }
         }
       })
-      setHistory(hisarr)
+      dispatch({type:'his',payload:{his:hisarr}})
       setLoading(false)
-      const id = `msg${historyList[len].uuid}`
+      const id = `msg${hisref.current[len].uuid}`
       setCurMsg(id)
     })
   }
   const tobottom = () => {
-    const arr = [...historyList, ...fakes]
+    const arr = [...hisref.current, ...fakeref.current]
     const cur = `msg${arr[arr.length - 1].uuid}`
     setCurMsg(cur)
   }
@@ -234,11 +260,10 @@ const LiveChat = () => {
     // 创建uuid
     const uuid = genUuid()
     let msg = message
-    let fakelist = fakes
-
     msg = msg.trim()
     if (msg === '') {
       console.log('提交信息不通过')
+      setShowEmoji(false)
       return
     }
     const { fanId, pageId } = fan
@@ -249,7 +274,7 @@ const LiveChat = () => {
       userName: userInfo.username,
       senderId: fanId,
       pageId: pageId,
-      msg: msg
+      msg: msg,
     }
     // 假数据
     // TODO: 目前自制的假消息类型只有text
@@ -265,11 +290,12 @@ const LiveChat = () => {
       status: 0, // 发送状态 0:发送中 1:发送成功 2:已送达 3:已读 -1:发送失败
       errorText: '', // 错误提示信息
       userId: userInfo.userId, // 用来显示假消息头像
+      fake: true
       // isTimeVisible: (Date.now() - this.lastVisibleTime > 300000) // 是否显示时间戳
     }
-    fakelist.push(fakeText)
-    
-    dispatch(fakelist)
+    fakeref.current = [...fakeref.current,fakeText]
+
+    dispatch({type:'fakes',payload:{fakes:fakeref.current}})
     setMessage('')
     wsio.emit('SEND_MSG', socketParams)
     tobottom()
@@ -325,7 +351,7 @@ const LiveChat = () => {
         className='msgview'
         style={msgViewStyle}
         scrollIntoView={curMsg}
-        upperThreshold={10}
+        upperThreshold={20}
         onScrollToUpper={morehistorymsg}
         onClick={() => { setShowEmoji(false) }}>
         <AtActivityIndicator isOpened={initLoading} size={36} mode='center'></AtActivityIndicator>
@@ -345,6 +371,12 @@ const LiveChat = () => {
                 <View className={`history-content ${msgitem.isServe ? 'reverse' : ''}`}>
                   <UserAvatar ref={childref} msgItem={msgitem} fan={fan}></UserAvatar>
                   {msgComponent(msgitem, msgidx)}
+
+                  {
+                    msgitem.isServe ?
+                      <Text className='msgstatus'>{formatMsgStatus(msgitem.status)}</Text>
+                      : ''
+                  }
                 </View>
               </View>
             )
@@ -358,6 +390,13 @@ const LiveChat = () => {
                 <View className={`history-content ${fakeitem.isServe ? 'reverse' : ''}`}>
                   <UserAvatar ref={childref} msgItem={fakeitem} fan={fan}></UserAvatar>
                   {msgComponent(fakeitem, fakeidx)}
+
+                  {
+                    fakeitem.isServe && fakeitem.status !== -1 ?
+                      <Text className='msgstatus'>{formatMsgStatus(fakeitem.status)}</Text>
+                      : ''
+                  }
+
                 </View>
               </View>
             )

@@ -5,27 +5,19 @@ import mine_w from '@/assets/images/mine_white.png'
 import {NavTo,redirectTo,SetStorageSync} from '@/utils/index'
 import {getUserInfo} from '@/api/info'
 import { observer } from 'mobx-react';
-import { useUserStore } from '@/store';
+import { useUserStore, useFanStore } from '@/store';
 import './index.scss'
 
 const Mine = () => {
   const cur: number = 2
   const childref = useRef();
   const {userInfo,setUserInfo} = useUserStore()
+  const {hasNew} = useFanStore()
   const editinfo =()=>{
     NavTo('../myInfo/index')
   }
   const editPass = () =>{
     NavTo('../rePassword/index')
-  }
-  useEffect(()=>{
-    // getinfo()
-  },[])
-  const getinfo= async()=>{
-    await getUserInfo().then(res=>{
-      const {data} = res
-      setUserInfo(data.sysUser)
-    })
   }
   const logout =()=>{
     SetStorageSync('Token','')
@@ -73,7 +65,7 @@ const Mine = () => {
           </View>
         </View>
       </View>
-      <TabBar ref={childref} cur={cur} />
+      <TabBar ref={childref} cur={cur} has={hasNew} />
     </View>
   )
 }

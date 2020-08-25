@@ -2,7 +2,7 @@
 export const getBaseUrl = (url) => {
   let BASE_URL = '';
   if (process.env.NODE_ENV === 'development') {
-    //开发环境 - 根据请求不同返回不同的BASE_URL
+    //开发环境 
     // BASE_URL = 'https://back.hivescrm.cn'
     BASE_URL = 'https://back.hivemarket.top'
   } else {
@@ -15,13 +15,13 @@ export const getBaseUrl = (url) => {
 // 图片地址
 export const imgUrl = (url) => {
   let IMG_URL = '';
-  IMG_URL = process.env.NODE_ENV === 'development' ? 'https://image.hivescrm.cn/image_test':'https://image.hivescrm.cn/image'
+  IMG_URL = process.env.NODE_ENV === 'development' ? 'https://image.hivescrm.cn/image_test':'https://image.hivescrm.cn/image_test'
   return IMG_URL
 }
 
 // socket地址
 export const socketUrl = (url) => {
   let SOCKET_URL = '';
-  SOCKET_URL = process.env.NODE_ENV === 'development' ? 'https://back.hivemarket.top?':'https://back.hivescrm.cn'
+  SOCKET_URL = process.env.NODE_ENV === 'development' ? 'https://back.hivemarket.top?':'https://back.hivemarket.top?'
   return SOCKET_URL
 }

@@ -1,11 +1,11 @@
 import React, { useEffect, useRef } from 'react'
-// import { AtTabBar } from 'taro-ui'
+import { AtBadge } from 'taro-ui'
 import { View, Image, Text } from '@tarojs/components'
 import './index.scss'
 import { useState, forwardRef } from 'react'
 import Taro from '@tarojs/taro'
 
-const TabBar = (props,ref) => {
+const TabBar = (props, ref) => {
   // const childref = useRef()
   const [tabList, setTabList] = useState(
     [
@@ -49,7 +49,9 @@ const TabBar = (props,ref) => {
               onClick={handleClick}
               data-key={index}
             >
-              <Image src={props.cur === index ? item.selectedImage : item.image} />
+              <AtBadge dot={index === 0 && props.has}>
+                <Image src={props.cur === index ? item.selectedImage : item.image} />
+              </AtBadge>
             </View>
           )
         })

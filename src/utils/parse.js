@@ -263,6 +263,25 @@
    }
    return lastMsg
  }
+
+  /**
+  *
+  * @param {解析后的消息} parsedMsg
+  * @return 返回用户的最后信息展示
+  */
+ export function judgeMyType(parsedMsg) {
+  const { type, text = '' } = parsedMsg
+  let lastMsg = ''
+  switch (type) {
+    case 'text': lastMsg = text; break
+    case 'postback': lastMsg = text; break
+    case 'image': lastMsg = '发送了一张图片'; break
+    case 'generic': lastMsg = '发送了轮播图'; break
+    case 'button': lastMsg = '发送了按钮模板'; break
+    default: return text
+  }
+  return lastMsg
+}
  
  /**
   * @description 根据文件的类型 分配对应的渲染 msg-view 类型

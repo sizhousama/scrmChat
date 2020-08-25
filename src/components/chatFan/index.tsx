@@ -11,13 +11,14 @@ const ChatFan = (props, ref) => {
   const imgurl = imgUrl()
   const {fan,setFan} = useFanStore()
   const goChat = () =>{
+    props.handleClick(props.fan)
     setFan(props.fan)
     NavTo('/pages/liveChat/index')
   }
   return (
     <View className='fanbox' onClick={goChat}>
       <View className='left'>
-        <AtBadge value={''} maxValue={99}>
+        <AtBadge className='badge' dot={props.fan.read===0}>
           <Image
             className='head'
             src={`${imgurl}/header/${props.fan.pageId}/${props.fan.fanId}.jpg`}></Image>
