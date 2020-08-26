@@ -23,3 +23,8 @@ export const getAllPage = () => {
 export const upRead = (data) => {
   return HTTPREQUEST.post('/scrm-message/messenging/contacts/updateReadStatus',data)
 }
+
+// 更新分配客服
+export const upFanService = (data) => {
+  return HTTPREQUEST.post('/scrm-message/messenging/contacts/updateService',data)
+}

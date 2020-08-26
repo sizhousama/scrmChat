@@ -2,6 +2,9 @@ import React, { useRef, useState, useEffect, useReducer } from "react";
 import ChatHeader from "@/components/chatHeader";
 import UserAvatar from '@/components/userAvatar';
 import Emoji from '@/components/emoji'
+import Tools from '@/components/chatTools'
+import QuickReply from '@/components/quickReply'
+import ChatOrder from '@/components/chatOrder'
 // 消息体组件
 import TextMsg from '@/components/msgView/textMsg';
 import ImgMsg from '@/components/msgView/imgMsg';
@@ -63,14 +66,17 @@ const LiveChat = () => {
   const childref = useRef()
   const hisref = useRef<any[]>([])
   const fakeref = useRef<any[]>([])
-
+  const cursorref = useRef(0)
   const barHeight = getSysInfo().statusBarHeight
   const { fan } = useFanStore()
   const { userInfo } = useUserStore()
   const { wsio } = useWsioStore()
+  const [pos, setPos] = useState(0)
   const [message, setMessage] = useState('')
   const [showemoji, setShowEmoji] = useState(false)
-  // const [historyList, setHistory] = useState<any[]>([])
+  const [showtools, setShowTools] = useState(false)
+  const [showreply, setShowReply] = useState(false)
+  const [showorder, setShowOrder] = useState(false)
   const [state, dispatch] = useReducer(listReducer, initState)
   const { historyList, fakes } = state
   const [curMsg, setCurMsg] = useState('')
@@ -121,12 +127,12 @@ const LiveChat = () => {
       if (!message) {
         if (((isServe && newMsgSenderId === fanPageId) && (newMsgRecipientId === fanSenderId)) || ((!isServe && newMsgSenderId === fanSenderId) && (newMsgRecipientId === fanPageId))) {
           console.log('当前信息不存在，并且聊天对象正确')
-          messageItem.status = 1 
+          messageItem.status = 1
           messageItem.uuid = genUuid()
           messageItem.userId = userId
           messageItem.fake = true
-          fakeref.current = [...fakeref.current,messageItem]
-          dispatch({type:'fakes',payload:{fakes:fakeref.current}})
+          fakeref.current = [...fakeref.current, messageItem]
+          dispatch({ type: 'fakes', payload: { fakes: fakeref.current } })
           tobottom()
         }
       }
@@ -153,7 +159,7 @@ const LiveChat = () => {
           sendText.mid = mid
         }
       }
-      dispatch({type:'fakes',payload:{fakes:fakeref.current}})
+      dispatch({ type: 'fakes', payload: { fakes: fakeref.current } })
     })
   }
   const historymsg = async () => {
@@ -199,7 +205,7 @@ const LiveChat = () => {
 
       if (!isbreak) {
         hisarr.reverse()
-        dispatch({type:'his',payload:{his:hisarr}})
+        dispatch({ type: 'his', payload: { his: hisarr } })
         // setHistory(hisarr.slice())
         tobottom()
         setInitLoading(false)
@@ -244,7 +250,7 @@ const LiveChat = () => {
           }
         }
       })
-      dispatch({type:'his',payload:{his:hisarr}})
+      dispatch({ type: 'his', payload: { his: hisarr } })
       setLoading(false)
       const id = `msg${hisref.current[len].uuid}`
       setCurMsg(id)
@@ -263,7 +269,7 @@ const LiveChat = () => {
     msg = msg.trim()
     if (msg === '') {
       console.log('提交信息不通过')
-      setShowEmoji(false)
+      closeModal()
       return
     }
     const { fanId, pageId } = fan
@@ -293,13 +299,14 @@ const LiveChat = () => {
       fake: true
       // isTimeVisible: (Date.now() - this.lastVisibleTime > 300000) // 是否显示时间戳
     }
-    fakeref.current = [...fakeref.current,fakeText]
+    fakeref.current = [...fakeref.current, fakeText]
 
-    dispatch({type:'fakes',payload:{fakes:fakeref.current}})
+    dispatch({ type: 'fakes', payload: { fakes: fakeref.current } })
     setMessage('')
     wsio.emit('SEND_MSG', socketParams)
     tobottom()
-    setShowEmoji(false)
+    // 关闭表情，工具
+    closeModal()
   }
 
   // 输入时
@@ -315,7 +322,7 @@ const LiveChat = () => {
   const msgInputBlur = (v, e) => {
     keybordHeight = e.detail.height
     diffHeight -= keybordHeight //软键盘高度改变，scroll高度改变
-    console.log(e.detail.cursor)
+    cursorref.current = e.detail.cursor
   }
   // 动态组件
   const msgComponent = (item, idx) => {
@@ -340,11 +347,53 @@ const LiveChat = () => {
     }
   }
   const setemoji = (emoji) => {
-    const result = setInput('msgInput', emoji)
+    const result = setInput('msgInput', emoji, cursorref.current)
     setMessage(result)
+    setPos(cursorref.current + emoji.length)
+  }
+  const setReply =(reply)=>{
+    const text = reply.content
+    const result = setInput('msgInput', text, cursorref.current)
+    setMessage(result)
+    setPos(cursorref.current + text.length)
+    setShowReply(false)
+  }
+  // 选择工具
+  const clickTool = (id) => {
+    if(id===0){
+      setShowReply(true)
+      return
+    }
+    if(id===3){
+      setShowOrder(true)
+      return
+    }   
+  }
+  // 关闭所有对话框
+  const closeModal = () =>{
+    setShowEmoji(false)
+    setShowTools(false)
+    setShowReply(false)
+    setShowOrder(false)
+  }
+  // 点击表情icon
+  const clickEmojiIcon = () =>{
+    setShowEmoji(!showemoji)
+    setShowTools(false)
+    setShowReply(false)
+    setShowOrder(false)
+  }
+  // 点击工具icon
+  const clickToolsiIcon = () =>{ 
+    showorder||showreply ? 
+    setShowTools(true):
+    setShowTools(!showtools)
+    setShowEmoji(false)
+    setShowReply(false)
+    setShowOrder(false)
   }
   return (
-    <View className='live-chat'>
+    <View className='live-chat' >
       <ChatHeader ref={childref} fan={fan}></ChatHeader>
       <ScrollView
         scrollY
@@ -353,7 +402,7 @@ const LiveChat = () => {
         scrollIntoView={curMsg}
         upperThreshold={20}
         onScrollToUpper={morehistorymsg}
-        onClick={() => { setShowEmoji(false) }}>
+        onClick={closeModal}>
         <AtActivityIndicator isOpened={initLoading} size={36} mode='center'></AtActivityIndicator>
         {
           loading ?
@@ -371,7 +420,6 @@ const LiveChat = () => {
                 <View className={`history-content ${msgitem.isServe ? 'reverse' : ''}`}>
                   <UserAvatar ref={childref} msgItem={msgitem} fan={fan}></UserAvatar>
                   {msgComponent(msgitem, msgidx)}
-
                   {
                     msgitem.isServe ?
                       <Text className='msgstatus'>{formatMsgStatus(msgitem.status)}</Text>
@@ -390,13 +438,11 @@ const LiveChat = () => {
                 <View className={`history-content ${fakeitem.isServe ? 'reverse' : ''}`}>
                   <UserAvatar ref={childref} msgItem={fakeitem} fan={fan}></UserAvatar>
                   {msgComponent(fakeitem, fakeidx)}
-
                   {
                     fakeitem.isServe && fakeitem.status !== -1 ?
                       <Text className='msgstatus'>{formatMsgStatus(fakeitem.status)}</Text>
                       : ''
                   }
-
                 </View>
               </View>
             )
@@ -407,16 +453,15 @@ const LiveChat = () => {
       <View className='fooler' style={{ height: '44px', bottom: keybordHeight + 'px' }}>
         {/* 左边工具栏 */}
         <View className='left'>
-          <View className='emoj' onClick={() => { setShowEmoji(!showemoji) }}>
+          <View className='emoj' onClick={clickEmojiIcon}>
             <AtIcon prefixClass='icon' value='smile' color='#666' className='alicon'></AtIcon>
-            {
-              showemoji ?
-                <Emoji ref={childref} msg={message} handleClick={setemoji}></Emoji>
-                : ''
-            }
+            {showemoji ?<Emoji ref={childref} msg={message} handleClick={setemoji}></Emoji>: ''}
           </View>
-          <View className='more'>
+          <View className='more' onClick={clickToolsiIcon}>
             <AtIcon prefixClass='icon' value='add-circle' color='#666' className='alicon'></AtIcon>
+            {showtools ?<Tools ref={childref} handleClick={clickTool}></Tools>:''}
+            {showreply?<QuickReply ref={childref} pageId={fan.pageId} handleClick={setReply}></QuickReply>:''}
+            {showorder?<ChatOrder ref={childref} ></ChatOrder>:''}
           </View>
         </View>
         {/* 输入发送消息 */}
@@ -427,6 +472,8 @@ const LiveChat = () => {
           onChange={inputMsg}
           onFocus={msgInputFocus}
           onBlur={msgInputBlur}
+          selectionStart={pos}
+          selectionEnd={pos}
         />
         {/* 发送按钮 */}
         <View className='searchbtn send' onClick={sendMsg}>

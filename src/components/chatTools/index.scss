@@ -1,0 +1,40 @@
+.toolbox {
+  width: 480px;
+  height: 88px;
+  border-radius: 10px;
+  box-shadow: 0 2px 16px 0 rgba(0, 0, 0, .15);
+  position: absolute;
+  bottom: 80px;
+  left: -70px;
+  box-sizing: border-box;
+  padding:20px 40px;
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  .tool {
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    text-align: center;
+    background: #7685FF;
+    border-radius: 50%;
+    .at-icon {
+      font-size: 28px;
+      color: #fff;  
+      margin-bottom:2px!important;
+    }
+  }
+
+  &::after {
+    content: '';
+    width: 0;
+    height: 0;
+    border-width: 20px 20px 0;
+    border-style: solid;
+    border-color: #fff transparent transparent;
+    position: absolute;
+    bottom: -20px;
+    left: 70px;
+  }
+}

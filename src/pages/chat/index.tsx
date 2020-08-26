@@ -14,6 +14,7 @@ import { socketUrl } from '@/servers/baseUrl'
 import { msgAudio } from '@/utils/index'
 import io from 'socket.io-mp-client'
 import "./index.scss";
+import { useDidShow } from "@tarojs/taro";
 interface Fan {
   fanId: string,
   pageId: string,
@@ -66,10 +67,11 @@ const Chat = () => {
     initWebSocket(socket)
     console.log(socket)
   }
-
-  useEffect(() => {
-    getinfo()
+  useDidShow(()=>{
     getList()
+  })
+  useEffect(() => {
+    getinfo() 
   }, [])
   const initWebSocket = (socket) => {
     socket.on('connect', () => {

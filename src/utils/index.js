@@ -107,12 +107,11 @@ export const genUuid = () => {
   })
 }
 
-// 
-export const setInput = (id, data) => {
+// 插入表情
+export const setInput = (id, data,cursor) => {
   var elInput = document.getElementById(id) // 根据id选择器选中对象
-  var startPos = elInput.selectionStart // input 第0个字符到选中的字符
-  var endPos = elInput.selectionEnd // 选中的字符到最后的字符
-  console.log(elInput)
+  var startPos = cursor // input 第0个字符到选中的字符
+  var endPos = cursor // 选中的字符到最后的字符
   if (startPos === undefined || endPos === undefined) return elInput.value+data
   var txt = elInput.value
   // 将表情添加到选中的光标位置
@@ -120,7 +119,5 @@ export const setInput = (id, data) => {
   elInput.value = result // 赋值给input的value
   // 重新定义光标位置
   elInput.focus()
-  elInput.selectionStart = startPos + data.length
-  elInput.selectionEnd = startPos + data.length
   return result
 }

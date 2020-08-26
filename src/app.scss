@@ -27,3 +27,15 @@
   line-clamp: 2;
   -webkit-box-orient: vertical;
 }
+
+// input修改
+.cominput{
+  padding:10px 0;
+  margin:0;
+  &:after{display: none;}
+  input{
+    padding:0;
+    font-size: 26px;
+    padding-left:30px;
+  }
+}

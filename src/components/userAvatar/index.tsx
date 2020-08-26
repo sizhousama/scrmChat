@@ -13,10 +13,10 @@ const userAvatar = (props, ref) => {
   const pageId = props.fan.pageId
   const fanId = props.fan.fanId
   const baseUrl = imgUrl()
-  const avatar = isfake ?
-    userId !== 0 ? `${baseUrl}/sys/user/avatar/${userId}.jpg` : `${baseUrl}/header/${pageId}.jpg`
-    : isR ?
-      userId !== 0 ? `${baseUrl}/sys/user/avatar/${userId}.jpg` : `${baseUrl}/header/${pageId}.jpg`
+  const avatar = isR 
+      ? userId !== 0 
+      ? `${baseUrl}/sys/user/avatar/${userId}.jpg` 
+      : `${baseUrl}/header/${pageId}.jpg` 
       : `${baseUrl}/header/${pageId}/${fanId}.jpg`
   return (
     <AtAvatar

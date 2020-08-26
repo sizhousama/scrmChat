@@ -1,26 +1,67 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { View, Text, Image, Picker } from '@tarojs/components'
 import { AtList, AtListItem } from 'taro-ui'
-import { Back, getSysInfo } from '@/utils/index'
+import { Back, getSysInfo, Toast } from '@/utils/index'
+import {getServices} from '@/api/chat'
+import {upFanService} from '@/api/fan'
 import livechat from '@/assets/images/livechat.png'
 import user from '@/assets/images/mine.png'
 import './index.scss'
 import { forwardRef } from 'react'
 
 const ChatHeader = (props, ref) => {
-  const [blockStyle, setStyle] = useState({})
-  const [services, setServices] = useState(['1234567891111', '2', '3', '4'])
-  const [selectSer, setSelectSer] = useState('1234567891111')
+  const listref = useRef<any>([])
+  const [services, setServices] = useState<any[]>([])
+  const [selectSer, setSelectSer] = useState(props.fan.serviceName?props.fan.serviceName:'未分配')
+  const [curser,setCurser] = useState(0)
+  const barHeight = getSysInfo().statusBarHeight
+  const blockStyle = {
+    width: "100%",
+    height: barHeight + 44 + 'px',
+    background: "#fff"
+  }
   useEffect(() => {
-    const barHeight = getSysInfo().statusBarHeight
-    setStyle({
-      width: "100%",
-      height: barHeight + 44 + 'px',
-      background: "#fff"
-    })
+    getlist()
   }, [])
+  const getlist = async()=>{
+    await getServices().then(res=>{
+      const {data} = res
+      let arr:any[] = ['未分配']
+      data.forEach((item,index) => {
+        arr = [...arr,item.username]
+        if(props.fan.serviceName===item.username){
+          setCurser(index+1)
+        }
+      });
+      listref.current = data
+      setServices(arr)
+    })
+  }
   const onChange = (e) => {
+    let service = {
+      username:'',
+      avatar:'',
+      userId:null
+    }
+    setServices(e.detail.value)
     setSelectSer(services[e.detail.value])
+    listref.current.forEach(item=>{
+      if(item.username===services[e.detail.value]){
+        service = item
+      }
+    })
+    const { pageId, fanId } = props.fan
+    const { username, avatar, userId } = service
+    const params = {
+      pageId,
+      fanId,
+      serviceId: userId,
+      serviceName: username,
+      serviceAvatar: avatar
+    }
+    upFanService(params).then(res=>{
+      Toast('分配客服成功！','none')
+    })
   }
   return (
     <View>
@@ -44,7 +85,7 @@ const ChatHeader = (props, ref) => {
         <View className='right'>
           <View className='serselect'>
             <View className='at-icon at-icon-chevron-down'></View>
-            <Picker className='picker' mode='selector' value={0} range={services} onChange={onChange}>
+            <Picker className='picker' mode='selector' value={curser} range={services} onChange={onChange}>
               <AtList>
                 <AtListItem extraText={selectSer} />
               </AtList>

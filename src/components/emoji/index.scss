@@ -7,15 +7,33 @@
   bottom:100px;
   left:35px;
   box-sizing: border-box;
-  padding:30px 40px;
+  padding:30px 40px 20px;
   background:#fff;
-  display: flex;
-  overflow-y: auto;
-  flex-wrap: wrap;
   .emoji{
     width:60px;
     height:60px;
     line-height: 60px;
     text-align: center;
+  }
+  &::after {
+    content: '';
+    width: 0;
+    height: 0;
+    border-width: 20px 20px 0;
+    border-style: solid;
+    border-color: #fff transparent transparent;
+    position: absolute;
+    bottom: -20px;
+    left: 26px;
+  }
+}
+.emojiscroll{
+  height:100%;
+  width:100%;
+  .emojiinner{
+    width:100%;
+    height: 100%;
+    display: flex;
+    flex-wrap: wrap;
   }
 }
