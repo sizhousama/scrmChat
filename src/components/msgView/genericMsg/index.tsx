@@ -1,9 +1,17 @@
 import React, { useEffect, useRef } from 'react'
 import { View, Text, Image, Swiper, SwiperItem } from '@tarojs/components'
 import { forwardRef } from 'react'
+import {previewImg} from '@/utils/index'
 import './index.scss'
 const SwiperMsg = (props, ref) => {
   const list = props.msgItem.elements
+  const preview = (e)=>{
+    let arr:any = []
+    list.forEach(item=>{
+      arr.push(item.image_url)
+    })
+    previewImg(e.currentTarget.dataset.cur,arr)
+  }
   return (
     <View className='generic-msg'>
       <Swiper
@@ -22,6 +30,8 @@ const SwiperMsg = (props, ref) => {
                     className='simg'
                     src={item.image_url}
                     mode='widthFix'
+                    onClick={preview}
+                    data-cur={item.image_url}
                   ></Image>
                   <Text className='title twoline'>{item.title}</Text>
                   <Text className='btn'>

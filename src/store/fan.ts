@@ -3,12 +3,14 @@ import { observable,action } from 'mobx'
 interface Fan {
   pageId:string,
   senderId:string,
-  fanId:string
+  fanId:string,
+  fanName:string,
 }
 const fan = {
   pageId:'',
   senderId:'',
-  fanId:''
+  fanId:'',
+  fanName:''
 }
 
 export class FanStore {

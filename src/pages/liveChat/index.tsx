@@ -15,7 +15,7 @@ import MediaMsg from '@/components/msgView/mediaMsg';
 import ButtonMsg from '@/components/msgView/buttonMsg';
 import { View, Text, ScrollView } from "@tarojs/components";
 import { AtInput, AtIcon, AtActivityIndicator } from 'taro-ui'
-import { getSysInfo, genUuid, setInput } from '@/utils/index'
+import { getSysInfo, genUuid, setInput, chooseImg, getsuffix,getFileType,chooseMsgFile } from '@/utils/index'
 import { formatMsgStatus } from '@/utils/filter'
 import { getHistoryMsg } from '@/api/chat'
 import { observer } from 'mobx-react';
@@ -114,6 +114,7 @@ const LiveChat = () => {
         userId: 0
       }
       messageItem = { ...parseMsg(data) }
+      console.log(messageItem)
       const { userId, isServe = true, senderId: newMsgSenderId, recipientId: newMsgRecipientId } = messageItem
       const { fanId: fanSenderId, pageId: fanPageId } = fan
       const message = fakeref.current.find(item => {
@@ -123,6 +124,7 @@ const LiveChat = () => {
           return undefined
         }
       })
+      
 
       if (!message) {
         if (((isServe && newMsgSenderId === fanPageId) && (newMsgRecipientId === fanSenderId)) || ((!isServe && newMsgSenderId === fanSenderId) && (newMsgRecipientId === fanPageId))) {
@@ -140,7 +142,6 @@ const LiveChat = () => {
 
     wsio.on('SEND_MSG_RESPONSE', (data) => {
       const { msg = '', status, uuid = '', mid = '' } = data
-      console.log(data)
       // 收到的状态为3的时候，比状态时间戳小的信息全部改为已读
       if (status === 3) {
         const watermark = data.watermark
@@ -150,8 +151,11 @@ const LiveChat = () => {
           }
         })
       } else {
+        console.log(uuid)
+        console.log(fakeref.current)
         const sendText = fakeref.current.find(item => item.uuid === uuid)
         // 找到uuid 相同的信息 改变发送信息的状态
+        console.log(sendText)
         if (sendText) {
           // sendText.loading = false
           sendText.status = status
@@ -308,6 +312,63 @@ const LiveChat = () => {
     // 关闭表情，工具
     closeModal()
   }
+  const sendImg = async () => {
+    setShowTools(false)
+    const url = '/scrm-seller/utils/uploadFile'
+    await chooseImg(url, 3).then(res => {
+      res?sendFileSocket(res):console.log('error')
+    })
+  }
+  const sendFile = async() => {
+    const url = '/scrm-seller/utils/uploadRawFile'
+    await chooseMsgFile(url,3).then(res=>{
+      res?sendFileSocket(res):console.log('error')
+    })
+  }
+  const sendFileSocket=(list)=>{
+    const { fanId, pageId } = fan
+    list.forEach(item => {
+      const uuid = genUuid()
+      const url = item.url?item.url:item
+      const name = item.name?item.name:item
+      const elements = { payload: { url }, name }
+      let originType = getsuffix(url)
+      const type = getFileType(originType) === 'video' || getFileType(originType) === 'radio' 
+      ?'media':getFileType(originType)
+      originType = type==='media'?getFileType(getsuffix(url)):getsuffix(url)
+      const socketParams = {
+        uuid: uuid,
+        userId: userInfo.userId,
+        senderId: fanId,
+        pageId: pageId,
+        files: [url]
+      }
+      const fakeText = {
+        uuid: uuid,
+        mid: '',
+        type, // 定义的类型，例如文件被定义为 file，mp3 4 会被定义为 media
+        originType, // 原始类型，例如 mp4,mp3
+        elements: [elements], // 渲染dom结构，目前只有图片类型有
+        filename: name, // 文件类型的 文件名
+        mediaUrl:url,
+        imgUrl: url, // 文件类型的 文件url
+        fileUrl:url,
+        loading: true,
+        isServe: true,
+        timestamp: Date.now(),
+        text: '',
+        status: 0, // 发送状态 0:发送中 1:发送成功 2:已送达 3:已读 -1:发送失败
+        errorText: '', // 错误提示信息
+        userId: userInfo.userId,
+        // isTimeVisible: (Date.now() - this.lastVisibleTime > 300000) // 是否显示时间戳
+      }
+      
+      fakeref.current = [...fakeref.current, fakeText]
+      dispatch({ type: 'fakes', payload: { fakes: fakeref.current } })  
+      wsio.emit('SEND_MSG', socketParams)
+      tobottom()
+    })
+  }
 
   // 输入时
   const inputMsg = (v, e) => {
@@ -351,7 +412,7 @@ const LiveChat = () => {
     setMessage(result)
     setPos(cursorref.current + emoji.length)
   }
-  const setReply =(reply)=>{
+  const setReply = (reply) => {
     const text = reply.content
     const result = setInput('msgInput', text, cursorref.current)
     setMessage(result)
@@ -360,34 +421,39 @@ const LiveChat = () => {
   }
   // 选择工具
   const clickTool = (id) => {
-    if(id===0){
+    if (id === 0) {
       setShowReply(true)
-      return
     }
-    if(id===3){
+    if (id === 1) {
+      setShowTools(false)
+      sendImg()
+    }
+    if (id === 2) {
+      sendFile()
+    }
+    if (id === 3) {
       setShowOrder(true)
-      return
-    }   
+    }
   }
   // 关闭所有对话框
-  const closeModal = () =>{
+  const closeModal = () => {
     setShowEmoji(false)
     setShowTools(false)
     setShowReply(false)
     setShowOrder(false)
   }
   // 点击表情icon
-  const clickEmojiIcon = () =>{
+  const clickEmojiIcon = () => {
     setShowEmoji(!showemoji)
     setShowTools(false)
     setShowReply(false)
     setShowOrder(false)
   }
   // 点击工具icon
-  const clickToolsiIcon = () =>{ 
-    showorder||showreply ? 
-    setShowTools(true):
-    setShowTools(!showtools)
+  const clickToolsiIcon = () => {
+    showorder || showreply ?
+      setShowTools(true) :
+      setShowTools(!showtools)
     setShowEmoji(false)
     setShowReply(false)
     setShowOrder(false)
@@ -455,13 +521,13 @@ const LiveChat = () => {
         <View className='left'>
           <View className='emoj' onClick={clickEmojiIcon}>
             <AtIcon prefixClass='icon' value='smile' color='#666' className='alicon'></AtIcon>
-            {showemoji ?<Emoji ref={childref} msg={message} handleClick={setemoji}></Emoji>: ''}
+            {showemoji ? <Emoji ref={childref} msg={message} handleClick={setemoji}></Emoji> : ''}
           </View>
           <View className='more' onClick={clickToolsiIcon}>
             <AtIcon prefixClass='icon' value='add-circle' color='#666' className='alicon'></AtIcon>
-            {showtools ?<Tools ref={childref} handleClick={clickTool}></Tools>:''}
-            {showreply?<QuickReply ref={childref} pageId={fan.pageId} handleClick={setReply}></QuickReply>:''}
-            {showorder?<ChatOrder ref={childref} ></ChatOrder>:''}
+            {showtools ? <Tools ref={childref} handleClick={clickTool}></Tools> : ''}
+            {showreply ? <QuickReply ref={childref} pageId={fan.pageId} handleClick={setReply}></QuickReply> : ''}
+            {showorder ? <ChatOrder ref={childref} ></ChatOrder> : ''}
           </View>
         </View>
         {/* 输入发送消息 */}

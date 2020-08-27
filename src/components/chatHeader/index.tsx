@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { View, Text, Image, Picker } from '@tarojs/components'
 import { AtList, AtListItem } from 'taro-ui'
-import { Back, getSysInfo, Toast } from '@/utils/index'
+import { Back, getSysInfo, Toast,NavTo } from '@/utils/index'
 import {getServices} from '@/api/chat'
 import {upFanService} from '@/api/fan'
 import livechat from '@/assets/images/livechat.png'
@@ -63,6 +63,9 @@ const ChatHeader = (props, ref) => {
       Toast('分配客服成功！','none')
     })
   }
+  const gofaninfo = ()=>{
+    NavTo('/pages/fanInfo/index')
+  }
   return (
     <View>
       <View style={blockStyle}></View>
@@ -74,7 +77,7 @@ const ChatHeader = (props, ref) => {
           <Text className='name'>{props.fan.fanName}</Text>
           <Text className='pageid'>主页ID：{props.fan.pageId}</Text>
         </View>
-        <View className='right'>
+        <View className='right' onClick={gofaninfo}>
           <Image src={user}></Image>
         </View>
       </View>

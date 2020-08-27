@@ -10,9 +10,7 @@ const MediaMsg = (props, ref) => {
   const url = props.msgItem.mediaUrl
   const [playing,SetPlaying] = useState(false)
   const myaudio = Taro.createInnerAudioContext()
-  // useEffect(()=>{
-  //   createAudio()
-  // },[])
+
   const createAudio = ()=>{
     myaudio.autoplay = false
     myaudio.src = url

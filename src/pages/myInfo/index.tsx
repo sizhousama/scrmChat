@@ -3,43 +3,26 @@ import NavBar from "@/components/navBar";
 import { View, Image } from "@tarojs/components";
 import { observer } from 'mobx-react';
 import { useNavStore, useUserStore } from '@/store';
-import { previewImg } from '@/utils/index'
-import { getBaseUrl } from '@/servers/baseUrl'
-import Taro from "@tarojs/taro";
-import { uploadAva } from '@/api/info'
-// import Taro from "@tarojs/taro";
+import { previewImg, chooseImg } from '@/utils/index'
+import { AtActivityIndicator } from 'taro-ui'
 import "./index.scss";
 
 const MyInfo = () => {
   const childref = useRef();
   const { navH } = useNavStore();
-  const { userInfo } = useUserStore()
+  const { userInfo, setAvatar } = useUserStore()
+  const [loading, setLoading] = useState(false)
   const style = {
     marginTop: navH + 10 + 'px'
   }
   const upHead = async () => {
-    Taro.chooseImage({
-      count: 1,
-      sizeType: ['original', 'compressed'],
-      sourceType: ['album', 'camera'],
-      success(res) {
-        const tempFilePaths = res.tempFilePaths
-        console.log(tempFilePaths[0])
-        const baseurl = getBaseUrl()
-        Taro.uploadFile({
-          url: `${baseurl}/scrm-seller/utils/uploadFileAvatarImg`,
-          filePath: tempFilePaths[0],
-          name: 'file',
-          formData:{
-            'file':tempFilePaths[0]
-          },
-          header: {
-            'Authorization': Taro.getStorageSync('Token'),
-          },
-          success(res) {
-          }
-        })
-      }
+    const url = '/scrm-seller/utils/uploadFileAvatarImg'
+    setLoading(true)
+    await chooseImg(url, 1).then(res => {
+      setAvatar('')
+      setAvatar(res[0])
+    }).finally(() => {
+      setLoading(false)
     })
   }
   const viewImg = (e) => {
@@ -49,12 +32,14 @@ const MyInfo = () => {
 
   return (
     <View>
-      <NavBar title='编辑个人信息' btn={<View className='navbtn'>保存</View>} />
+      <NavBar title='编辑个人信息' />
       <View style={style}>
         <View className='listitem head'>
           <View className='left'>头像：</View>
           <View className='right' onClick={upHead}>
-            <Image src={userInfo.avatar+'?v=1'} onClick={viewImg}></Image>
+            <Image src={userInfo.avatar} onClick={viewImg}>
+              <AtActivityIndicator isOpened={loading} mode='center'></AtActivityIndicator>
+            </Image>
             <View className='at-icon at-icon-chevron-right'></View>
           </View>
         </View>

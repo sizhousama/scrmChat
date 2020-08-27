@@ -28,3 +28,13 @@ export const upRead = (data) => {
 export const upFanService = (data) => {
   return HTTPREQUEST.post('/scrm-message/messenging/contacts/updateService',data)
 }
+
+// 粉丝订单
+export const fanOrders = (params) => {
+  return HTTPREQUEST.get('/scrm-seller/scalpingOrder/scalpingOrders',params)
+}
+
+// 粉丝标签
+export const fanTags = (params) => {
+  return HTTPREQUEST.get('/scrm-message/tags/getFanTagsBySenderId',params)
+}

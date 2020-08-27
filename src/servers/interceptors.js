@@ -35,7 +35,7 @@ const customInterceptor = (chain) => {
       pageToLogin()
       return Promise.reject("需要鉴权")
     }else{
-      console.log(res)
+      Toast('错误'+res.statusCode,'none')    
     }
   })
 }

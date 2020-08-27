@@ -2,11 +2,12 @@ import React, { useEffect, useRef, useReducer, useState } from 'react'
 import { View, Image, Text,Picker } from '@tarojs/components'
 import { forwardRef } from 'react'
 import { AtForm, AtInput,AtList,AtListItem } from 'taro-ui'
+import {cashOutStatus,cashOuts} from '@/constant/index'
 import './index.scss'
 const initState = {
   goosname: '',
   ordernum: '',
-  orderdate: '2018-04-22',
+  orderdate: new Date().toLocaleDateString().replace(/\//g,'-'),
   cashout: 0,
 }
 const stateReducer = (state, action) => {
@@ -24,7 +25,7 @@ const stateReducer = (state, action) => {
     case 'date':
       return {
         ...state,
-        ordertime: action.payload.date
+        orderdate: action.payload.date
       }
     case 'cash':
       return {
@@ -37,15 +38,28 @@ const stateReducer = (state, action) => {
 }
 const ChatOrder = (props, ref) => {
   const [state, dispatch] = useReducer(stateReducer, initState)
+  const [curcashout,setCurCashOut] = useState('已返款')
   const { goosname, ordernum, cashout, orderdate } = state
+ 
   const changeOrderNum = (v) => {
     dispatch({ type: 'num', payload: { num: v } })
   }
   const changeGoodsName = (v) => {
     dispatch({ type: 'name', payload: { name: v } })
   }
-  const onDateChange = (v) =>{
-
+  const onDateChange = (e) =>{
+    dispatch({type:'date',payload:{date:e.detail.value}})
+  }
+  const onCashOutChange = (e) =>{
+    setCurCashOut(cashOuts[e.detail.value])
+    dispatch({type:'cash',payload:{cash:e.detail.value}})
+  }
+  const restForm = ()=>{
+    dispatch({ type: 'name', payload: { num: '' } })
+    dispatch({ type: 'num', payload: { num: '' } })
+    dispatch({type:'date',payload:{date:new Date().toLocaleDateString().replace(/\//g,'-')}})
+    setCurCashOut('已返款')
+    dispatch({type:'cash',payload:{cash:0}})
   }
   return (
     <View className='chatorderbox' onClick={(e) => { e.stopPropagation() }}>
@@ -70,21 +84,21 @@ const ChatOrder = (props, ref) => {
           onChange={changeOrderNum}
         />
         <view className='label'>订单时间：</view>
-        <Picker value='' mode='date' onChange={onDateChange} className='orderpicker'>
+        <Picker value={orderdate} mode='date' onChange={onDateChange} className='orderpicker'>
           <AtList>
             <AtListItem title='请选择日期' extraText={orderdate} />
           </AtList>
         </Picker>
         <view className='label'>返款状态：</view>
-        <Picker value='' mode='date' onChange={onDateChange} className='orderpicker'>
+        <Picker mode='selector' value={cashout} onChange={onCashOutChange} range={cashOuts} className='orderpicker'>
           <AtList>
-            <AtListItem title='请选择日期' extraText={orderdate} />
+            <AtListItem title='请选择日期' extraText={curcashout} />
           </AtList>
         </Picker>
 
         <View className='formbtn'>
           <View className='flb'>
-            <View className='rest searchbtn'>重置</View>
+            <View className='rest searchbtn' onClick={restForm}>重置</View>
           </View>
           <View className='frb'>
             <View className='creat searchbtn'>录入</View>
