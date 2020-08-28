@@ -1,5 +1,4 @@
 import React, { useRef, useState, useEffect, useReducer } from "react";
-// import { useDidHide, useDidShow, useReady } from '@tarojs/taro'
 import TabBar from "../tabbar";
 import Header from "@/components/header";
 import ChatFan from "@/components/chatFan";
@@ -15,7 +14,7 @@ import { socketUrl } from '@/servers/baseUrl'
 import { msgAudio } from '@/utils/index'
 import io from 'socket.io-mp-client'
 import "./index.scss";
-import { useDidShow } from "@tarojs/taro";
+import { useDidShow, useReachBottom } from "@tarojs/taro";
 interface Fan {
   fanId: string,
   pageId: string,
@@ -32,7 +31,8 @@ interface PM {
 }
 const initState = {
   fanlist: [],
-  loading:false
+  loading: false,
+  moreloading: false,
 }
 const listReducer = (state, action) => {
   switch (action.type) {
@@ -46,6 +46,11 @@ const listReducer = (state, action) => {
         ...state,
         loading: action.payload.loading
       }
+    case 'moreloading':
+      return {
+        ...state,
+        moreloading: action.payload.ml
+      }
     default:
       return state;
   }
@@ -53,18 +58,18 @@ const listReducer = (state, action) => {
 const Chat = () => {
   const cur: number = 0
   const childref = useRef();
-  const listref = useRef([])
+  const listref = useRef<any[]>([])
   const paramsref = useRef({
     page: 1,
-    pageSize: 15
+    pageSize: 10
   })
   // store
   const { setWsio } = useWsioStore()
   const { setPageIds, hasNew, setHasNew } = useFanStore()
   const { setUserInfo } = useUserStore()
   const [state, dispatch] = useReducer(listReducer, initState)
-  // const [fanlist,setFanList] = useState(listref.current)
-  const { fanlist,loading } = state
+  const [hasmore, setHasMore] = useState(false)
+  const { fanlist, loading, moreloading } = state
   // 创建socket连接
   const conSocket = (userId, pageIdsStr) => {
     const query = `userId=${userId}&pageIds=${pageIdsStr}`
@@ -148,25 +153,25 @@ const Chat = () => {
         }
       }
     })
-    socket.on('CONTACTS_UPDATE',(data)=>{
-      typeof data === 'string'?data = JSON.parse(data):''
-      data.status === -1?getList():''
+    socket.on('CONTACTS_UPDATE', (data) => {
+      typeof data === 'string' ? data = JSON.parse(data) : ''
+      data.status === -1 ? getList() : ''
       if (data.read !== undefined) {
-        let fan:any={}
+        let fan: any = {}
         // 找到当前fanId 匹配的粉丝 并且 修改状态 表明有状态发生改变
         fan = listref.current.find(item => {
           return item['fanId'] === data.senderId
         })
-        fan.read = data.read 
+        fan.read = data.read
       } else {
         const { senderId, tags } = data
-        let fan:any={}
+        let fan: any = {}
         fan = listref.current.find(item => {
           return item['fanId'] === senderId
         })
         if (fan) {
           if (tags !== '' && tags !== null && tags !== undefined) {
-            const parsetags = tags.substr(1,tags.length-2).split(',').slice(-1)
+            const parsetags = tags.substr(1, tags.length - 2).split(',').slice(-2)
             fan.tagsArr = parsetags
           } else {
             fan.tagsArr = []
@@ -202,14 +207,16 @@ const Chat = () => {
   }
   // 聊天会话列表
   const getList = async () => {
-    dispatch({type: 'loading',payload: { loading:true }});
+    paramsref.current.page=1
+    dispatch({ type: 'loading', payload: { loading: true } });
     await getRecentContacts(paramsref.current).then(res => {
       const { data } = res
+      data.length > 0 ? setHasMore(true) : setHasMore(false)
       let list = data
       list.forEach(item => {
         item.tagsArr = []
         item.formatTime = formatChatTime(item.timestamp)
-        item.tagsArr = item.tags === '' || item.tags === null ? [] : item.tagsArr = item.tags.split(',').slice(-1)
+        item.tagsArr = item.tags === '' || item.tags === null ? [] : item.tagsArr = item.tags.split(',').slice(-2)
       })
       listref.current = list
       dispatch({
@@ -222,14 +229,38 @@ const Chat = () => {
           return
         }
       }
-    }).finally(()=>{
-      dispatch({type: 'loading',payload: { loading:false }});
+    }).finally(() => {
+      dispatch({ type: 'loading', payload: { loading: false } });
+    })
+  }
+  // 更多聊天会话列表
+  const getMoreList = async () => {
+    dispatch({ type: 'moreloading', payload: { ml: true } });
+    await getRecentContacts(paramsref.current).then(res => {
+      const { data } = res
+      data.length > 0 ? setHasMore(true) : setHasMore(false)
+      let list = data
+      list.forEach(item => {
+        item.tagsArr = []
+        item.formatTime = formatChatTime(item.timestamp)
+        item.tagsArr = item.tags === '' || item.tags === null ? [] : item.tagsArr = item.tags.split(',').slice(-2)
+      })
+      listref.current = [...listref.current, ...list]
+      dispatch({ type: 'list', payload: { list: listref.current } });
+      for (let i = 0; i < list.length; i++) {
+        if (list[i]['read'] === 0) {
+          setHasNew(true)
+          return
+        }
+      }
+    }).finally(() => {
+      dispatch({ type: 'moreloading', payload: { ml: false } });
     })
   }
   const clickFan = (fan) => {
     let item: any = {}
     item = listref.current.find(f => { return fan.fanId === f['fanId'] })
-    item ? item.read = 1:''
+    item ? item.read = 1 : ''
     dispatch({
       type: 'list',
       payload: { list: listref.current }
@@ -248,12 +279,19 @@ const Chat = () => {
     }
   }
 
+  useReachBottom(() => {
+    if (hasmore) {
+      paramsref.current.page++
+      getMoreList()
+    }
+  })
+
   return (
     <View>
       <Header ref={childref} title='消息' icon='message' />
       <AtActivityIndicator isOpened={loading} mode='center'></AtActivityIndicator>
       <View className='chatfanlist'>
-      
+
         {
           fanlist.map((item: Fan, index) => {
             return (
@@ -265,6 +303,13 @@ const Chat = () => {
               />
             )
           })
+        }
+        {
+          moreloading ?
+            <View className='moreload'>
+              <AtActivityIndicator isOpened={moreloading} mode='center'></AtActivityIndicator>
+            </View>
+            : ''
         }
       </View>
 

@@ -68,6 +68,10 @@ export const redirectTo = (url) => {
     url,
   })
 }
+// 隐藏键盘
+export const hideKb = (url) => {
+  Taro.hideKeyboard()
+}
 // 提示音
 export const msgAudio = () => {
   const msg = Taro.createInnerAudioContext()
@@ -284,12 +288,10 @@ export const setInput = (id, data, cursor) => {
   var elInput = document.getElementById(id) // 根据id选择器选中对象
   var startPos = cursor // input 第0个字符到选中的字符
   var endPos = cursor // 选中的字符到最后的字符
-  if (startPos === undefined || endPos === undefined) return elInput.value + data
+  if (startPos === 0 || endPos === 0) return elInput.value + data
   var txt = elInput.value
   // 将表情添加到选中的光标位置
   var result = txt.substring(0, startPos) + data + txt.substring(endPos)
   elInput.value = result // 赋值给input的value
-  // 重新定义光标位置
-  elInput.focus()
   return result
 }

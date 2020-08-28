@@ -5,51 +5,60 @@
   align-items: center;
   position: fixed;
   bottom: 0;
-
-  // background:#ddd;
+  position: relative;
+  background:#fff;
+  // transition: all .05s;
+  border-top:2px solid #eee;
+  border-bottom:2px solid #eee;
   .left {
     flex: 1;
     display: flex;
-    margin-left: 56px;
+    margin-left: 20px;
     align-items: center;
-
-    .at-icon {
-      margin: 0;
-    }
-
+    height:68px;
     .emoj {
       flex: 1;
+      height:100%;
       display: flex;
       align-items: center;
-
     }
-
     .more {
       flex: 1;
+      height:100%;
       display: flex;
       align-items: center;
     }
+    
   }
 
   .msginput {
     width: 440px;
-    height: 50px;
-    border: 2px solid #ddd;
+    height: 68px;
     border-radius: 8px;
     padding: 0;
     margin: 0;
-
-    input {
-      height: 50px;
-      font-size: 26px;
-      color: #101010;
-      padding: 0 10px;
-    }
+    font-size: 26px;
+    color: #101010;
+    padding: 0 10px;
+    border:2px solid #ddd;
   }
 
   .alicon {
     font-weight: 100;
+    font-size: 28px;
   }
+  &.trans{
+    transition: all .2s ease;
+  }
+}
+
+.toolsbox{
+  width:100%;
+  height: 0px;
+  position: fixed;
+  bottom:0;
+  background:#eee;
+  // transition: all .05s;
 }
 
 .topblock {

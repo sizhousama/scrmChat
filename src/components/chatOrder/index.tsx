@@ -63,7 +63,7 @@ const ChatOrder = (props, ref) => {
   }
   return (
     <View className='chatorderbox' onClick={(e) => { e.stopPropagation() }}>
-      <View className='orderheader'>录入订单</View>
+      <View className='topheader'>录入订单</View>
       <AtForm className='orderform'>
         <view className='label'>商品名称：</view>
         <AtInput

@@ -3,7 +3,8 @@ import NavBar from "@/components/navBar";
 import { View, Image, Text } from "@tarojs/components";
 import { observer } from 'mobx-react';
 import { useNavStore, useFanStore } from '@/store';
-import { previewImg, chooseImg } from '@/utils/index'
+import { previewImg } from '@/utils/index'
+import { typeCashOut, typeOrderS } from '@/utils/filter'
 import { AtActivityIndicator } from 'taro-ui'
 import { fanOrders, fanTags } from '@/api/fan'
 import "./index.scss";
@@ -35,10 +36,11 @@ const FanInfo = () => {
   const [state, dispatch] = useReducer(stateReducer, initState)
   const [orderloading, setOrderLoading] = useState(false)
   const [tagloading, setTagLoading] = useState(false)
+  const [more,setMore] = useState(false)
   const { fanOrderList, fanTagsList } = state
   const avatar = `${imgUrl()}/header/${fan.pageId}/${fan.fanId}.jpg`
   const style = {
-    marginTop: navH + 10 + 'px'
+    marginTop: navH + 'px'
   }
   useEffect(() => {
     getorders()
@@ -61,13 +63,18 @@ const FanInfo = () => {
     }
     await fanTags(p).then(res => {
       const { data } = res
-      dispatch({ type: 'tags', payload: { tags: data } })
+      !data?dispatch({ type: 'tags', payload: { tags: [] } })
+      :dispatch({ type: 'tags', payload: { tags: data } })
     }).finally(() => {
       setTagLoading(false)
     })
   }
   const viewHead = () => {
     previewImg(avatar)
+  }
+
+  const seemore = ()=>{
+    setMore(!more)
   }
 
   return (
@@ -85,13 +92,28 @@ const FanInfo = () => {
           </View>
         </View>
         <View className='sec-title'>订单信息：</View>
-        <View className='orderlist'>
+        <View className={`orderlist ${!more&&fanOrderList.length>3?'seemore':''}`}>
           {
             fanOrderList.length > 0 ?
               fanOrderList.map((item, index) => {
                 return (
                   <View key={index} className='order'>
-
+                    <View className='top'>
+                      <View className='left'>
+                        <Text className='name break'>{item.scalpingProductName}</Text>
+                      </View>
+                      <View className='right'>
+                        <Text >{item.orderImageDate}</Text>
+                      </View>
+                    </View>
+                    <View className='bot'>
+                      <View className='left'>
+                        <Text className='status'>{typeOrderS(item.status)} {typeCashOut(item.isCashout)}</Text>
+                      </View>
+                      <View className='right'>
+                        <Text className='ordernum'>{item.orderNumber}</Text>
+                      </View>
+                    </View>
                   </View>
                 )
               })
@@ -104,6 +126,11 @@ const FanInfo = () => {
               </View>
           }
         </View>
+        {
+          fanOrderList.length>3?
+          <View className='checkmore' onClick={seemore}>{more?'收起':'查看更多'}</View>
+          :''
+        }
         <View className='sec-title'>标签：</View>
         <View className='taglist'>
           {

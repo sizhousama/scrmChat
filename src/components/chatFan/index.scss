@@ -1,7 +1,7 @@
 
 .fanbox {
   width: 100%;
-  height: 150px;
+  height: 170px;
   display: flex;
   align-items: center;
 
@@ -9,12 +9,12 @@
     width: 120px;
     height: 120px;
     margin-left: 60px;
-    margin-right: 14px;
+    margin-right: 20px;
   }
 
   .right {
     flex: 1;
-    height: 96px;
+    height: 120px;
     padding-right: 30px;
     display: flex;
     flex-direction: column;
@@ -23,13 +23,12 @@
 }
 
 .head {
-  width: 110px;
-  height: 110px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
 }
 
 .top {
-  margin-bottom: 15px;
   display: flex;
   .name {
     font-size: 30px;
@@ -39,15 +38,16 @@
   .page {
     line-height: 44px;
     font-size: 22px;
-    width:110px;
+    width:150px;
     color: #909399;
   }
-  .tagbox{
-    flex:1;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-  }
+
+}
+.tagbox{
+  width:100%;
+  display: flex;
+  align-items: center;
+  padding:4px 0;
   .tag{
     height:30px;
     line-height: 30px;
@@ -55,12 +55,11 @@
     border:2px solid #7685FF;
     border-radius: 4px;
     color:#7685FF;
-    margin-left: 10px;
+    margin-right: 10px;
     font-size: 20px;
     max-width: 124px;
   }
 }
-
 .bot {
   display: flex;
 

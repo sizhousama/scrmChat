@@ -13,9 +13,9 @@ import FileMsg from '@/components/msgView/fileMsg';
 import NotifyMsg from '@/components/msgView/notifyMsg';
 import MediaMsg from '@/components/msgView/mediaMsg';
 import ButtonMsg from '@/components/msgView/buttonMsg';
-import { View, Text, ScrollView } from "@tarojs/components";
+import { View, Text, ScrollView,Input} from "@tarojs/components";
 import { AtInput, AtIcon, AtActivityIndicator } from 'taro-ui'
-import { getSysInfo, genUuid, setInput, chooseImg, getsuffix,getFileType,chooseMsgFile } from '@/utils/index'
+import { getSysInfo, genUuid, setInput, chooseImg, getsuffix, getFileType, chooseMsgFile,hideKb } from '@/utils/index'
 import { formatMsgStatus } from '@/utils/filter'
 import { getHistoryMsg } from '@/api/chat'
 import { observer } from 'mobx-react';
@@ -66,8 +66,10 @@ const LiveChat = () => {
   const childref = useRef()
   const hisref = useRef<any[]>([])
   const fakeref = useRef<any[]>([])
+  const kbhref = useRef(0)
   const cursorref = useRef(0)
   const barHeight = getSysInfo().statusBarHeight
+
   const { fan } = useFanStore()
   const { userInfo } = useUserStore()
   const { wsio } = useWsioStore()
@@ -90,12 +92,13 @@ const LiveChat = () => {
     senderId: fan.fanId,
     userId: 0
   })//历史记录参数
-  let diffHeight = barHeight + 178 //176 + 2 2px为border高度
-  let keybordHeight = 0 //键盘高度
-  const msgViewStyle = {
-    width: '100%',
+
+  let diffHeight = barHeight + 190 //176 + 2 2px为border高度
+  const [msgViewStyle, setMsgViewSyle] = useState({
     height: `calc(100vh - ${diffHeight}px)`
-  }
+  })
+  const [inputbot, setInputBot] = useState(0)
+  const [keyboardH,setKeyBoardH] = useState(0)
 
   useEffect(() => {
     initSocket()
@@ -124,7 +127,7 @@ const LiveChat = () => {
           return undefined
         }
       })
-      
+
 
       if (!message) {
         if (((isServe && newMsgSenderId === fanPageId) && (newMsgRecipientId === fanSenderId)) || ((!isServe && newMsgSenderId === fanSenderId) && (newMsgRecipientId === fanPageId))) {
@@ -142,6 +145,7 @@ const LiveChat = () => {
 
     wsio.on('SEND_MSG_RESPONSE', (data) => {
       const { msg = '', status, uuid = '', mid = '' } = data
+      console.log(data)
       // 收到的状态为3的时候，比状态时间戳小的信息全部改为已读
       if (status === 3) {
         const watermark = data.watermark
@@ -151,10 +155,7 @@ const LiveChat = () => {
           }
         })
       } else {
-        console.log(uuid)
-        console.log(fakeref.current)
         const sendText = fakeref.current.find(item => item.uuid === uuid)
-        // 找到uuid 相同的信息 改变发送信息的状态
         console.log(sendText)
         if (sendText) {
           // sendText.loading = false
@@ -313,29 +314,28 @@ const LiveChat = () => {
     closeModal()
   }
   const sendImg = async () => {
-    setShowTools(false)
     const url = '/scrm-seller/utils/uploadFile'
     await chooseImg(url, 3).then(res => {
-      res?sendFileSocket(res):console.log('error')
+      res ? sendFileSocket(res) : console.log('error')
     })
   }
-  const sendFile = async() => {
+  const sendFile = async () => {
     const url = '/scrm-seller/utils/uploadRawFile'
-    await chooseMsgFile(url,3).then(res=>{
-      res?sendFileSocket(res):console.log('error')
+    await chooseMsgFile(url, 3).then(res => {
+      res ? sendFileSocket(res) : console.log('error')
     })
   }
-  const sendFileSocket=(list)=>{
+  const sendFileSocket = (list) => {
     const { fanId, pageId } = fan
     list.forEach(item => {
       const uuid = genUuid()
-      const url = item.url?item.url:item
-      const name = item.name?item.name:item
+      const url = item.url ? item.url : item
+      const name = item.name ? item.name : item
       const elements = { payload: { url }, name }
       let originType = getsuffix(url)
-      const type = getFileType(originType) === 'video' || getFileType(originType) === 'radio' 
-      ?'media':getFileType(originType)
-      originType = type==='media'?getFileType(getsuffix(url)):getsuffix(url)
+      const type = getFileType(originType) === 'video' || getFileType(originType) === 'radio'
+        ? 'media' : getFileType(originType)
+      originType = type === 'media' ? getFileType(getsuffix(url)) : getsuffix(url)
       const socketParams = {
         uuid: uuid,
         userId: userInfo.userId,
@@ -350,9 +350,9 @@ const LiveChat = () => {
         originType, // 原始类型，例如 mp4,mp3
         elements: [elements], // 渲染dom结构，目前只有图片类型有
         filename: name, // 文件类型的 文件名
-        mediaUrl:url,
+        mediaUrl: url,
         imgUrl: url, // 文件类型的 文件url
-        fileUrl:url,
+        fileUrl: url,
         loading: true,
         isServe: true,
         timestamp: Date.now(),
@@ -362,28 +362,39 @@ const LiveChat = () => {
         userId: userInfo.userId,
         // isTimeVisible: (Date.now() - this.lastVisibleTime > 300000) // 是否显示时间戳
       }
-      
       fakeref.current = [...fakeref.current, fakeText]
-      dispatch({ type: 'fakes', payload: { fakes: fakeref.current } })  
+      dispatch({ type: 'fakes', payload: { fakes: fakeref.current } })
       wsio.emit('SEND_MSG', socketParams)
       tobottom()
     })
   }
 
   // 输入时
-  const inputMsg = (v, e) => {
-    setMessage(v)
+  const inputMsg = (e) => {
+    setMessage(e.detail.value)
   }
   // 聚焦时
-  const msgInputFocus = (v, e) => {
-    keybordHeight = e.detail.height
-    diffHeight += keybordHeight //软键盘高度改变，scroll高度改变
+  const msgInputFocus = (e) => {
+    setInputBot(e.detail.height)
   }
   // 失焦时
-  const msgInputBlur = (v, e) => {
-    keybordHeight = e.detail.height
-    diffHeight -= keybordHeight //软键盘高度改变，scroll高度改变
-    cursorref.current = e.detail.cursor
+  const msgInputBlur = (e) => {
+    showtools||showemoji?setInputBot(200):setInputBot(0)
+  }
+  const keyboardChange = (e) => {
+    console.log('键盘变化时高度：',e.detail.height)
+    // if (e.detail.height === 0) {
+    //   showtools||showemoji?diffHeight = barHeight + 390: diffHeight = barHeight + 190
+    //   setMsgViewSyle({
+    //     height: `calc(100vh - ${diffHeight}px)`
+    //   })
+    // } else {
+    //   diffHeight += e.detail.height 
+    //   setMsgViewSyle({
+    //     height: `calc(100vh - ${diffHeight}px)`
+    //   })
+    // }
+    // tobottom()
   }
   // 动态组件
   const msgComponent = (item, idx) => {
@@ -409,23 +420,26 @@ const LiveChat = () => {
   }
   const setemoji = (emoji) => {
     const result = setInput('msgInput', emoji, cursorref.current)
-    setMessage(result)
-    setPos(cursorref.current + emoji.length)
+    hideKb()//隐藏键盘
+    setMessage(result)//input赋值
   }
   const setReply = (reply) => {
     const text = reply.content
     const result = setInput('msgInput', text, cursorref.current)
     setMessage(result)
-    setPos(cursorref.current + text.length)
-    setShowReply(false)
+    hideKb()
+    setInputBot(0)//input距离底部高度
+    setShowReply(false)//input赋值
+    setShowTools(false)
   }
   // 选择工具
   const clickTool = (id) => {
+    setInputBot(0)
+    setShowTools(false)
     if (id === 0) {
       setShowReply(true)
     }
-    if (id === 1) {
-      setShowTools(false)
+    if (id === 1) { 
       sendImg()
     }
     if (id === 2) {
@@ -437,6 +451,11 @@ const LiveChat = () => {
   }
   // 关闭所有对话框
   const closeModal = () => {
+    diffHeight = barHeight + 190
+    setInputBot(0)
+    setMsgViewSyle({
+      height: `calc(100vh - ${diffHeight}px)`
+    })
     setShowEmoji(false)
     setShowTools(false)
     setShowReply(false)
@@ -444,16 +463,19 @@ const LiveChat = () => {
   }
   // 点击表情icon
   const clickEmojiIcon = () => {
-    setShowEmoji(!showemoji)
+    hideKb()
+    setInputBot(200)
+    setShowEmoji(true)
     setShowTools(false)
     setShowReply(false)
     setShowOrder(false)
+    
   }
   // 点击工具icon
   const clickToolsiIcon = () => {
-    showorder || showreply ?
-      setShowTools(true) :
-      setShowTools(!showtools)
+    hideKb()
+    setInputBot(200)
+    setShowTools(true)
     setShowEmoji(false)
     setShowReply(false)
     setShowOrder(false)
@@ -461,6 +483,7 @@ const LiveChat = () => {
   return (
     <View className='live-chat' >
       <ChatHeader ref={childref} fan={fan}></ChatHeader>
+      <AtActivityIndicator isOpened={initLoading} size={36} mode='center'></AtActivityIndicator>
       <ScrollView
         scrollY
         className='msgview'
@@ -469,7 +492,6 @@ const LiveChat = () => {
         upperThreshold={20}
         onScrollToUpper={morehistorymsg}
         onClick={closeModal}>
-        <AtActivityIndicator isOpened={initLoading} size={36} mode='center'></AtActivityIndicator>
         {
           loading ?
             <View className='more'>
@@ -516,35 +538,39 @@ const LiveChat = () => {
         }
       </ScrollView>
 
-      <View className='fooler' style={{ height: '44px', bottom: keybordHeight + 'px' }}>
+      <View className={`fooler`} style={{ height: '54px', bottom:inputbot+'px' }}>
         {/* 左边工具栏 */}
         <View className='left'>
           <View className='emoj' onClick={clickEmojiIcon}>
-            <AtIcon prefixClass='icon' value='smile' color='#666' className='alicon'></AtIcon>
-            {showemoji ? <Emoji ref={childref} msg={message} handleClick={setemoji}></Emoji> : ''}
+            <AtIcon prefixClass='icon' value='smile' color='#666' size='28' className='alicon'></AtIcon>
           </View>
           <View className='more' onClick={clickToolsiIcon}>
-            <AtIcon prefixClass='icon' value='add-circle' color='#666' className='alicon'></AtIcon>
-            {showtools ? <Tools ref={childref} handleClick={clickTool}></Tools> : ''}
+            <AtIcon prefixClass='icon' value='add-circle' color='#666' size='28' className='alicon'></AtIcon>
             {showreply ? <QuickReply ref={childref} pageId={fan.pageId} handleClick={setReply}></QuickReply> : ''}
             {showorder ? <ChatOrder ref={childref} ></ChatOrder> : ''}
           </View>
         </View>
         {/* 输入发送消息 */}
-        <AtInput
-          name='msgInput'
+        <Input
+          id='msgInput'
           className='msginput'
+          adjustPosition={false}
           value={message}
-          onChange={inputMsg}
+          onInput={inputMsg}
           onFocus={msgInputFocus}
           onBlur={msgInputBlur}
           selectionStart={pos}
           selectionEnd={pos}
-        />
+          onKeyboardHeightChange={keyboardChange}
+        ></Input>
         {/* 发送按钮 */}
         <View className='searchbtn send' onClick={sendMsg}>
           发送
         </View>
+      </View>
+      <View className={`toolsbox`} style={{ height: showtools||showemoji ? '200px' : 0 }}>
+        {showemoji ? <Emoji ref={childref} msg={message} handleClick={setemoji}></Emoji> : ''}
+        {showtools ? <Tools ref={childref} handleClick={clickTool}></Tools> : ''}
       </View>
     </View>
   );

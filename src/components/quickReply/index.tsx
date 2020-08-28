@@ -19,7 +19,6 @@ const stateReducer = (state, action) => {
   }
 }
 const QuickReply = (props, ref) => {
-  const [cur, setCur] = useState(0)
   const [key,setKey] = useState('')
   const [loading, setLoading] = useState(false)
   const [state, dispatch] = useReducer(stateReducer, initState)
@@ -45,24 +44,13 @@ const QuickReply = (props, ref) => {
       setLoading(false)
     })
   }
-  const clickTab = (v, e) => {
-    setCur(v)
-    e.stopPropagation()
-  }
   const inputChange = (v)=>{
     params.title = v
     setKey(v)
   }
   return (
     <View className='replybox' onClick={(e)=>e.stopPropagation()}>
-      <AtTabBar
-        tabList={[
-          { title: '全部' },
-          { title: 'Daily necessities' },
-        ]}
-        onClick={clickTab}
-        current={cur}
-      />
+      <View className='topheader'>快捷回复</View>
       <View className='search'>
         <AtInput
         name='replyInput'

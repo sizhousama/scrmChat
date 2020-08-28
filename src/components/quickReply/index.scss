@@ -4,23 +4,20 @@
   border-radius: 10px;
   box-shadow: 0 2px 16px 0 rgba(0,0,0,.15);
   position: absolute;
-  bottom:80px;
-  left:-76px;
+  bottom:100px;
+  left:-50px;
   box-sizing: border-box;
   background:#fff;
-  .at-tab-bar{
-    border-bottom:2px solid #eee;
-    border-radius: 10px 10px 0 0;
-    font-weight: 500;
-  }
-  .at-tab-bar__item--active{
-    color:#7685FF;
-  }
-  .at-tab-bar__item:last-child{
-    flex:1.5;
-    .at-tab-bar__title{
-      max-width: 240px;
-    }
+
+  .topheader {
+    width: 100%;
+    height: 80px;
+    line-height: 80px;
+    box-sizing: border-box;
+    padding-left: 60px;
+    font-size: 28px;
+    color: #7685FF;
+    border-bottom: 2px solid #eee;
   }
   &::after {
     content: '';
@@ -31,7 +28,7 @@
     border-color: #fff transparent transparent;
     position: absolute;
     bottom: -20px;
-    left: 76px;
+    left: 60px;
   }
 }
 .search{
@@ -58,7 +55,7 @@
 
 .replyscroll{
   width:100%;
-  height:424px;
+  height:430px;
   .replyinner{
     width:100%;
     height: 100%;

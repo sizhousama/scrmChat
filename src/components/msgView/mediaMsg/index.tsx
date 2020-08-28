@@ -25,6 +25,7 @@ const MediaMsg = (props, ref) => {
     })
     myaudio.onEnded(() => {
       console.log('结束')
+      SetPlaying(false)
     })
 
     myaudio.onError((res) => {
@@ -63,7 +64,6 @@ const MediaMsg = (props, ref) => {
 
             </View>
             <View className='time'>
-
             </View>
             {createAudio()}
           </View>

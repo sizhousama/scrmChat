@@ -1,40 +1,37 @@
 .toolbox {
-  width: 480px;
-  height: 88px;
-  border-radius: 10px;
-  box-shadow: 0 2px 16px 0 rgba(0, 0, 0, .15);
-  position: absolute;
-  bottom: 80px;
-  left: -70px;
+  width: 100%;
+  height:100%;
   box-sizing: border-box;
-  padding:20px 40px;
-  background: #fff;
+  padding:40px 55px;
+  background: #f3f3f3;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-wrap: wrap;
   .tool {
-    width: 50px;
-    height: 50px;
-    line-height: 50px;
-    text-align: center;
-    background: #7685FF;
-    border-radius: 50%;
-    .at-icon {
-      font-size: 28px;
-      color: #fff;  
-      margin-bottom:2px!important;
+    width: 160px;
+    height: 160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; 
+    align-items: center;
+    .icon{
+      width:100px;
+      height:100px;
+      background:#fff;
+      border-radius: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      .at-icon {
+        font-size: 46px;
+        color: #7685ff; 
+        font-weight: bold; 
+      }
     }
-  }
-
-  &::after {
-    content: '';
-    width: 0;
-    height: 0;
-    border-width: 20px 20px 0;
-    border-style: solid;
-    border-color: #fff transparent transparent;
-    position: absolute;
-    bottom: -20px;
-    left: 70px;
+    .label{
+      font-size: 22px;
+      color:#666;
+      padding:8px 0;
+    }
+    
   }
 }

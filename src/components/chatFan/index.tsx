@@ -6,11 +6,11 @@ import { observer } from 'mobx-react';
 import { useFanStore } from '@/store';
 import { AtBadge } from 'taro-ui'
 import { imgUrl } from '@/servers/baseUrl'
-import {NavTo} from '@/utils/index'
+import { NavTo } from '@/utils/index'
 const ChatFan = (props, ref) => {
   const imgurl = imgUrl()
-  const {fan,setFan} = useFanStore()
-  const goChat = () =>{
+  const { fan, setFan } = useFanStore()
+  const goChat = () => {
     props.handleClick(props.fan)
     setFan(props.fan)
     NavTo('/pages/liveChat/index')
@@ -18,7 +18,7 @@ const ChatFan = (props, ref) => {
   return (
     <View className='fanbox' onClick={goChat}>
       <View className='left'>
-        <AtBadge className='badge' dot={props.fan.read===0}>
+        <AtBadge className='badge' dot={props.fan.read === 0}>
           <Image
             className='head'
             src={`${imgurl}/header/${props.fan.pageId}/${props.fan.fanId}.jpg`}></Image>
@@ -28,13 +28,13 @@ const ChatFan = (props, ref) => {
         <View className='top'>
           <Text className='name'>{props.fan.fanName}</Text>
           <Text className='page break'>{props.fan.pageName}</Text>
-          <View className='tagbox'>
-            {
-              props.fan.tagsArr.map((tag, i) => {
-                return <Text key={tag + i} className='tag break'>{tag}</Text>
-              })
-            }
-          </View>
+        </View>
+        <View className='tagbox'>
+          {
+            props.fan.tagsArr.map((tag, i) => {
+              return <Text key={tag + i} className='tag break'>{tag}</Text>
+            })
+          }
         </View>
         <View className='bot'>
           <Text className='newmsg break'>{props.fan.msg}</Text>
