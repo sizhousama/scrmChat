@@ -1,12 +1,14 @@
 import React, { useEffect, useRef } from 'react'
 import { AtBadge } from 'taro-ui'
 import { View, Image, Text } from '@tarojs/components'
-import './index.scss'
 import { useState, forwardRef } from 'react'
 import Taro from '@tarojs/taro'
-
+import {isNeedAddH} from '@/utils/index'
+import './index.scss'
 const TabBar = (props, ref) => {
   // const childref = useRef()
+  const needAddH = isNeedAddH()
+  
   const [tabList, setTabList] = useState(
     [
       {

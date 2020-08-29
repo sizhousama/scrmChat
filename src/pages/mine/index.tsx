@@ -32,7 +32,7 @@ const Mine = () => {
         </View>
         <View className='userbox'>
           <View className='left'>
-            <Image src={userInfo.avatar} />
+            <Image src={`${userInfo.avatar}?${Math.random()}`} />
           </View>
           <View className='right'>
             <View className='top'>

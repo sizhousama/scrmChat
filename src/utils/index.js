@@ -38,6 +38,19 @@ export const getSysInfo = () => {
   })
   return info
 }
+// 是否需要加高
+export const isNeedAddH = () => {
+  let ish = false
+  Taro.getSystemInfo({
+    success(res) {
+      if(res.model.indexOf('iPhone X'||'iPhone 11')>-1){
+        ish=true
+      }
+    }
+  })
+  return ish
+}
+
 // 预览
 export const previewImg = (url,arr) => {
   arr?
@@ -71,6 +84,10 @@ export const redirectTo = (url) => {
 // 隐藏键盘
 export const hideKb = (url) => {
   Taro.hideKeyboard()
+}
+// 震动
+export const vibrateS = () => {
+  Taro.vibrateShort()
 }
 // 提示音
 export const msgAudio = () => {

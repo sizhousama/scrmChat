@@ -13,14 +13,16 @@ import FileMsg from '@/components/msgView/fileMsg';
 import NotifyMsg from '@/components/msgView/notifyMsg';
 import MediaMsg from '@/components/msgView/mediaMsg';
 import ButtonMsg from '@/components/msgView/buttonMsg';
-import { View, Text, ScrollView,Input} from "@tarojs/components";
+import { View, Text, ScrollView, Input } from "@tarojs/components";
 import { AtInput, AtIcon, AtActivityIndicator } from 'taro-ui'
-import { getSysInfo, genUuid, setInput, chooseImg, getsuffix, getFileType, chooseMsgFile,hideKb } from '@/utils/index'
+import { getSysInfo, genUuid, setInput, chooseImg, getsuffix, getFileType, chooseMsgFile, hideKb } from '@/utils/index'
 import { formatMsgStatus } from '@/utils/filter'
 import { getHistoryMsg } from '@/api/chat'
+import { getFanInfo } from '@/api/fan'
 import { observer } from 'mobx-react';
 import { useFanStore, useWsioStore, useUserStore } from '@/store';
 import { parseMsg } from '@/utils/parse'
+import { vibrateS } from '@/utils/index'
 import "./index.scss";
 
 interface RI {
@@ -79,6 +81,7 @@ const LiveChat = () => {
   const [showtools, setShowTools] = useState(false)
   const [showreply, setShowReply] = useState(false)
   const [showorder, setShowOrder] = useState(false)
+  const [showTagMsg, setShowTagMsg] = useState(false)
   const [state, dispatch] = useReducer(listReducer, initState)
   const { historyList, fakes } = state
   const [curMsg, setCurMsg] = useState('')
@@ -93,17 +96,38 @@ const LiveChat = () => {
     userId: 0
   })//历史记录参数
 
-  let diffHeight = barHeight + 190 //176 + 2 2px为border高度
+  const diffHeight = barHeight + 190 //176 + 2 2px为border高度
   const [msgViewStyle, setMsgViewSyle] = useState({
     height: `calc(100vh - ${diffHeight}px)`
   })
   const [inputbot, setInputBot] = useState(0)
-  const [keyboardH,setKeyBoardH] = useState(0)
+  const [keyboardH, setKeyBoardH] = useState(0)
 
   useEffect(() => {
     initSocket()
     historymsg()
+    tagMsg()
   }, [])
+  //判断是否显示标签消息
+  const tagMsg = async () => {
+    const { pageId, fanId } = fan
+    const p = { pageId, fanId }
+
+    await getFanInfo(p).then(res => {
+      const { lastSendMsgTime } = res.data
+      if (lastSendMsgTime != undefined && lastSendMsgTime !== '') {
+        try {
+          const lastSendTime = new Date(lastSendMsgTime).getTime()
+          const now = new Date().getTime()
+          if (now - lastSendTime > 24 * 60 * 60 * 1000) {
+            setShowTagMsg(true)
+          }
+        } catch (e) {
+          setShowTagMsg(true)
+        }
+      } else { setShowTagMsg(true) }
+    })
+  }
   // socket事件
   const initSocket = () => {
     wsio.on('SEND_MSG', (data) => {
@@ -117,7 +141,6 @@ const LiveChat = () => {
         userId: 0
       }
       messageItem = { ...parseMsg(data) }
-      console.log(messageItem)
       const { userId, isServe = true, senderId: newMsgSenderId, recipientId: newMsgRecipientId } = messageItem
       const { fanId: fanSenderId, pageId: fanPageId } = fan
       const message = fakeref.current.find(item => {
@@ -140,6 +163,9 @@ const LiveChat = () => {
           dispatch({ type: 'fakes', payload: { fakes: fakeref.current } })
           tobottom()
         }
+      }
+      if (!isServe) {
+        vibrateS()
       }
     })
 
@@ -262,6 +288,7 @@ const LiveChat = () => {
     })
   }
   const tobottom = () => {
+    
     const arr = [...hisref.current, ...fakeref.current]
     const cur = `msg${arr[arr.length - 1].uuid}`
     setCurMsg(cur)
@@ -286,6 +313,7 @@ const LiveChat = () => {
       senderId: fanId,
       pageId: pageId,
       msg: msg,
+      tag: showTagMsg ? 'ACCOUNT_UPDATE' : ''
     }
     // 假数据
     // TODO: 目前自制的假消息类型只有text
@@ -341,7 +369,8 @@ const LiveChat = () => {
         userId: userInfo.userId,
         senderId: fanId,
         pageId: pageId,
-        files: [url]
+        files: [url],
+        tag: showTagMsg ? 'ACCOUNT_UPDATE' : ''
       }
       const fakeText = {
         uuid: uuid,
@@ -375,26 +404,31 @@ const LiveChat = () => {
   }
   // 聚焦时
   const msgInputFocus = (e) => {
-    setInputBot(e.detail.height)
+    setCurMsg('')
+    const h = e.detail.height
+    const dif = diffHeight 
+    console.log(dif)
+    setMsgViewSyle({
+      height: `calc(100vh - ${dif+h}px)`
+    })
+    setTimeout(() => {
+      tobottom()
+    }, 0);
   }
   // 失焦时
   const msgInputBlur = (e) => {
-    showtools||showemoji?setInputBot(200):setInputBot(0)
-  }
-  const keyboardChange = (e) => {
-    console.log('键盘变化时高度：',e.detail.height)
-    // if (e.detail.height === 0) {
-    //   showtools||showemoji?diffHeight = barHeight + 390: diffHeight = barHeight + 190
-    //   setMsgViewSyle({
-    //     height: `calc(100vh - ${diffHeight}px)`
-    //   })
-    // } else {
-    //   diffHeight += e.detail.height 
-    //   setMsgViewSyle({
-    //     height: `calc(100vh - ${diffHeight}px)`
-    //   })
-    // }
-    // tobottom()
+    if (showtools || showemoji) {
+      const dif = diffHeight
+      setMsgViewSyle({
+        height: `calc(100vh - ${dif+200}px)`
+      })
+      tobottom()
+    } else {
+      setMsgViewSyle({
+        height: `calc(100vh - ${diffHeight}px)`
+      })
+      tobottom()
+    }
   }
   // 动态组件
   const msgComponent = (item, idx) => {
@@ -439,7 +473,7 @@ const LiveChat = () => {
     if (id === 0) {
       setShowReply(true)
     }
-    if (id === 1) { 
+    if (id === 1) {
       sendImg()
     }
     if (id === 2) {
@@ -451,7 +485,6 @@ const LiveChat = () => {
   }
   // 关闭所有对话框
   const closeModal = () => {
-    diffHeight = barHeight + 190
     setInputBot(0)
     setMsgViewSyle({
       height: `calc(100vh - ${diffHeight}px)`
@@ -463,22 +496,37 @@ const LiveChat = () => {
   }
   // 点击表情icon
   const clickEmojiIcon = () => {
+    setCurMsg('')
+    console.log(showemoji)
+    !showemoji?
+    setMsgViewSyle({
+      height: `calc(100vh - ${diffHeight+200}px)`
+    }):'' 
     hideKb()
-    setInputBot(200)
     setShowEmoji(true)
     setShowTools(false)
     setShowReply(false)
     setShowOrder(false)
-    
+    setTimeout(() => {
+      tobottom()
+    }, 0);
+
   }
   // 点击工具icon
   const clickToolsiIcon = () => {
+    setCurMsg('')
+    !showtools?
+    setMsgViewSyle({
+      height: `calc(100vh - ${diffHeight+200}px)`
+    }):''
     hideKb()
-    setInputBot(200)
     setShowTools(true)
     setShowEmoji(false)
     setShowReply(false)
     setShowOrder(false)
+    setTimeout(() => {
+      tobottom()
+    }, 0);
   }
   return (
     <View className='live-chat' >
@@ -538,7 +586,7 @@ const LiveChat = () => {
         }
       </ScrollView>
 
-      <View className={`fooler`} style={{ height: '54px', bottom:inputbot+'px' }}>
+      <View className={`fooler`} style={{ height: '54px', bottom: inputbot + 'px' }}>
         {/* 左边工具栏 */}
         <View className='left'>
           <View className='emoj' onClick={clickEmojiIcon}>
@@ -561,14 +609,13 @@ const LiveChat = () => {
           onBlur={msgInputBlur}
           selectionStart={pos}
           selectionEnd={pos}
-          onKeyboardHeightChange={keyboardChange}
         ></Input>
         {/* 发送按钮 */}
         <View className='searchbtn send' onClick={sendMsg}>
           发送
         </View>
       </View>
-      <View className={`toolsbox`} style={{ height: showtools||showemoji ? '200px' : 0 }}>
+      <View className={`toolsbox`} style={{ height: showtools || showemoji ? '200px' : 0 }}>
         {showemoji ? <Emoji ref={childref} msg={message} handleClick={setemoji}></Emoji> : ''}
         {showtools ? <Tools ref={childref} handleClick={clickTool}></Tools> : ''}
       </View>

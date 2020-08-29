@@ -17,6 +17,7 @@ export class FanStore {
   @observable fan:Fan = fan
   @observable pageIds:string = ''
   @observable hasNew = false
+  @observable fanSearchKey = ''
 
   @action.bound setFan(data) {
     this.fan = data;
@@ -26,6 +27,9 @@ export class FanStore {
   }
   @action.bound setHasNew(data) {
     this.hasNew = data;
+  }
+  @action.bound setFanSearchKey(data) {
+    this.fanSearchKey = data;
   }
 }
 

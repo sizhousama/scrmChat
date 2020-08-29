@@ -6,7 +6,7 @@ export const getHistoryMsg = (data) => {
 }
 // 客服
 export const getServices = () => {
-  return HTTPREQUEST.get('/scrm-admin/user/getServiceList')
+  return HTTPREQUEST.get('/scrm-admin/user/getUserListForOrder',{type:1})
 }
 // 快捷回复
 export const getReplys = (params) => {

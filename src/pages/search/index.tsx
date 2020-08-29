@@ -2,31 +2,33 @@ import React, { useRef, useState, useEffect } from "react";
 import { AtInput, AtForm, AtList, AtListItem, AtTag } from 'taro-ui'
 import NavBar from "@/components/navBar";
 import { View, Picker } from "@tarojs/components";
-import { NavTo } from "@/utils/index"
+import { NavTo,SwitchTab } from "@/utils/index"
 import { observer } from 'mobx-react';
-import { useNavStore, useUserStore } from '@/store';
+import { useNavStore, useFanStore } from '@/store';
 import "./index.scss";
 
 const Search = () => {
-  const [name, setName] = useState('')
-  const [services, setServices] = useState(['1', '2', '3', '4'])
-  const [selectSer, setSelectSer] = useState('请选择客服')
+  const [keyword, setKeyWord] = useState('')
   const { navH } = useNavStore()
+  const {setFanSearchKey} = useFanStore()
   const style = {
     marginTop: navH + 'px'
   }
-  const setname = (v) => {
-    setName(v)
+  const setkey = (v) => {
+    setKeyWord(v)
   }
   const onChange = (e) => {
-    setSelectSer(services[e.detail.value])
+   
   }
   const settag = (e) => {
-    console.log(e)
     e.active = true
   }
   const navToMoreTag = () => {
     NavTo('../tags/index')
+  }
+  const search= () =>{
+    SwitchTab(`/pages/chat/index`)
+    setFanSearchKey(keyword)
   }
 
   return (
@@ -38,18 +40,18 @@ const Search = () => {
             <View className='at-icon at-icon-search search-icon'></View>
             <AtInput
               className='sinput tops'
-              name='value1'
+              name='mainSearchInput'
               type='text'
-              placeholder='单行文本'
+              placeholder='粉丝名称/邮箱/分配人/adid'
               placeholderClass='placestyle'
               clear={true}
-              value={name}
-              onChange={setname}
+              value={keyword}
+              onChange={setkey}
             />
-            <View className='searchbtn'>搜索</View>
+            <View className='searchbtn' onClick={search}>搜索</View>
           </View>
-          <View className='subtitle'>详细筛选：</View>
-          <AtInput
+          {/* <View className='subtitle'>详细筛选：</View> */}
+          {/* <AtInput
             className='sinput'
             title='名称:'
             name='value1'
@@ -58,8 +60,8 @@ const Search = () => {
             placeholderClass='placestyle'
             value={name}
             onChange={setname}
-          />
-          <View className='other tagform'>
+          /> */}
+          {/* <View className='other tagform'>
             <View className='label'>标签：</View>
             <View className='content'>
               <AtTag
@@ -82,8 +84,8 @@ const Search = () => {
           <View className='other'>
             <View className='label'></View>
             <View className='more' onClick={navToMoreTag}>查看更多...</View>
-          </View>
-          <AtInput
+          </View> */}
+          {/* <AtInput
             className='sinput'
             title='邮箱:'
             name='value2'
@@ -102,8 +104,8 @@ const Search = () => {
             placeholderClass='placestyle'
             value={name}
             onChange={setname}
-          />
-          <AtInput
+          /> */}
+          {/* <AtInput
             className='sinput'
             title='订单号:'
             name='value4'
@@ -122,12 +124,11 @@ const Search = () => {
             placeholderClass='placestyle'
             value={name}
             onChange={setname}
-          />
-          <View className='other tagform'>
+          /> */}
+          {/* <View className='other tagform'>
             <View className='label'>客服：</View>
             <View className='content'>
               <View className='select'>
-                {/* 请选择客服 */}
                 <View className='at-icon at-icon-chevron-down'></View>
                 <Picker className='picker' mode='selector' range={services} onChange={onChange}>
                   <AtList>
@@ -138,12 +139,12 @@ const Search = () => {
                 </Picker>
               </View>
             </View>
-          </View>
+          </View> */}
 
-          <View className='btnbox'>
+          {/* <View className='btnbox'>
             <View className='rest'>重置</View>
             <View className='submit'>搜索</View>
-          </View>
+          </View> */}
         </AtForm>
       </View>
     </View>

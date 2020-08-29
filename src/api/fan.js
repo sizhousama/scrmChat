@@ -4,6 +4,14 @@ import HTTPREQUEST from "../servers/http"
 export const getFans = (params) => {
   return HTTPREQUEST.get('/scrm-message/pageUserData/pageUserDatas', params)
 }
+// 特定粉丝
+export const getFan = (data) => {
+  return HTTPREQUEST.post('/scrm-message/messenging/getContacts', data)
+}
+//粉丝详情
+export const getFanInfo = (params) => {
+  return HTTPREQUEST.get(`/scrm-message/pageUserData/get/${params.pageId}/${params.fanId}`)
+}
 // 聊天粉丝
 export const getRecentContacts = (data) => {
   return HTTPREQUEST.post('/scrm-message/messenging/recentContacts', data)

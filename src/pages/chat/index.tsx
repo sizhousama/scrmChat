@@ -4,14 +4,14 @@ import Header from "@/components/header";
 import ChatFan from "@/components/chatFan";
 import { AtActivityIndicator } from 'taro-ui'
 import { View } from "@tarojs/components";
-import { getRecentContacts, getAllPage, upRead } from '@/api/fan'
+import { getFan, getRecentContacts, getAllPage, upRead } from '@/api/fan'
 import { formatChatTime } from '@/utils/time'
 import { getUserInfo } from '@/api/info'
 import { observer } from 'mobx-react';
 import { parseMsg, judgeType, judgeMyType } from '@/utils/parse'
 import { useFanStore, useUserStore, useWsioStore } from '@/store';
 import { socketUrl } from '@/servers/baseUrl'
-import { msgAudio } from '@/utils/index'
+import { msgAudio, vibrateS } from '@/utils/index'
 import io from 'socket.io-mp-client'
 import "./index.scss";
 import { useDidShow, useReachBottom } from "@tarojs/taro";
@@ -61,11 +61,12 @@ const Chat = () => {
   const listref = useRef<any[]>([])
   const paramsref = useRef({
     page: 1,
-    pageSize: 10
+    pageSize: 10,
+    fanName: ''
   })
   // store
   const { setWsio } = useWsioStore()
-  const { setPageIds, hasNew, setHasNew } = useFanStore()
+  const { setPageIds, hasNew, setHasNew, fanSearchKey } = useFanStore()
   const { setUserInfo } = useUserStore()
   const [state, dispatch] = useReducer(listReducer, initState)
   const [hasmore, setHasMore] = useState(false)
@@ -80,11 +81,15 @@ const Chat = () => {
     console.log(socket)
   }
   useDidShow(() => {
+    search()
     getList()
   })
   useEffect(() => {
     getinfo()
   }, [])
+  const search = () => {
+    fanSearchKey !== '' ? paramsref.current.fanName = fanSearchKey : ''
+  }
   const initWebSocket = (socket) => {
     socket.on('connect', () => {
       console.log('已连接')
@@ -119,6 +124,7 @@ const Chat = () => {
       })
 
       const { text, isServe, recipientId, senderId } = parsedMsg
+      const params = { pageId: recipientId, fanId: senderId }
       // 粉丝发来的信息则进行处理
       if (!isServe) {
         // 如果 fan 存在
@@ -127,14 +133,18 @@ const Chat = () => {
           fan.read = 0
           fan.timestamp = Date.now()
           fan.formatTime = formatChatTime(fan.timestamp)
+          fans.sort((a, b) => b['timestamp'] - a['timestamp'])
+          dispatch({
+            type: 'list',
+            payload: { list: listref.current }
+          })
+          setHasNew(true)
+          msgAudio()
+          vibrateS()
+        } else {
+          getfan(params)
         }
-        fans.sort((a, b) => b['timestamp'] - a['timestamp'])
-        dispatch({
-          type: 'list',
-          payload: { list: listref.current }
-        })
-        setHasNew(true)
-        msgAudio()
+
       } else { // 客服发送消息的时候商家同时可以看到
         let serfan: any = {}
         serfan = fans.find(item => {
@@ -150,19 +160,21 @@ const Chat = () => {
             type: 'list',
             payload: { list: listref.current }
           })
+        } else {
+          getfan(params)
         }
       }
     })
     socket.on('CONTACTS_UPDATE', (data) => {
       typeof data === 'string' ? data = JSON.parse(data) : ''
       data.status === -1 ? getList() : ''
-      if (data.read !== undefined) {
+      if (data.read !== undefined && data.read !== '') {
         let fan: any = {}
         // 找到当前fanId 匹配的粉丝 并且 修改状态 表明有状态发生改变
         fan = listref.current.find(item => {
           return item['fanId'] === data.senderId
         })
-        fan.read = data.read
+        fan['read'] = data.read
       } else {
         const { senderId, tags } = data
         let fan: any = {}
@@ -207,7 +219,7 @@ const Chat = () => {
   }
   // 聊天会话列表
   const getList = async () => {
-    paramsref.current.page=1
+    paramsref.current.page = 1
     dispatch({ type: 'loading', payload: { loading: true } });
     await getRecentContacts(paramsref.current).then(res => {
       const { data } = res
@@ -255,6 +267,18 @@ const Chat = () => {
       }
     }).finally(() => {
       dispatch({ type: 'moreloading', payload: { ml: false } });
+    })
+  }
+  // 特定粉丝
+  const getfan = async (data) => {
+    await getFan(data).then(res => {
+      const { data } = res
+      data.tagsArr = []
+      data.formatTime = formatChatTime(data.timestamp)
+      data.tagsArr = data.tags === '' || data.tags === null ? [] : data.tagsArr = data.tags.split(',').slice(-2)
+      data.read = 0
+      if (fanSearchKey !== '') return
+      listref.current = [data, ...listref.current]
     })
   }
   const clickFan = (fan) => {

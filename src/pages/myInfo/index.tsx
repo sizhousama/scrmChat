@@ -27,7 +27,7 @@ const MyInfo = () => {
   }
   const viewImg = (e) => {
     e.stopPropagation()
-    previewImg(userInfo.avatar)
+    previewImg(`${userInfo.avatar}?${Math.random()}`)
   }
 
   return (
@@ -37,7 +37,7 @@ const MyInfo = () => {
         <View className='listitem head'>
           <View className='left'>头像：</View>
           <View className='right' onClick={upHead}>
-            <Image src={userInfo.avatar} onClick={viewImg}>
+            <Image src={`${userInfo.avatar}?${Math.random()}`} onClick={viewImg}>
               <AtActivityIndicator isOpened={loading} mode='center'></AtActivityIndicator>
             </Image>
             <View className='at-icon at-icon-chevron-right'></View>
