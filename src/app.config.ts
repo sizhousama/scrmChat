@@ -1,18 +1,15 @@
 
 export default {
-  pages: [
-    
+  pages: [  
     'pages/chat/index',
     'pages/liveChat/index',
     'pages/mine/index',
     'pages/fanInfo/index',
-
-
+    'pages/myPages/index',
     'pages/rePassword/index',
     'pages/tags/index',
     'pages/myInfo/index',
     'pages/search/index',
-
     'pages/login/index',
     'pages/users/index'
 

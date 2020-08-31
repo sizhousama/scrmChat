@@ -5,12 +5,14 @@ interface Fan {
   senderId:string,
   fanId:string,
   fanName:string,
+  pageName:string
 }
 const fan = {
   pageId:'',
   senderId:'',
   fanId:'',
-  fanName:''
+  fanName:'',
+  pageName:''
 }
 
 export class FanStore {

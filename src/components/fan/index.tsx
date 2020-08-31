@@ -17,7 +17,7 @@ const Fan = (props, ref) => {
           <Text className='name'>{props.name}</Text>
         </View>
         <View className='bot'>
-          <Text className='newmsg break'>pageId：{props.pageId}</Text>
+          <Text className='newmsg break'>主页：{props.pageName}</Text>
         </View>
       </View>
     </View>

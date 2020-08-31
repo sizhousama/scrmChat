@@ -10,6 +10,7 @@ import './index.scss'
 const Login = () => {
   const [userName, setUserName] = useState('')
   const [password, setpassword] = useState('')
+  const [ptype,setPtype] = useState('password')
   const Encrypt = (word:string)=> {
     var key = CryptoJS.enc.Utf8.parse('abcdefgabcdefg12')
     var srcs = CryptoJS.enc.Utf8.parse(word)
@@ -40,6 +41,13 @@ const Login = () => {
   const inputPassWord = (v) => {
     setpassword(v)
   }
+  const seePass = () =>{
+    if(ptype==='text'){
+      setPtype('password')
+    }else{
+      setPtype('text')
+    }
+  }
   return (
     <View className='loginbody'>
       <View className='head'>
@@ -59,14 +67,18 @@ const Login = () => {
       </View>
       <View className='password'>
         <AtInput
+          name='userPass'
           required={true}
-          type='password'
+          type={ptype}
           className='input'
-          name='passWord'
           placeholder='请输入密码...'
           value={password}
           onChange={inputPassWord}
         />
+        <View className='eye' onClick={seePass}>
+        <View className='at-icon at-icon-eye eye'></View>
+        </View>
+        
       </View>
       {/* </AtForm> */}
       <AtButton className='submit' onClick={handleLogin} >立即登录</AtButton>

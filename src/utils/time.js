@@ -126,3 +126,17 @@ export const getWeek = (week) => {
   }
   return str
 }
+
+// 主页格式化时间
+export const pageFormatda =(startDate, endDate)=> {
+  if (!endDate) {
+    startDate = new Date(startDate)
+    var year = startDate.getFullYear()
+    var month = startDate.getMonth() + 1
+    var date = startDate.getDate()
+    var dastr = [year, month, date].join('/')
+    return `${dastr}`
+  } else {
+    return Math.floor((endDate - startDate) / 86400000)
+  }
+}

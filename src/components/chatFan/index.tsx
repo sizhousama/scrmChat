@@ -11,6 +11,7 @@ const ChatFan = (props, ref) => {
   const imgurl = imgUrl()
   const { fan, setFan } = useFanStore()
   const goChat = () => {
+    console.log(props.fan)
     props.handleClick(props.fan)
     setFan(props.fan)
     NavTo('/pages/liveChat/index')

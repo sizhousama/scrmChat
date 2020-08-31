@@ -41,7 +41,7 @@ const TabBar = (props, ref) => {
     }
   }
   return (
-    <View className='tabbar'>
+    <View className={`tabbar ${needAddH?'needH':''}`}>
       {
         tabList.map((item, index) => {
           return (

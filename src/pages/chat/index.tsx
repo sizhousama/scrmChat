@@ -11,7 +11,7 @@ import { observer } from 'mobx-react';
 import { parseMsg, judgeType, judgeMyType } from '@/utils/parse'
 import { useFanStore, useUserStore, useWsioStore } from '@/store';
 import { socketUrl } from '@/servers/baseUrl'
-import { msgAudio, vibrateS } from '@/utils/index'
+import { msgAudio, vibrateS, isNeedAddH } from '@/utils/index'
 import io from 'socket.io-mp-client'
 import "./index.scss";
 import { useDidShow, useReachBottom } from "@tarojs/taro";
@@ -64,12 +64,13 @@ const Chat = () => {
     pageSize: 10,
     fanName: ''
   })
+  const needAddH = isNeedAddH()
+  const [state, dispatch] = useReducer(listReducer, initState)
+  const [hasmore, setHasMore] = useState(false)
   // store
   const { setWsio } = useWsioStore()
   const { setPageIds, hasNew, setHasNew, fanSearchKey } = useFanStore()
   const { setUserInfo } = useUserStore()
-  const [state, dispatch] = useReducer(listReducer, initState)
-  const [hasmore, setHasMore] = useState(false)
   const { fanlist, loading, moreloading } = state
   // 创建socket连接
   const conSocket = (userId, pageIdsStr) => {
@@ -117,7 +118,6 @@ const Chat = () => {
         recipientId: '',
       }
       parsedMsg = { ...parseMsg(data) }
-      console.log(parsedMsg)
       let fan: any = {}
       fan = fans.find(item => {
         return item['fanId'] === parsedMsg.senderId
@@ -139,11 +139,11 @@ const Chat = () => {
             payload: { list: listref.current }
           })
           setHasNew(true)
-          msgAudio()
-          vibrateS()
         } else {
           getfan(params)
         }
+        msgAudio()
+        vibrateS()
 
       } else { // 客服发送消息的时候商家同时可以看到
         let serfan: any = {}
@@ -273,12 +273,15 @@ const Chat = () => {
   const getfan = async (data) => {
     await getFan(data).then(res => {
       const { data } = res
-      data.tagsArr = []
-      data.formatTime = formatChatTime(data.timestamp)
-      data.tagsArr = data.tags === '' || data.tags === null ? [] : data.tagsArr = data.tags.split(',').slice(-2)
-      data.read = 0
-      if (fanSearchKey !== '') return
-      listref.current = [data, ...listref.current]
+      if (data) {
+        data.tagsArr = []
+        data.formatTime = formatChatTime(data.timestamp)
+        data.tagsArr = data.tags === '' || data.tags === null ? [] : data.tagsArr = data.tags.split(',').slice(-2)
+        data.read = 0
+        if (fanSearchKey !== '') return
+        listref.current = [data, ...listref.current]
+        setHasNew(true)
+      }
     })
   }
   const clickFan = (fan) => {
@@ -291,7 +294,6 @@ const Chat = () => {
     });
     const { pageId, fanId, read } = item
     const p = { pageId, fanId, read }
-    console.log(p)
     upRead(p)
     for (let i = 0; i < listref.current.length; i++) {
       if (listref.current[i]['read'] === 0) {
@@ -314,8 +316,7 @@ const Chat = () => {
     <View>
       <Header ref={childref} title='消息' icon='message' />
       <AtActivityIndicator isOpened={loading} mode='center'></AtActivityIndicator>
-      <View className='chatfanlist'>
-
+      <View className={`chatfanlist ${needAddH ? 'needh' : ''}`}>
         {
           fanlist.map((item: Fan, index) => {
             return (

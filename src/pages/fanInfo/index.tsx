@@ -88,7 +88,7 @@ const FanInfo = () => {
           </View>
           <View className='info'>
             <Text className='name'>{fan.fanName}</Text>
-            <Text className='pid'>主页ID：{fan.pageId}</Text>
+            <Text className='pid'>主页：{fan.pageName}</Text>
           </View>
         </View>
         <View className='sec-title'>订单信息：</View>

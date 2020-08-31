@@ -19,7 +19,7 @@ const userAvatar = (props, ref) => {
   
   const avatar = isR
     ? userId !== 0
-      ? `${baseUrl}/sys/user/avatar/${userId}.jpg`
+      ? `${baseUrl}/sys/user/avatar/${userId}.jpg?v=${props.redom}`
       : `${baseUrl}/header/${pageId}.jpg`
     : `${baseUrl}/header/${pageId}/${fanId}.jpg`
 

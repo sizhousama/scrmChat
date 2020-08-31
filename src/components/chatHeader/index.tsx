@@ -75,7 +75,7 @@ const ChatHeader = (props, ref) => {
         </View>
         <View className='left'>
           <Text className='name'>{props.fan.fanName}</Text>
-          <Text className='pageid'>主页ID：{props.fan.pageId}</Text>
+          <Text className='pageid'>主页：{props.fan.pageName}</Text>
         </View>
         <View className='right' onClick={gofaninfo}>
           <Image src={user}></Image>

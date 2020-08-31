@@ -8,14 +8,22 @@ import { useNavStore, useFanStore } from '@/store';
 import "./index.scss";
 
 const Search = () => {
+  const kref = useRef('')
   const [keyword, setKeyWord] = useState('')
   const { navH } = useNavStore()
-  const {setFanSearchKey} = useFanStore()
+  const {fanSearchKey,setFanSearchKey} = useFanStore()
   const style = {
     marginTop: navH + 'px'
   }
+  useEffect(()=>{
+    if(fanSearchKey!==''){
+      setKeyWord(fanSearchKey)
+    }
+  },[])
   const setkey = (v) => {
+    kref.current=v
     setKeyWord(v)
+    
   }
   const onChange = (e) => {
    
@@ -27,8 +35,13 @@ const Search = () => {
     NavTo('../tags/index')
   }
   const search= () =>{
+    if(kref.current===''){
+      setFanSearchKey(' ')
+    }else{
+      setFanSearchKey(kref.current)
+    }
+    
     SwitchTab(`/pages/chat/index`)
-    setFanSearchKey(keyword)
   }
 
   return (

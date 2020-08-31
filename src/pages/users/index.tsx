@@ -8,6 +8,7 @@ import { getFans } from '@/api/fan'
 import { toIndexes } from '@/utils/index'
 import { observer } from 'mobx-react';
 import { useFanStore } from '@/store';
+import {isNeedAddH} from '@/utils/index'
 import { AtActivityIndicator } from 'taro-ui'
 import './index.scss'
 
@@ -19,6 +20,7 @@ interface Us {
 
 const Users = () => {
   const cur: number = 1
+  const needH = isNeedAddH()
   const childref = useRef();
   const {hasNew} = useFanStore()
   const [fans, setFans] = useState([])
@@ -49,7 +51,7 @@ const Users = () => {
     <View>
       <AtActivityIndicator isOpened={loading} mode='center'></AtActivityIndicator>
       <Header ref={childref} title='粉丝' icon='fanlist' />
-      <View className='fanlist'>
+      <View className={`fanlist ${needH?'needh':''}`} >
         {
           fans.map((fl: Us, index) => {
             if (fl.items.length > 0) {
@@ -66,14 +68,14 @@ const Users = () => {
                           ref={childref}
                           name={fan.facebookName}
                           senderId={fan.senderId}
-                          pageId={fan.pageId} />
+                          pageId={fan.pageId}
+                          pageName={fan.pageName} />
                       )
                     })
                   }
                 </View>
               )
             }
-
           })
         }
         <Indexes ref={childref} st={44} />

@@ -3,6 +3,10 @@ import HTTPREQUEST from "../servers/http"
 export const getUserInfo = () => {
   return HTTPREQUEST.get('/scrm-admin/user/info')
 }
+// 获取用户主页信息
+export const getUserPages = (params) => {
+  return HTTPREQUEST.get('/scrm-message/pageConfig/getPageListForProfile',params)
+}
 // 检查密码
 export const checkPass = (data) => {
   return HTTPREQUEST.post('/scrm-admin/user/checkPassWord',data)
@@ -14,9 +18,4 @@ export const rePassOrAva = (data) => {
 // 清除token
 export const removeToken = () => {
   return HTTPREQUEST.get('/scrm-admin/user/removeToken')
-}
-
-// 上传头像
-export const uploadAva = (data) => {
-  return HTTPREQUEST.post('/scrm-seller/utils/uploadFileAvatarByUrl',data)
 }

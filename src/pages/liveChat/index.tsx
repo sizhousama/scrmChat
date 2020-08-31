@@ -14,7 +14,7 @@ import NotifyMsg from '@/components/msgView/notifyMsg';
 import MediaMsg from '@/components/msgView/mediaMsg';
 import ButtonMsg from '@/components/msgView/buttonMsg';
 import { View, Text, ScrollView, Input } from "@tarojs/components";
-import { AtInput, AtIcon, AtActivityIndicator } from 'taro-ui'
+import { AtIcon, AtActivityIndicator } from 'taro-ui'
 import { getSysInfo, genUuid, setInput, chooseImg, getsuffix, getFileType, chooseMsgFile, hideKb } from '@/utils/index'
 import { formatMsgStatus } from '@/utils/filter'
 import { getHistoryMsg } from '@/api/chat'
@@ -68,7 +68,7 @@ const LiveChat = () => {
   const childref = useRef()
   const hisref = useRef<any[]>([])
   const fakeref = useRef<any[]>([])
-  const kbhref = useRef(0)
+  const kbref = useRef(0)
   const cursorref = useRef(0)
   const barHeight = getSysInfo().statusBarHeight
 
@@ -101,9 +101,11 @@ const LiveChat = () => {
     height: `calc(100vh - ${diffHeight}px)`
   })
   const [inputbot, setInputBot] = useState(0)
-  const [keyboardH, setKeyBoardH] = useState(0)
+  const [isFocus,setIsFocus] = useState(false)
+  // const [keyboardH, setKeyBoardH] = useState(0)
 
   useEffect(() => {
+    console.log(fan)
     initSocket()
     historymsg()
     tagMsg()
@@ -151,10 +153,8 @@ const LiveChat = () => {
         }
       })
 
-
       if (!message) {
         if (((isServe && newMsgSenderId === fanPageId) && (newMsgRecipientId === fanSenderId)) || ((!isServe && newMsgSenderId === fanSenderId) && (newMsgRecipientId === fanPageId))) {
-          console.log('当前信息不存在，并且聊天对象正确')
           messageItem.status = 1
           messageItem.uuid = genUuid()
           messageItem.userId = userId
@@ -171,9 +171,9 @@ const LiveChat = () => {
 
     wsio.on('SEND_MSG_RESPONSE', (data) => {
       const { msg = '', status, uuid = '', mid = '' } = data
-      console.log(data)
       // 收到的状态为3的时候，比状态时间戳小的信息全部改为已读
       if (status === 3) {
+        console.log(data)
         const watermark = data.watermark
         fakeref.current.forEach(item => {
           if (item.timestamp <= watermark) {
@@ -182,9 +182,7 @@ const LiveChat = () => {
         })
       } else {
         const sendText = fakeref.current.find(item => item.uuid === uuid)
-        console.log(sendText)
         if (sendText) {
-          // sendText.loading = false
           sendText.status = status
           sendText.errorText = msg
           sendText.mid = mid
@@ -338,8 +336,12 @@ const LiveChat = () => {
     setMessage('')
     wsio.emit('SEND_MSG', socketParams)
     tobottom()
-    // 关闭表情，工具
-    closeModal()
+    setIsFocus(true)
+    // 关闭所有
+    setShowEmoji(false)
+    setShowTools(false)
+    setShowReply(false)
+    setShowOrder(false)
   }
   const sendImg = async () => {
     const url = '/scrm-seller/utils/uploadFile'
@@ -407,7 +409,7 @@ const LiveChat = () => {
     setCurMsg('')
     const h = e.detail.height
     const dif = diffHeight 
-    console.log(dif)
+    kbref.current = h
     setMsgViewSyle({
       height: `calc(100vh - ${dif+h}px)`
     })
@@ -423,12 +425,17 @@ const LiveChat = () => {
         height: `calc(100vh - ${dif+200}px)`
       })
       tobottom()
-    } else {
-      setMsgViewSyle({
-        height: `calc(100vh - ${diffHeight}px)`
-      })
+    }else {
+      if(kbref.current===0){
+        setMsgViewSyle({
+          height: `calc(100vh - ${diffHeight}px)`
+        })
+      }
       tobottom()
     }
+  }
+  const kbChange = (e)=>{
+    kbref.current = e.detail.height
   }
   // 动态组件
   const msgComponent = (item, idx) => {
@@ -485,7 +492,12 @@ const LiveChat = () => {
   }
   // 关闭所有对话框
   const closeModal = () => {
-    setInputBot(0)
+    // if(showemoji||showtools){
+    //   setMsgViewSyle({
+    //     height: `calc(100vh - ${diffHeight}px)`
+    //   })
+    // }
+    hideKb()
     setMsgViewSyle({
       height: `calc(100vh - ${diffHeight}px)`
     })
@@ -497,7 +509,6 @@ const LiveChat = () => {
   // 点击表情icon
   const clickEmojiIcon = () => {
     setCurMsg('')
-    console.log(showemoji)
     !showemoji?
     setMsgViewSyle({
       height: `calc(100vh - ${diffHeight+200}px)`
@@ -554,7 +565,7 @@ const LiveChat = () => {
             return (
               <View className={`history ${msgitem.isServe ? 'reverse' : ''}`} key={msgidx} id={`msg${msgitem.uuid}`}>
                 <View className={`history-content ${msgitem.isServe ? 'reverse' : ''}`}>
-                  <UserAvatar ref={childref} msgItem={msgitem} fan={fan}></UserAvatar>
+                  <UserAvatar ref={childref} msgItem={msgitem} fan={fan} redom={msgitem.uuid}></UserAvatar>
                   {msgComponent(msgitem, msgidx)}
                   {
                     msgitem.isServe ?
@@ -572,7 +583,7 @@ const LiveChat = () => {
             return (
               <View className={`history ${fakeitem.isServe ? 'reverse' : ''}`} key={fakeidx} id={`msg${fakeitem.uuid}`}>
                 <View className={`history-content ${fakeitem.isServe ? 'reverse' : ''}`}>
-                  <UserAvatar ref={childref} msgItem={fakeitem} fan={fan}></UserAvatar>
+                  <UserAvatar ref={childref} msgItem={fakeitem} fan={fan} redom={fakeitem.uuid}></UserAvatar>
                   {msgComponent(fakeitem, fakeidx)}
                   {
                     fakeitem.isServe && fakeitem.status !== -1 ?
@@ -609,6 +620,12 @@ const LiveChat = () => {
           onBlur={msgInputBlur}
           selectionStart={pos}
           selectionEnd={pos}
+          maxlength={2000}
+          confirmType='send'
+          onConfirm={sendMsg}
+          confirmHold={true}
+          holdKeyboard={true}
+          onKeyboardHeightChange={kbChange}
         ></Input>
         {/* 发送按钮 */}
         <View className='searchbtn send' onClick={sendMsg}>

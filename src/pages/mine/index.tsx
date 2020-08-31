@@ -23,6 +23,9 @@ const Mine = () => {
     SetStorageSync('Token','')
     redirectTo('/pages/login/index')  
   }
+  const openPage= ()=>{
+    NavTo('../myPages/index')
+  }
   return (
     <View className='minebody'>
       <View className='topbox'>
@@ -46,10 +49,10 @@ const Mine = () => {
         </View>
       </View>
       <View className='botbox'>
-        <View className='itembox'>
+        <View className='itembox' onClick={openPage}>
           <View className='at-icon at-icon-home'></View>
           <View>已绑定主页：</View>
-          <View className='cont'>{userInfo.pageId}</View>
+          <View className='cont'>点击查看主页信息</View>
         </View>
         <View className='itembox'>
           <View className='at-icon at-icon-mail'></View>
