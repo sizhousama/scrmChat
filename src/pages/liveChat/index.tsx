@@ -5,6 +5,8 @@ import Emoji from '@/components/emoji'
 import Tools from '@/components/chatTools'
 import QuickReply from '@/components/quickReply'
 import ChatOrder from '@/components/chatOrder'
+import ReplyImg from '@/components/replyImg'
+import SendFlow from '@/components/sendFlow'
 // 消息体组件
 import TextMsg from '@/components/msgView/textMsg';
 import ImgMsg from '@/components/msgView/imgMsg';
@@ -15,7 +17,7 @@ import MediaMsg from '@/components/msgView/mediaMsg';
 import ButtonMsg from '@/components/msgView/buttonMsg';
 import { View, Text, ScrollView, Input } from "@tarojs/components";
 import { AtIcon, AtActivityIndicator } from 'taro-ui'
-import { getSysInfo, genUuid, setInput, chooseImg, getsuffix, getFileType, chooseMsgFile, hideKb } from '@/utils/index'
+import { getSysInfo, genUuid, setInput, chooseImg, getsuffix, getFileType, chooseMsgFile, hideKb, isNeedAddH } from '@/utils/index'
 import { formatMsgStatus } from '@/utils/filter'
 import { getHistoryMsg } from '@/api/chat'
 import { getFanInfo } from '@/api/fan'
@@ -24,6 +26,7 @@ import { useFanStore, useWsioStore, useUserStore } from '@/store';
 import { parseMsg } from '@/utils/parse'
 import { vibrateS } from '@/utils/index'
 import "./index.scss";
+import { formatChatTime } from "@/utils/time";
 
 interface RI {
   timestamp?: string | number,
@@ -81,6 +84,7 @@ const LiveChat = () => {
   const [showtools, setShowTools] = useState(false)
   const [showreply, setShowReply] = useState(false)
   const [showorder, setShowOrder] = useState(false)
+  const [showflow, setShowFlow] = useState(false)
   const [showTagMsg, setShowTagMsg] = useState(false)
   const [state, dispatch] = useReducer(listReducer, initState)
   const { historyList, fakes } = state
@@ -88,6 +92,7 @@ const LiveChat = () => {
   const [loading, setLoading] = useState(false) //加载更多...
   const [initLoading, setInitLoading] = useState(false)
   const [hasmore, setHasmore] = useState(false) //是否有更多历史记录
+  const [replyImg, setReplyImg] = useState('')
   const [hisPar, setHisPar] = useState({
     page: 1,
     pageSize: 15,
@@ -95,13 +100,16 @@ const LiveChat = () => {
     senderId: fan.fanId,
     userId: 0
   })//历史记录参数
+  const needH = isNeedAddH()
+  const needh = needH ? 32 : 0
+  const diffHeight = barHeight + 190  //176 + 2 2px为border高度
 
-  const diffHeight = barHeight + 190 //176 + 2 2px为border高度
   const [msgViewStyle, setMsgViewSyle] = useState({
-    height: `calc(100vh - ${diffHeight}px)`
+    height: `calc(100vh - ${diffHeight + needh}px)`
   })
   const [inputbot, setInputBot] = useState(0)
-  const [isFocus,setIsFocus] = useState(false)
+  const [isFocus, setIsFocus] = useState(false)
+  const [foolerpb, setFoolerpb] = useState(needh)
   // const [keyboardH, setKeyBoardH] = useState(0)
 
   useEffect(() => {
@@ -191,6 +199,7 @@ const LiveChat = () => {
       dispatch({ type: 'fakes', payload: { fakes: fakeref.current } })
     })
   }
+  // 获取历史记录
   const historymsg = async () => {
     setInitLoading(true)
     await getHistoryMsg(hisPar).then(res => {
@@ -209,6 +218,7 @@ const LiveChat = () => {
 
         const parsedItem = JSON.parse(item.msg)
         let regroupItem: RI = { ...parseMsg(parsedItem) }
+        console.log(regroupItem)
         regroupItem.userId = userId
         regroupItem.userName = userName
         regroupItem.uuid = genUuid()
@@ -235,12 +245,13 @@ const LiveChat = () => {
       if (!isbreak) {
         hisarr.reverse()
         dispatch({ type: 'his', payload: { his: hisarr } })
-        // setHistory(hisarr.slice())
         tobottom()
-        setInitLoading(false)
       }
+    }).finally(() => {
+      setInitLoading(false)
     })
   }
+  // 获取更多历史记录
   const morehistorymsg = async () => {
     if (!hasmore) {
       return
@@ -280,16 +291,19 @@ const LiveChat = () => {
         }
       })
       dispatch({ type: 'his', payload: { his: hisarr } })
-      setLoading(false)
       const id = `msg${hisref.current[len].uuid}`
       setCurMsg(id)
+    }).finally(() => {
+      setLoading(false)
     })
   }
+  // 滚动到底部
   const tobottom = () => {
-    
     const arr = [...hisref.current, ...fakeref.current]
-    const cur = `msg${arr[arr.length - 1].uuid}`
-    setCurMsg(cur)
+    if (arr.length > 0) {
+      const cur = `msg${arr[arr.length - 1].uuid}`
+      setCurMsg(cur)
+    }
   }
   //发送文本消息
   const sendMsg = () => {
@@ -301,6 +315,10 @@ const LiveChat = () => {
       console.log('提交信息不通过')
       closeModal()
       return
+    }
+    if (replyImg !== '') {
+      sendFileSocket([replyImg])
+      setReplyImg('')
     }
     const { fanId, pageId } = fan
     // 发送参数 当前登录用户userId,聊天对象的senderId,pageId
@@ -327,34 +345,41 @@ const LiveChat = () => {
       status: 0, // 发送状态 0:发送中 1:发送成功 2:已送达 3:已读 -1:发送失败
       errorText: '', // 错误提示信息
       userId: userInfo.userId, // 用来显示假消息头像
-      fake: true
-      // isTimeVisible: (Date.now() - this.lastVisibleTime > 300000) // 是否显示时间戳
+      fake: true,
+      isTimeVisible: hisref.current.length > 0 ? (Date.now() - hisref.current[hisref.current.length - 1].timestamp > 600000) : false // 是否显示时间戳
     }
     fakeref.current = [...fakeref.current, fakeText]
 
     dispatch({ type: 'fakes', payload: { fakes: fakeref.current } })
     setMessage('')
+
     wsio.emit('SEND_MSG', socketParams)
     tobottom()
     setIsFocus(true)
     // 关闭所有
-    setShowEmoji(false)
-    setShowTools(false)
-    setShowReply(false)
-    setShowOrder(false)
+    setTimeout(() => {
+      setShowEmoji(false)
+      setShowTools(false)
+      setShowReply(false)
+      setShowOrder(false)
+      setShowFlow(false)
+    }, 10);
   }
+  // 发送图片
   const sendImg = async () => {
     const url = '/scrm-seller/utils/uploadFile'
     await chooseImg(url, 3).then(res => {
       res ? sendFileSocket(res) : console.log('error')
     })
   }
+  // 发送文件
   const sendFile = async () => {
     const url = '/scrm-seller/utils/uploadRawFile'
     await chooseMsgFile(url, 3).then(res => {
       res ? sendFileSocket(res) : console.log('error')
     })
   }
+  // 发送触发socket
   const sendFileSocket = (list) => {
     const { fanId, pageId } = fan
     list.forEach(item => {
@@ -391,7 +416,7 @@ const LiveChat = () => {
         status: 0, // 发送状态 0:发送中 1:发送成功 2:已送达 3:已读 -1:发送失败
         errorText: '', // 错误提示信息
         userId: userInfo.userId,
-        // isTimeVisible: (Date.now() - this.lastVisibleTime > 300000) // 是否显示时间戳
+        isTimeVisible: (Date.now() - hisref.current[hisref.current.length - 1].timestamp > 600000) // 是否显示时间戳
       }
       fakeref.current = [...fakeref.current, fakeText]
       dispatch({ type: 'fakes', payload: { fakes: fakeref.current } })
@@ -399,7 +424,12 @@ const LiveChat = () => {
       tobottom()
     })
   }
-
+  // 设置scrollview样式
+  const setstyle = (h) => {
+    setMsgViewSyle({
+      height: `calc(100vh - ${h}px)`
+    })
+  }
   // 输入时
   const inputMsg = (e) => {
     setMessage(e.detail.value)
@@ -407,12 +437,11 @@ const LiveChat = () => {
   // 聚焦时
   const msgInputFocus = (e) => {
     setCurMsg('')
+    setFoolerpb(0)
     const h = e.detail.height
-    const dif = diffHeight 
+    const dif = diffHeight
     kbref.current = h
-    setMsgViewSyle({
-      height: `calc(100vh - ${dif+h}px)`
-    })
+    setstyle(dif + h)
     setTimeout(() => {
       tobottom()
     }, 0);
@@ -420,21 +449,20 @@ const LiveChat = () => {
   // 失焦时
   const msgInputBlur = (e) => {
     if (showtools || showemoji) {
+      setFoolerpb(0) //IPX底部bottom
       const dif = diffHeight
-      setMsgViewSyle({
-        height: `calc(100vh - ${dif+200}px)`
-      })
+      setstyle(dif + 200)
       tobottom()
-    }else {
-      if(kbref.current===0){
-        setMsgViewSyle({
-          height: `calc(100vh - ${diffHeight}px)`
-        })
+    } else {
+      if (kbref.current === 0) {
+        setFoolerpb(needh)
+        setstyle(diffHeight + needh)
       }
       tobottom()
     }
   }
-  const kbChange = (e)=>{
+  // 键盘高度改变时
+  const kbChange = (e) => {
     kbref.current = e.detail.height
   }
   // 动态组件
@@ -459,24 +487,52 @@ const LiveChat = () => {
       default: break
     }
   }
+  // 插入标签
   const setemoji = (emoji) => {
     const result = setInput('msgInput', emoji, cursorref.current)
     hideKb()//隐藏键盘
     setMessage(result)//input赋值
   }
+  // 插入快捷回复
   const setReply = (reply) => {
     const text = reply.content
     const result = setInput('msgInput', text, cursorref.current)
+    reply.imgUrl ? setReplyImg(reply.imgUrl) : ''
     setMessage(result)
     hideKb()
-    setInputBot(0)//input距离底部高度
-    setShowReply(false)//input赋值
-    setShowTools(false)
+    setShowReply(false)
+    setTimeout(() => {
+      restPage()
+    }, 100);
+  }
+  //发流程
+  const sendFlow = (flow) => {
+    const socketParams = {
+      uuid: genUuid(),
+      userId: userInfo.userId,
+      userName: userInfo.username,
+      senderId: fan.fanId,
+      pageId: fan.pageId,
+      msg: message,
+      flowId: flow.id
+    }
+    wsio.emit('SEND_MSG', socketParams)
+    hideKb()
+    setShowFlow(false)
+    setTimeout(() => {
+      restPage()
+    }, 100);
+  }
+  //关闭快捷回复图片
+  const closeReplyImg = () => {
+    setReplyImg('')
+    setTimeout(() => {
+      restPage()
+    }, 100);
   }
   // 选择工具
   const clickTool = (id) => {
-    setInputBot(0)
-    setShowTools(false)
+    restPage()
     if (id === 0) {
       setShowReply(true)
     }
@@ -489,35 +545,36 @@ const LiveChat = () => {
     if (id === 3) {
       setShowOrder(true)
     }
+    if (id === 4) {
+      setShowFlow(true)
+    }
+  }
+  // 重置页面
+  const restPage = () => {
+    setFoolerpb(needh)
+    setstyle(diffHeight + needh)
+    setShowEmoji(false)
+    setShowTools(false)
   }
   // 关闭所有对话框
   const closeModal = () => {
-    // if(showemoji||showtools){
-    //   setMsgViewSyle({
-    //     height: `calc(100vh - ${diffHeight}px)`
-    //   })
-    // }
     hideKb()
-    setMsgViewSyle({
-      height: `calc(100vh - ${diffHeight}px)`
-    })
-    setShowEmoji(false)
-    setShowTools(false)
+    restPage()
     setShowReply(false)
     setShowOrder(false)
+    setShowFlow(false)
   }
   // 点击表情icon
   const clickEmojiIcon = () => {
+    setFoolerpb(0)
     setCurMsg('')
-    !showemoji?
-    setMsgViewSyle({
-      height: `calc(100vh - ${diffHeight+200}px)`
-    }):'' 
+    !showemoji ? setstyle(diffHeight + 200) : ''
     hideKb()
     setShowEmoji(true)
     setShowTools(false)
     setShowReply(false)
     setShowOrder(false)
+    setShowFlow(false)
     setTimeout(() => {
       tobottom()
     }, 0);
@@ -525,16 +582,15 @@ const LiveChat = () => {
   }
   // 点击工具icon
   const clickToolsiIcon = () => {
+    setFoolerpb(0)
     setCurMsg('')
-    !showtools?
-    setMsgViewSyle({
-      height: `calc(100vh - ${diffHeight+200}px)`
-    }):''
+    !showtools ? setstyle(diffHeight + 200) : ''
     hideKb()
     setShowTools(true)
     setShowEmoji(false)
     setShowReply(false)
     setShowOrder(false)
+    setShowFlow(false)
     setTimeout(() => {
       tobottom()
     }, 0);
@@ -563,15 +619,22 @@ const LiveChat = () => {
         {
           historyList.map((msgitem, msgidx) => {
             return (
-              <View className={`history ${msgitem.isServe ? 'reverse' : ''}`} key={msgidx} id={`msg${msgitem.uuid}`}>
-                <View className={`history-content ${msgitem.isServe ? 'reverse' : ''}`}>
-                  <UserAvatar ref={childref} msgItem={msgitem} fan={fan} redom={msgitem.uuid}></UserAvatar>
-                  {msgComponent(msgitem, msgidx)}
-                  {
-                    msgitem.isServe ?
-                      <Text className='msgstatus'>{formatMsgStatus(msgitem.status)}</Text>
-                      : ''
-                  }
+              <View className='msgitembox' key={msgidx} id={`msg${msgitem.uuid}`}>
+                {
+                  msgidx > 0 && (msgitem.timestamp - historyList[msgidx - 1].timestamp) >= 600000 ?
+                    <View className='timeline'>{formatChatTime(msgitem.timestamp)}</View>
+                    : ''
+                }
+                <View className={`history ${msgitem.isServe ? 'reverse' : ''}`} >
+                  <View className={`history-content ${msgitem.isServe ? 'reverse' : ''}`}>
+                    <UserAvatar ref={childref} msgItem={msgitem} fan={fan} redom={msgitem.uuid}></UserAvatar>
+                    {msgComponent(msgitem, msgidx)}
+                    {
+                      msgitem.isServe ?
+                        <Text className='msgstatus'>{formatMsgStatus(msgitem.status)}</Text>
+                        : ''
+                    }
+                  </View>
                 </View>
               </View>
             )
@@ -581,15 +644,22 @@ const LiveChat = () => {
         {
           fakes.map((fakeitem, fakeidx) => {
             return (
-              <View className={`history ${fakeitem.isServe ? 'reverse' : ''}`} key={fakeidx} id={`msg${fakeitem.uuid}`}>
-                <View className={`history-content ${fakeitem.isServe ? 'reverse' : ''}`}>
-                  <UserAvatar ref={childref} msgItem={fakeitem} fan={fan} redom={fakeitem.uuid}></UserAvatar>
-                  {msgComponent(fakeitem, fakeidx)}
-                  {
-                    fakeitem.isServe && fakeitem.status !== -1 ?
-                      <Text className='msgstatus'>{formatMsgStatus(fakeitem.status)}</Text>
-                      : ''
-                  }
+              <View className='msgitembox' key={fakeidx} id={`msg${fakeitem.uuid}`}>
+                {
+                  fakeitem.isTimeVisible ?
+                    <View className='timeline'>{formatChatTime(fakeitem.timestamp)}</View>
+                    : ''
+                }
+                <View className={`history ${fakeitem.isServe ? 'reverse' : ''}`} >
+                  <View className={`history-content ${fakeitem.isServe ? 'reverse' : ''}`}>
+                    <UserAvatar ref={childref} msgItem={fakeitem} fan={fan} redom={fakeitem.uuid}></UserAvatar>
+                    {msgComponent(fakeitem, fakeidx)}
+                    {
+                      fakeitem.isServe && fakeitem.status !== -1 ?
+                        <Text className='msgstatus'>{formatMsgStatus(fakeitem.status)}</Text>
+                        : ''
+                    }
+                  </View>
                 </View>
               </View>
             )
@@ -597,7 +667,7 @@ const LiveChat = () => {
         }
       </ScrollView>
 
-      <View className={`fooler`} style={{ height: '54px', bottom: inputbot + 'px' }}>
+      <View className={`fooler`} style={{ height: '54px', bottom: inputbot + 'px', paddingBottom: foolerpb + 'px' }}>
         {/* 左边工具栏 */}
         <View className='left'>
           <View className='emoj' onClick={clickEmojiIcon}>
@@ -607,6 +677,8 @@ const LiveChat = () => {
             <AtIcon prefixClass='icon' value='add-circle' color='#666' size='28' className='alicon'></AtIcon>
             {showreply ? <QuickReply ref={childref} pageId={fan.pageId} handleClick={setReply}></QuickReply> : ''}
             {showorder ? <ChatOrder ref={childref} ></ChatOrder> : ''}
+            {showflow ? <SendFlow ref={childref} handleClick={sendFlow}></SendFlow> : ''}
+            {replyImg !== '' ? <ReplyImg ref={childref} url={replyImg} handleClick={closeReplyImg}></ReplyImg> : ''}
           </View>
         </View>
         {/* 输入发送消息 */}

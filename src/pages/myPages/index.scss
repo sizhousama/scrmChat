@@ -63,4 +63,8 @@
     height: auto;
     border-bottom:2px solid #eee;
   }
+  .accthead{
+    @extend .pagebox;
+    font-weight: bold;
+  }
 }

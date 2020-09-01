@@ -43,3 +43,18 @@
 .needH{
   padding-bottom:64px;
 }
+
+
+// flex
+.fx{
+  display: flex;
+}
+.fx1{
+  flex:1;
+  display: flex;
+  align-items:center;
+}
+.fx2{
+  @extend .fx1;
+  flex:2;
+}

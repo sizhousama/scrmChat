@@ -246,6 +246,7 @@ export function parseFallBack(originMsg) {
   } = originMsg
   msgItem.type = 'text'
   msgItem.text = text
+  msgItem.otherType = 'link'
 }
 /**
  * @description 处理 generic 中出现的 notify信息

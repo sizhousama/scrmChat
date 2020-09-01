@@ -17,6 +17,7 @@ export const Toast = (title, icon, dur) => {
     duration: dur
   })
 }
+
 // 导航
 export const NavTo = (url) => {
   Taro.navigateTo({

@@ -5,17 +5,24 @@
   &.needh{
     margin-bottom:214px;
   }
-}
-.iarr{
-  width:100%;
-  .ititle{
+  .more{
     width:100%;
-    height:40px;
-    font-size: 38px;
-    line-height: 40px;
-    font-weight: bold;
-  }
-  .ititle .text{
-    margin-left:60px
+    height: 60px;
+    line-height: 60px;
+    text-align: center;
+    position: relative;
   }
 }
+// .iarr{
+//   width:100%;
+//   .ititle{
+//     width:100%;
+//     height:40px;
+//     font-size: 38px;
+//     line-height: 40px;
+//     font-weight: bold;
+//   }
+//   .ititle .text{
+//     margin-left:60px
+//   }
+// }

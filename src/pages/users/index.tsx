@@ -1,84 +1,101 @@
-import React, { useRef, useEffect, useState } from 'react'
-import { View,Text } from '@tarojs/components'
+import React, { useRef, useEffect, useState, useReducer } from 'react'
+import { View, Text } from '@tarojs/components'
 import TabBar from "../tabbar";
 import Header from "@/components/header";
 import Fan from "@/components/fan";
-import Indexes from "@/components/indexes";
 import { getFans } from '@/api/fan'
-import { toIndexes } from '@/utils/index'
 import { observer } from 'mobx-react';
 import { useFanStore } from '@/store';
-import {isNeedAddH} from '@/utils/index'
+import { isNeedAddH } from '@/utils/index'
 import { AtActivityIndicator } from 'taro-ui'
+import { useReachBottom } from "@tarojs/taro";
 import './index.scss'
 
-interface Us {
-  key:string,
-  title: string,
-  items: any[]
-}
 
+const initState = {
+  fans: [],
+}
+const stateReducer = (state, action) => {
+  switch (action.type) {
+    case 'list':
+      return {
+        ...state,
+        fans: action.payload.list
+      }
+    default:
+      return state
+  }
+}
 const Users = () => {
   const cur: number = 1
   const needH = isNeedAddH()
   const childref = useRef();
-  const {hasNew} = useFanStore()
-  const [fans, setFans] = useState([])
-  const [loading,setLoading] = useState(false)
-  const [listParams, setListParams] = useState({
+  const { hasNew } = useFanStore()
+  const listref = useRef<any[]>([])
+  const [state, dispatch] = useReducer(stateReducer, initState)
+  const [loading, setLoading] = useState(false)
+  const [moreloading, setMoredLoading] = useState(false)
+  const [hasmore,setHasMore] = useState(false)
+  const parmref = useRef({
     current: 1,
-    size: 999999,
+    size: 10,
     userStatus: '',
     tags: '',
     facebookName: '',
     pageId: '',
     fanGrades: 0
   })
+  const { fans } = state
+
   useEffect(() => {
     getfans()
   }, [])
   const getfans = async () => {
     setLoading(true)
-    await getFans(listParams).then(res => {
+    await getFans(parmref.current).then(res => {
       const { data } = res
-      const arr = toIndexes(data.records, 'facebookName')
-      setFans(arr)
-    }).finally(()=>{
+      data.total>parmref.current.size?setHasMore(true):setHasMore(false)
+      listref.current = data.records
+      dispatch({ type: 'list', payload: { list: listref.current } })
+    }).finally(() => {
       setLoading(false)
     })
   }
+  const getmorefans = async () => {
+    setMoredLoading(true)
+    await getFans(parmref.current).then(res => {
+      const { data } = res
+      listref.current = [...listref.current,...data.records] 
+      dispatch({ type: 'list', payload: { list: listref.current } })
+      data.total>listref.current.length?setHasMore(true):setHasMore(false)
+    }).finally(() => {
+      setMoredLoading(false)
+    })
+  }
+  useReachBottom(() => {
+    if (hasmore) {
+      parmref.current.current++
+      getmorefans()
+    }
+  })
   return (
     <View>
       <AtActivityIndicator isOpened={loading} mode='center'></AtActivityIndicator>
       <Header ref={childref} title='粉丝' icon='fanlist' />
-      <View className={`fanlist ${needH?'needh':''}`} >
+      <View className={`fanlist ${needH ? 'needh' : ''}`} >
         {
-          fans.map((fl: Us, index) => {
-            if (fl.items.length > 0) {
-              return (
-                <View className='iarr' key={index}>
-                  <View id={fl.key} className='ititle'>
-                    <Text className='text'>{fl.title}</Text>
-                  </View>
-                  {
-                    fl.items.map((fan, i) => {
-                      return (
-                        <Fan
-                          key={`f_${i}`}
-                          ref={childref}
-                          name={fan.facebookName}
-                          senderId={fan.senderId}
-                          pageId={fan.pageId}
-                          pageName={fan.pageName} />
-                      )
-                    })
-                  }
-                </View>
-              )
-            }
+          fans.map((fan: any, index) => {
+            return (
+              <Fan key={index} ref={childref} fan={fan} />
+            )
           })
         }
-        <Indexes ref={childref} st={44} />
+        {
+          moreloading?
+          <View className='more'>
+            <AtActivityIndicator isOpened={moreloading} mode='center' color='#999'></AtActivityIndicator>
+          </View>:''
+        }
       </View>
       <TabBar ref={childref} cur={cur} has={hasNew} />
     </View>

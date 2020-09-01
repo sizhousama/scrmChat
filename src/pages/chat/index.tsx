@@ -89,7 +89,7 @@ const Chat = () => {
     getinfo()
   }, [])
   const search = () => {
-    fanSearchKey !== '' ? paramsref.current.fanName = fanSearchKey : ''
+    fanSearchKey !== '' ? paramsref.current.fanName = fanSearchKey : paramsref.current.fanName=''
   }
   const initWebSocket = (socket) => {
     socket.on('connect', () => {
@@ -175,6 +175,7 @@ const Chat = () => {
           return item['fanId'] === data.senderId
         })
         fan['read'] = data.read
+        
       } else {
         const { senderId, tags } = data
         let fan: any = {}
@@ -190,6 +191,10 @@ const Chat = () => {
           }
         }
       }
+      const nohasnew = listref.current.every(item => {
+        return item.read === 1
+      })
+      if(nohasnew){setHasNew(false)}
       dispatch({
         type: 'list',
         payload: { list: listref.current }

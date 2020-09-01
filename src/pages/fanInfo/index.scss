@@ -37,12 +37,33 @@
       .name {
         font-size: 36px;
         color: #101010;
-        margin-bottom: 20px;
+        display: flex;
+        margin-bottom: 5px;
+
+        .icon {
+          font-size: 30px;
+          display: flex;
+          align-items: center;
+          margin-left: 20px;
+
+          &.icon-male {
+            color: #0084ff
+          }
+
+          &.icon-female {
+            color: #f2a7c0
+          }
+        }
       }
 
       .pid {
         font-size: 24px;
         color: #bbb;
+        margin-bottom: 5px
+      }
+
+      .adid {
+        @extend .pid;
       }
     }
   }
@@ -53,6 +74,7 @@
   padding: 10px 0;
   height: auto;
   transition: height .3s ease;
+
   .order {
     width: 630px;
     margin: 0 auto;
@@ -91,7 +113,7 @@
         justify-content: flex-end;
       }
 
-      
+
     }
 
     .bot {
@@ -117,19 +139,22 @@
       }
     }
   }
+
   &.seemore {
     height: 450px;
     overflow-y: hidden;
   }
 }
-.checkmore{
-  width:100%;
+
+.checkmore {
+  width: 100%;
   text-align: center;
   font-size: 28px;
-  color:#bbb;
+  color: #bbb;
   height: 40px;
   line-height: 40px;
 }
+
 .taglist {
   width: 100%;
   display: flex;

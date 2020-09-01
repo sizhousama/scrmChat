@@ -12,3 +12,7 @@ export const getServices = () => {
 export const getReplys = (params) => {
   return HTTPREQUEST.get('/scrm-automatic/msgResponseMutation/queryMsgResponseMutationByPage', params)
 }
+// 流程
+export const getFlows = (params) => {
+  return HTTPREQUEST.get('/scrm-automatic/sop2/querySop2ByPage', params)
+}

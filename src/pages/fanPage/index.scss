@@ -1,0 +1,74 @@
+page {
+  background: #f1f1f1;
+}
+
+.faninfo {
+  display: flex;
+  height: 180px;
+  box-sizing: border-box;
+  padding: 20px 60px;
+  background: #fff;
+
+  .avatar {
+    width: 120px;
+    height: 120px;
+    margin-right: 20px;
+
+    image {
+      width: 100%;
+      height: 100%;
+      border-radius: 5px;
+    }
+  }
+
+  .info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+
+    .name {
+      font-size: 36px;
+      color: #101010;
+      display: flex;
+      margin-bottom:5px;
+      .icon {
+        font-size: 30px;
+        display: flex;
+        align-items: center;
+        margin-left: 20px;
+        &.icon-male{color:#0084ff}
+        &.icon-female{color:#f2a7c0}
+      }
+    }
+
+    .pid {
+      font-size: 24px;
+      color: #bbb;
+      margin-bottom: 5px
+    }
+
+    .phone {
+      @extend .pid;
+    }
+  }
+}
+
+.fanbody {
+  .btn {
+    width: 100%;
+    height: 88px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: #7685FF;
+    margin-top: 20px;
+    font-weight: bold;
+
+    .icon {
+      font-size: 34px;
+      margin-right: 10px;
+    }
+  }
+}

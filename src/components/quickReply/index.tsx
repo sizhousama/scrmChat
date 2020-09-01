@@ -71,7 +71,11 @@ const QuickReply = (props, ref) => {
                     <Text className='title'>{item.title}</Text>
                     <Text className='desc twoline'>{item.content}</Text>
                   </View>
-                  <View className='opt'></View>
+                  <View className='opt'>
+                    {
+                      item.imgUrl?<Image src={item.imgUrl}></Image>:''
+                    } 
+                  </View>
                 </View>
               )
             })

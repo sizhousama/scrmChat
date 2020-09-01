@@ -79,11 +79,14 @@ const MyPages = () => {
                 <View className='accordion'>
                   <View className='left'>{item.facebookEmail}</View>
                   <View className='mid'>
-                    <Text>剩余<Text className={`stime ${item.isovertime?'warn':''}`}>{item.overday}</Text>天</Text>
                     {
-                      item.expireTime-item.createTime>0?
-                      <Text>{item.endDate}</Text>:
-                      <Text style={{color:'red'}}>已过期</Text>
+                      item.expireTime - new Date().getTime() > 0 ?
+                        <Text>剩余<Text className={`stime ${item.isovertime ? 'warn' : ''}`}>{item.overday}</Text>天</Text> : ''
+                    }
+                    {
+                      item.expireTime - new Date().getTime() > 0 ?
+                        <Text>{item.endDate}</Text> :
+                        <Text style={{ color: 'red' }}>授权已过期</Text>
                     }
                   </View>
                   <View className='right'>
@@ -94,16 +97,25 @@ const MyPages = () => {
                     }
                   </View>
                 </View>
-                <View className={`accbody ${item.open?'opend':''}`}>
+                <View className={`accbody ${item.open ? 'opend' : ''}`}>
+                  <View className='fx accthead'>
+                    <View className='fx1'>主页Id</View>
+                    <View className='fx1'>主页名称</View>
+                    <View className='fx1'>国家</View>
+                  </View>
                   {
-                    item.pageConfigs?
-                    item.pageConfigs.map((p,i)=>{
-                      return(
-                        <View key={i} className='pagebox'>
-                        {p.pageId} / <Text className='pname break'>{p.pageName}</Text>
-                        </View>
-                      )
-                    }):''
+                    item.pageConfigs ?
+                      item.pageConfigs.map((p, i) => {
+                        return (
+                          <View key={i} className='pagebox'>
+                            <View className='fx1'>{p.pageId}</View>
+                            <View className='fx1'>
+                              <Text className='pname break'>{p.pageName}</Text>
+                            </View>
+                            <View className='fx1'>{p.country}</View>
+                          </View>
+                        )
+                      }) : ''
                   }
                 </View>
               </View>

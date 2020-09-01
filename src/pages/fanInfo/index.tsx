@@ -6,7 +6,7 @@ import { useNavStore, useFanStore } from '@/store';
 import { previewImg } from '@/utils/index'
 import { typeCashOut, typeOrderS } from '@/utils/filter'
 import { AtActivityIndicator } from 'taro-ui'
-import { fanOrders, fanTags } from '@/api/fan'
+import { fanOrders, fanTags, getFanInfo } from '@/api/fan'
 import "./index.scss";
 import { imgUrl } from "@/servers/baseUrl";
 const initState = {
@@ -32,20 +32,29 @@ const stateReducer = (state, action) => {
 const FanInfo = () => {
   const childref = useRef();
   const { navH } = useNavStore();
-  const { fan } = useFanStore()
+  const { fan, setFan } = useFanStore()
   const [state, dispatch] = useReducer(stateReducer, initState)
   const [orderloading, setOrderLoading] = useState(false)
   const [tagloading, setTagLoading] = useState(false)
-  const [more,setMore] = useState(false)
+  const [more, setMore] = useState(false)
+  const [gender, setGen] = useState('')
   const { fanOrderList, fanTagsList } = state
   const avatar = `${imgUrl()}/header/${fan.pageId}/${fan.fanId}.jpg`
   const style = {
     marginTop: navH + 'px'
   }
   useEffect(() => {
+    getfandetail()
     getorders()
     gettags()
   }, [])
+  const getfandetail = async () => {
+    const { pageId, fanId } = fan
+    const p = { pageId, fanId }
+    await getFanInfo(p).then(res => {
+      setGen(res.data.gender)
+    })
+  }
   const getorders = async () => {
     setOrderLoading(true)
     await fanOrders({ senderId: fan.senderId }).then(res => {
@@ -63,8 +72,8 @@ const FanInfo = () => {
     }
     await fanTags(p).then(res => {
       const { data } = res
-      !data?dispatch({ type: 'tags', payload: { tags: [] } })
-      :dispatch({ type: 'tags', payload: { tags: data } })
+      !data ? dispatch({ type: 'tags', payload: { tags: [] } })
+        : dispatch({ type: 'tags', payload: { tags: data } })
     }).finally(() => {
       setTagLoading(false)
     })
@@ -72,8 +81,7 @@ const FanInfo = () => {
   const viewHead = () => {
     previewImg(avatar)
   }
-
-  const seemore = ()=>{
+  const seemore = () => {
     setMore(!more)
   }
 
@@ -87,12 +95,20 @@ const FanInfo = () => {
             <Image src={avatar} onClick={viewHead}></Image>
           </View>
           <View className='info'>
-            <Text className='name'>{fan.fanName}</Text>
+            <View className='name'>
+              {fan.fanName}
+              {
+                gender === 'male' ?
+                  <View className='icon icon-male'></View>
+                  : <View className='icon icon-female'></View>
+              }
+            </View>
             <Text className='pid'>主页：{fan.pageName}</Text>
+            <Text className='adid'>adId：{fan.adId}</Text>
           </View>
         </View>
         <View className='sec-title'>订单信息：</View>
-        <View className={`orderlist ${!more&&fanOrderList.length>3?'seemore':''}`}>
+        <View className={`orderlist ${!more && fanOrderList.length > 3 ? 'seemore' : ''}`}>
           {
             fanOrderList.length > 0 ?
               fanOrderList.map((item, index) => {
@@ -127,9 +143,9 @@ const FanInfo = () => {
           }
         </View>
         {
-          fanOrderList.length>3?
-          <View className='checkmore' onClick={seemore}>{more?'收起':'查看更多'}</View>
-          :''
+          fanOrderList.length > 3 ?
+            <View className='checkmore' onClick={seemore}>{more ? '收起' : '查看更多'}</View>
+            : ''
         }
         <View className='sec-title'>标签：</View>
         <View className='taglist'>

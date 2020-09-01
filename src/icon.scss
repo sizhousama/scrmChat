@@ -15,6 +15,30 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.icon-flow:before {
+  content: "\e71a";
+}
+
+.icon-mail:before {
+  content: "\e668";
+}
+
+.icon-card:before {
+  content: "\e6b4";
+}
+
+.icon-female:before {
+  content: "\e7a6";
+}
+
+.icon-male:before {
+  content: "\e600";
+}
+
+.icon-msg:before {
+  content: "\e6f0";
+}
+
 .icon-add-circle:before {
   content: "\e664";
 }

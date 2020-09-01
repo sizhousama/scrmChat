@@ -23,7 +23,6 @@ const Search = () => {
   const setkey = (v) => {
     kref.current=v
     setKeyWord(v)
-    
   }
   const onChange = (e) => {
    
@@ -35,12 +34,7 @@ const Search = () => {
     NavTo('../tags/index')
   }
   const search= () =>{
-    if(kref.current===''){
-      setFanSearchKey(' ')
-    }else{
-      setFanSearchKey(kref.current)
-    }
-    
+    setFanSearchKey(kref.current)
     SwitchTab(`/pages/chat/index`)
   }
 

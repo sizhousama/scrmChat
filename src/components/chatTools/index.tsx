@@ -19,6 +19,10 @@ const Tools = (props, ref) => {
     {
       icon: 'at-icon at-icon-file-new',
       name: '订单'
+    },
+    {
+      icon: 'icon icon-flow',
+      name: '流程'
     }
   ]
   const clicktool = (e) => {
