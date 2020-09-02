@@ -215,10 +215,8 @@ const LiveChat = () => {
           return
         }
         const { delivery, read, userName, userId } = item
-
         const parsedItem = JSON.parse(item.msg)
         let regroupItem: RI = { ...parseMsg(parsedItem) }
-        console.log(regroupItem)
         regroupItem.userId = userId
         regroupItem.userName = userName
         regroupItem.uuid = genUuid()
