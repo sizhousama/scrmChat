@@ -13,7 +13,7 @@ const FanInfo = () => {
   const { fan,setFan } = useFanStore()
   const avatar = `${imgUrl()}/header/${fan.pageId}/${fan.senderId}.jpg`
   const style = {
-    marginTop: navH + 'px'
+    marginTop: navH - 2+ 'px'
   }
   useEffect(() => {
     console.log(fan)

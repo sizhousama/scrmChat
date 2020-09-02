@@ -11,6 +11,12 @@ interface Fan {
   gender:string,
   adId:string
 }
+interface SF {
+  chatKey:string,
+  chatPage:string,
+  fanKey:string,
+  fanPage:string
+}
 const fan = {
   pageId:'',
   senderId:'',
@@ -22,24 +28,44 @@ const fan = {
   gender:'',
   adId:''
 }
+const sform = {
+  chatKey:'',
+  chatPage:'',
+  fanKey:'',
+  fanPage:''
+}
+
 
 export class FanStore {
   @observable fan:Fan = fan
-  @observable pageIds:string = ''
+  @observable pages:any[] = []
   @observable hasNew = false
-  @observable fanSearchKey = ''
-
+  // 搜索key
+  @observable searchForm:SF = sform
+  @observable searchFrom =  ''
   @action.bound setFan(data) {
     this.fan = data;
   }
-  @action.bound setPageIds(data) {
-    this.pageIds = data;
+  @action.bound setPages(data) {
+    this.pages = data;
   }
   @action.bound setHasNew(data) {
     this.hasNew = data;
   }
-  @action.bound setFanSearchKey(data) {
-    this.fanSearchKey = data;
+  @action.bound setSearchFrom(data) {
+    this.searchFrom = data;
+  }
+  @action.bound setSFchatKey(data) {
+    this.searchForm.chatKey = data;
+  }
+  @action.bound setSFchatPage(data) {
+    this.searchForm.chatPage = data;
+  }
+  @action.bound setSFfanKey(data) {
+    this.searchForm.fanKey = data;
+  }
+  @action.bound setSFfanPage(data) {
+    this.searchForm.fanPage = data;
   }
 }
 

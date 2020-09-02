@@ -1,15 +1,18 @@
 import React, { useEffect, useRef } from 'react'
 import { View, Image, Text } from '@tarojs/components'
 import {NavTo} from '@/utils/index'
-import './index.scss'
+import { observer } from 'mobx-react';
+import { useFanStore } from '@/store';
 import { useState, forwardRef } from 'react'
 import message from '@/assets/images/message.png'
 import fans from '@/assets/images/happy.png'
-
+import './index.scss'
 const Header = (props, ref) => {
   // const childref = useRef()
+  const {setSearchFrom} = useFanStore()
   const navto = ()=>{
-    NavTo('/pages/search/index')
+    setSearchFrom(props.icon)
+    NavTo(`/pages/search/index`)
   }
   return (
     <View className='header'>
@@ -24,4 +27,4 @@ const Header = (props, ref) => {
   )
 }
 
-export default forwardRef(Header)
+export default observer(forwardRef(Header))

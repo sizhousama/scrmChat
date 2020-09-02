@@ -20,12 +20,16 @@ const userinfo = {
 }
 export class UserStore {
   @observable userInfo:UI = userinfo
+  @observable role = null
 
   @action.bound setAvatar(url) {
     this.userInfo.avatar = url;
   }
   @action.bound setUserInfo(data) {
     this.userInfo = data;
+  }
+  @action.bound setRole(data) {
+    this.role = data;
   }
 }
 

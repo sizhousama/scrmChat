@@ -11,10 +11,10 @@ import { observer } from 'mobx-react';
 import { parseMsg, judgeType, judgeMyType } from '@/utils/parse'
 import { useFanStore, useUserStore, useWsioStore } from '@/store';
 import { socketUrl } from '@/servers/baseUrl'
-import { msgAudio, vibrateS, isNeedAddH } from '@/utils/index'
+import { msgAudio, vibrateS, isNeedAddH, SetStorageSync, redirectTo } from '@/utils/index'
 import io from 'socket.io-mp-client'
 import "./index.scss";
-import { useDidShow, useReachBottom } from "@tarojs/taro";
+import Taro, { useDidShow, useReachBottom, } from "@tarojs/taro";
 interface Fan {
   fanId: string,
   pageId: string,
@@ -59,19 +59,21 @@ const Chat = () => {
   const cur: number = 0
   const childref = useRef();
   const listref = useRef<any[]>([])
-  const paramsref = useRef({
-    page: 1,
-    pageSize: 10,
-    fanName: ''
-  })
   const needAddH = isNeedAddH()
   const [state, dispatch] = useReducer(listReducer, initState)
   const [hasmore, setHasMore] = useState(false)
   // store
   const { setWsio } = useWsioStore()
-  const { setPageIds, hasNew, setHasNew, fanSearchKey } = useFanStore()
-  const { setUserInfo } = useUserStore()
+  const { setPages, hasNew, setHasNew, searchForm } = useFanStore()
+  const { userInfo, setUserInfo, role, setRole } = useUserStore()
   const { fanlist, loading, moreloading } = state
+  // 请求参数
+  const paramsref = useRef({
+    page: 1,
+    pageSize: 10,
+    fanName: '',
+    pageIds:''
+  })
   // 创建socket连接
   const conSocket = (userId, pageIdsStr) => {
     const query = `userId=${userId}&pageIds=${pageIdsStr}`
@@ -79,17 +81,15 @@ const Chat = () => {
     const socket = io(surl + query)
     setWsio(socket)
     initWebSocket(socket)
-    console.log(socket)
   }
   useDidShow(() => {
+    role === null?getinfo():''
     search()
     getList()
   })
-  useEffect(() => {
-    getinfo()
-  }, [])
   const search = () => {
-    fanSearchKey !== '' ? paramsref.current.fanName = fanSearchKey : paramsref.current.fanName=''
+    paramsref.current.fanName = searchForm.chatKey
+    paramsref.current.pageIds = searchForm.chatPage
   }
   const initWebSocket = (socket) => {
     socket.on('connect', () => {
@@ -175,7 +175,7 @@ const Chat = () => {
           return item['fanId'] === data.senderId
         })
         fan['read'] = data.read
-        
+
       } else {
         const { senderId, tags } = data
         let fan: any = {}
@@ -194,7 +194,7 @@ const Chat = () => {
       const nohasnew = listref.current.every(item => {
         return item.read === 1
       })
-      if(nohasnew){setHasNew(false)}
+      if (nohasnew) { setHasNew(false) }
       dispatch({
         type: 'list',
         payload: { list: listref.current }
@@ -205,8 +205,23 @@ const Chat = () => {
   const getinfo = async () => {
     await getUserInfo().then(res => {
       const { data } = res
-      setUserInfo(data.sysUser)
-      getpage(data.sysUser.userId)
+      if (data.role === 7) {
+        Taro.showModal({
+          title: '提示',
+          content: '该账号暂无浏览权限！',
+          showCancel: false,
+          success: function (res) {
+            if (res.confirm) {
+              SetStorageSync('Token', '')
+              redirectTo('/pages/login/index')
+            }
+          }
+        })
+      } else {
+        setUserInfo(data.sysUser)
+        setRole(data.role)
+        getpage(data.sysUser.userId)
+      }
     })
   }
   // 主页
@@ -217,7 +232,7 @@ const Chat = () => {
         console.log('当前用户没有主页！')
       } else {
         const pageIdsStr = data.map(item => item.pageId).join(',')
-        setPageIds(pageIdsStr)
+        setPages(data)
         conSocket(userId, pageIdsStr)
       }
     })

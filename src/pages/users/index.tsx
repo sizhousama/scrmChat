@@ -8,9 +8,8 @@ import { observer } from 'mobx-react';
 import { useFanStore } from '@/store';
 import { isNeedAddH } from '@/utils/index'
 import { AtActivityIndicator } from 'taro-ui'
-import { useReachBottom } from "@tarojs/taro";
+import { useReachBottom,useDidShow } from "@tarojs/taro";
 import './index.scss'
-
 
 const initState = {
   fans: [],
@@ -30,7 +29,7 @@ const Users = () => {
   const cur: number = 1
   const needH = isNeedAddH()
   const childref = useRef();
-  const { hasNew } = useFanStore()
+  const { hasNew,searchForm} = useFanStore()
   const listref = useRef<any[]>([])
   const [state, dispatch] = useReducer(stateReducer, initState)
   const [loading, setLoading] = useState(false)
@@ -46,10 +45,15 @@ const Users = () => {
     fanGrades: 0
   })
   const { fans } = state
-
-  useEffect(() => {
+  
+  useDidShow(() => {
+    search()
     getfans()
-  }, [])
+  })
+  const search = () => {
+    parmref.current.facebookName = searchForm.fanKey
+    parmref.current.pageId = searchForm.fanPage
+  }
   const getfans = async () => {
     setLoading(true)
     await getFans(parmref.current).then(res => {
