@@ -4,7 +4,6 @@ import UserAvatar from '@/components/userAvatar';
 import Emoji from '@/components/emoji'
 import Tools from '@/components/chatTools'
 import QuickReply from '@/components/quickReply'
-import ChatOrder from '@/components/chatOrder'
 import ReplyImg from '@/components/replyImg'
 import SendFlow from '@/components/sendFlow'
 // 消息体组件
@@ -17,7 +16,7 @@ import MediaMsg from '@/components/msgView/mediaMsg';
 import ButtonMsg from '@/components/msgView/buttonMsg';
 import { View, Text, ScrollView, Input } from "@tarojs/components";
 import { AtIcon, AtActivityIndicator } from 'taro-ui'
-import { getSysInfo, genUuid, setInput, chooseImg, getsuffix, getFileType, chooseMsgFile, hideKb, isNeedAddH } from '@/utils/index'
+import { getSysInfo, genUuid, setInput, chooseImg, getsuffix, getFileType, chooseMsgFile, hideKb, isNeedAddH, NavTo } from '@/utils/index'
 import { formatMsgStatus } from '@/utils/filter'
 import { getHistoryMsg } from '@/api/chat'
 import { getFanInfo } from '@/api/fan'
@@ -83,7 +82,6 @@ const LiveChat = () => {
   const [showemoji, setShowEmoji] = useState(false)
   const [showtools, setShowTools] = useState(false)
   const [showreply, setShowReply] = useState(false)
-  const [showorder, setShowOrder] = useState(false)
   const [showflow, setShowFlow] = useState(false)
   const [showTagMsg, setShowTagMsg] = useState(false)
   const [state, dispatch] = useReducer(listReducer, initState)
@@ -359,7 +357,7 @@ const LiveChat = () => {
       setShowEmoji(false)
       setShowTools(false)
       setShowReply(false)
-      setShowOrder(false)
+
       setShowFlow(false)
     }, 10);
   }
@@ -541,7 +539,7 @@ const LiveChat = () => {
       sendFile()
     }
     if (id === 3) {
-      setShowOrder(true)
+      NavTo(`/pages/order/index?create`)
     }
     if (id === 4) {
       setShowFlow(true)
@@ -559,7 +557,6 @@ const LiveChat = () => {
     hideKb()
     restPage()
     setShowReply(false)
-    setShowOrder(false)
     setShowFlow(false)
   }
   // 点击表情icon
@@ -571,7 +568,6 @@ const LiveChat = () => {
     setShowEmoji(true)
     setShowTools(false)
     setShowReply(false)
-    setShowOrder(false)
     setShowFlow(false)
     setTimeout(() => {
       tobottom()
@@ -587,7 +583,6 @@ const LiveChat = () => {
     setShowTools(true)
     setShowEmoji(false)
     setShowReply(false)
-    setShowOrder(false)
     setShowFlow(false)
     setTimeout(() => {
       tobottom()
@@ -674,7 +669,6 @@ const LiveChat = () => {
           <View className='more' onClick={clickToolsiIcon}>
             <AtIcon prefixClass='icon' value='add-circle' color='#666' size='28' className='alicon'></AtIcon>
             {showreply ? <QuickReply ref={childref} pageId={fan.pageId} handleClick={setReply}></QuickReply> : ''}
-            {showorder ? <ChatOrder ref={childref} ></ChatOrder> : ''}
             {showflow ? <SendFlow ref={childref} handleClick={sendFlow}></SendFlow> : ''}
             {replyImg !== '' ? <ReplyImg ref={childref} url={replyImg} handleClick={closeReplyImg}></ReplyImg> : ''}
           </View>

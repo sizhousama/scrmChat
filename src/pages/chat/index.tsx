@@ -298,7 +298,7 @@ const Chat = () => {
         data.formatTime = formatChatTime(data.timestamp)
         data.tagsArr = data.tags === '' || data.tags === null ? [] : data.tagsArr = data.tags.split(',').slice(-2)
         data.read = 0
-        if (fanSearchKey !== '') return
+        if (searchForm.chatKey !== '') return
         listref.current = [data, ...listref.current]
         setHasNew(true)
       }

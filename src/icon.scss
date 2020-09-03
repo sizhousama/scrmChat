@@ -15,6 +15,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+
+.icon-close:before {
+  content: "\e610";
+}
+
 .icon-flow:before {
   content: "\e71a";
 }

@@ -37,7 +37,7 @@ const SendFlow = (props, ref) => {
     Taro.showModal({
       title: '',
       content: '确认发送流程？',
-      success: function (res) {
+      success (res) {
         if (res.confirm) {
           props.handleClick(e.currentTarget.dataset.item)
         } else if (res.cancel) {

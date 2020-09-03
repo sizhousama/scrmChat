@@ -2,6 +2,8 @@
 export default {
   pages: [  
     'pages/chat/index',
+    'pages/order/index',
+    
     'pages/fanPage/index',
     'pages/liveChat/index',
     'pages/mine/index',

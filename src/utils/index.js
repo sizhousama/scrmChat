@@ -17,6 +17,19 @@ export const Toast = (title, icon, dur) => {
     duration: dur
   })
 }
+// loading
+export const showL = (title) => {
+  Taro.showLoading({
+    title,
+    mask:true,
+  })
+}
+
+// hidloading
+export const hideL = () => {
+  Taro.hideLoading()
+}
+
 
 // 导航
 export const NavTo = (url) => {
