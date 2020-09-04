@@ -172,15 +172,14 @@ const Chat = () => {
         let fan: any = {}
         // 找到当前fanId 匹配的粉丝 并且 修改状态 表明有状态发生改变
         fan = listref.current.find(item => {
-          return item['fanId'] === data.senderId
+          return item.fanId === data.senderId
         })
-        fan['read'] = data.read
-
+        fan.read = data.read
       } else {
         const { senderId, tags } = data
         let fan: any = {}
         fan = listref.current.find(item => {
-          return item['fanId'] === senderId
+          return item.fanId === senderId
         })
         if (fan) {
           if (tags !== '' && tags !== null && tags !== undefined) {
@@ -300,6 +299,7 @@ const Chat = () => {
         data.read = 0
         if (searchForm.chatKey !== '') return
         listref.current = [data, ...listref.current]
+        dispatch({ type: 'list', payload: { list: listref.current }})
         setHasNew(true)
       }
     })

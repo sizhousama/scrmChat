@@ -3,11 +3,11 @@ import NavBar from "@/components/navBar";
 import OrderFormItem from '@/components/orderFormItem'
 import { View, Image, Picker, ScrollView } from "@tarojs/components";
 import { observer } from 'mobx-react';
-import { useNavStore, useFanStore } from '@/store';
+import { useNavStore, useFanStore, useOrderStore } from '@/store';
 import { previewImg, chooseImg, showL, hideL, Toast } from '@/utils/index'
 import { AtInput, AtList, AtListItem, AtRadio, AtActivityIndicator } from 'taro-ui'
 import { orderForm } from '@/constant/index'
-import Taro from '@tarojs/taro'
+import Taro, { getCurrentInstance } from '@tarojs/taro'
 import {
   addOrder,
   upOrder,
@@ -16,9 +16,11 @@ import {
   iMbOrderImg,
   iPcOrderImg,
   getProducts,
-  getActByPid
+  getActByPid,
+  getActBySenderId
 } from '@/api/order'
 import "./index.scss";
+import fan from "@/components/fan";
 const initState = {
   id: '',//订单id
   // 商品信息
@@ -40,18 +42,17 @@ const initState = {
   //测评信息
   commentWay: '', // 评论方式
   cashOutType: '', // 返款方式
-  orderChannelId: '', // 订单来源
+  orderChannelId: 0, // 订单来源
   amazonOrderStatus: '', // 亚马逊订单状态
   commentUrl: '', // 评论链接
   commentImage: '', // 评论截图
   // other
   currencyType: '',
-  payWay: '', // 支付方式
+  payWay: 1, // 支付方式
   paypalAccount: '', // 支付账号
+  buyerName: '',
   pageId: '', // 主页来源
   senderId: '', // 粉丝id
-  address: '', // Messager
-  selectedItemId: '', // 主页粉丝会话id
   acticityId: '', // 活动ID
   adId: '', // 广告id
   profileUrl: '',
@@ -59,6 +60,11 @@ const initState = {
 }
 const stateRducer = (state, action) => {
   switch (action.type) {
+    case 'temp':
+      return {
+        ...state,
+        ...action.payload.tempOrder
+      }
     case 'keyword':
       return {
         ...state,
@@ -167,6 +173,41 @@ const stateRducer = (state, action) => {
         ...state,
         currencyType: action.payload.currencyType
       }
+    case 'acticityId':
+      return {
+        ...state,
+        acticityId: action.payload.acticityId
+      }
+    case 'paypalAccount':
+      return {
+        ...state,
+        paypalAccount: action.payload.paypalAccount
+      }
+    case 'buyerName':
+      return {
+        ...state,
+        buyerName: action.payload.buyerName
+      }
+    case 'adId':
+      return {
+        ...state,
+        adId: action.payload.adId
+      }
+    case 'pageId':
+      return {
+        ...state,
+        pageId: action.payload.pageId
+      }
+    case 'senderId':
+      return {
+        ...state,
+        senderId: action.payload.senderId
+      }
+    case 'userMd5':
+      return {
+        ...state,
+        userMd5: action.payload.userMd5
+      }
     default:
       return state
   }
@@ -188,8 +229,57 @@ const Order = (props) => {
   const [comImg, setComImg] = useState('')
   const [showpro, setShowPro] = useState(false)
   const { fan } = useFanStore()
-  const type = props.tid.split('?')[1].split('&')[0]
-
+  const { tempOrder } = useOrderStore()
+  let type: string = '0'
+  useEffect(() => {
+    initorder()
+    getAct()
+  }, [])
+  const initorder = () => {
+    const router = getCurrentInstance().router
+    let params: any = ''
+    if (router) {
+      params = router.params
+      type = params.type
+      if (type === '0') {
+        tempOrder !== '' ? dispatch({ type: 'temp', payload: { tempOrder } }) : ''
+        tempOrder.commentImage?setComImg(tempOrder.commentImage):''
+        tempOrder.orderImage?setOrderImg(tempOrder.orderImage):''
+      } else {
+        const id = params.id
+        tempOrder !== '' ? dispatch({ type: 'temp', payload: { tempOrder } }) : ''
+        orderinfo(id)
+      }
+    }
+  }
+  const orderinfo = async(id)=>{
+    await getOrderInfo(id).then(res=>{
+      const {data} = res
+      dispatch({ type: 'temp', payload: { tempOrder:data } })
+      dispatch({ type: 'keyword', payload: { keyword:`(${data.scalpingProductId})${data.productTitle}` } })
+    })
+  }
+  const getAct = async () => {
+    const { pageId, fanId } = fan
+    const p = { pageId, senderId:fanId }
+    await getActBySenderId(p).then(res => {
+      const { data } = res
+      if (data) {
+        const { productId, asin, id, storeName, price, currencyType, title } = data
+        dispatch({ type: 'scalpingProductId', payload: { scalpingProductId: productId } })
+        dispatch({ type: 'asin', payload: { asin } })
+        dispatch({ type: 'acticityId', payload: { acticityId: id } })
+        dispatch({ type: 'storeName', payload: { storeName } })
+        dispatch({ type: 'scalpingProductPrice', payload: { scalpingProductPrice: price } })
+        dispatch({ type: 'currencyType', payload: { currencyType } })
+        dispatch({ type: 'keyword', payload: { keyword: `(${productId})${title}` } })
+      }
+    })
+    dispatch({ type: 'buyerName', payload: { buyerName: fan.fanName } })
+    dispatch({ type: 'adId', payload: { adId: fan.adId } })
+    dispatch({ type: 'paypalAccount', payload: { paypalAccount: fan.payAccount } })
+    dispatch({ type: 'userMd5', payload: { userMd5: fan.userMd5 } })
+  }
   const setState = (item, v) => {
     const key = item.key
     const payload = {}
@@ -371,11 +461,11 @@ const Order = (props) => {
     }
     const { scalpingProductPrice, cashOutPrice } = formdata
     let checkPrice = true
-    if (type==='create'&&((cashOutPrice - scalpingProductPrice) / scalpingProductPrice > 0.12)) {
+    if (type === 'create' && ((cashOutPrice - scalpingProductPrice) / scalpingProductPrice > 0.12)) {
       await Taro.showModal({
         title: '',
         content: '警告！商品金额与订单金额的差异大于12%是否确定创建',
-        success(res) {res.confirm?checkPrice = true:checkPrice = false },
+        success(res) { res.confirm ? checkPrice = true : checkPrice = false },
         fail() { checkPrice = false }
       })
     }
@@ -385,14 +475,14 @@ const Order = (props) => {
         Taro.showModal({
           title: '',
           content: '订单编号和商品ID已经存在于另一个测评订单中，是否继续添加！',
-          success(res) { res.confirm?setOrder():'' }
+          success(res) { res.confirm ? setOrder() : '' }
         })
       } else {
         setOrder()
       }
     }
   }
-  const orderIsExit = async ():Promise<any> => {
+  const orderIsExit = async (): Promise<any> => {
     const { id, orderNumber, scalpingProductId } = state
     const query = {
       id,
@@ -403,10 +493,10 @@ const Order = (props) => {
       return res.data
     })
   }
-  const setOrder = async()=>{
-    const fun = type==='create'?addOrder:upOrder
-    await fun(state).then(res=>{
-      Toast(type==='create'?'创建成功！':'编辑成功','none')
+  const setOrder = async () => {
+    const fun = type === 'create' ? addOrder : upOrder
+    await fun(state).then(res => {
+      Toast(type === 'create' ? '创建成功！' : '编辑成功', 'none')
     })
   }
 

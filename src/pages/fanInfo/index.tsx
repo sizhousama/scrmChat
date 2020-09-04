@@ -57,7 +57,7 @@ const FanInfo = () => {
   }
   const getorders = async () => {
     setOrderLoading(true)
-    await fanOrders({ senderId: fan.senderId }).then(res => {
+    await fanOrders({ senderId: fan.fanId,userMd5:fan.userMd5 }).then(res => {
       const { data } = res
       dispatch({ type: 'orders', payload: { orders: data.records } })
     }).finally(() => {

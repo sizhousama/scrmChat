@@ -24,9 +24,8 @@ import { observer } from 'mobx-react';
 import { useFanStore, useWsioStore, useUserStore } from '@/store';
 import { parseMsg } from '@/utils/parse'
 import { vibrateS } from '@/utils/index'
-import "./index.scss";
 import { formatChatTime } from "@/utils/time";
-
+import "./index.scss";
 interface RI {
   timestamp?: string | number,
   status?: number,
@@ -74,7 +73,7 @@ const LiveChat = () => {
   const cursorref = useRef(0)
   const barHeight = getSysInfo().statusBarHeight
 
-  const { fan } = useFanStore()
+  const { fan,setMd5,setPayAccount } = useFanStore()
   const { userInfo } = useUserStore()
   const { wsio } = useWsioStore()
   const [pos, setPos] = useState(0)
@@ -122,7 +121,9 @@ const LiveChat = () => {
     const p = { pageId, fanId }
 
     await getFanInfo(p).then(res => {
-      const { lastSendMsgTime } = res.data
+      const { lastSendMsgTime,userMd5,payAccount } = res.data
+      setMd5(userMd5)
+      setPayAccount(payAccount)
       if (lastSendMsgTime != undefined && lastSendMsgTime !== '') {
         try {
           const lastSendTime = new Date(lastSendMsgTime).getTime()
@@ -467,7 +468,7 @@ const LiveChat = () => {
       case 'text':
         return <TextMsg ref={childref} msgItem={item}></TextMsg>
       case 'image':
-        return <ImgMsg ref={childref} msgItem={item}></ImgMsg>
+        return <ImgMsg ref={childref} msgItem={item} fan={fan}></ImgMsg>
       case 'postback':
         return <TextMsg ref={childref} msgItem={item}></TextMsg>
       case 'generic':
@@ -539,7 +540,7 @@ const LiveChat = () => {
       sendFile()
     }
     if (id === 3) {
-      NavTo(`/pages/order/index?create`)
+      NavTo(`/pages/order/index?type=0`)
     }
     if (id === 4) {
       setShowFlow(true)

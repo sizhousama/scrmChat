@@ -9,7 +9,9 @@ interface Fan {
   facebookName:string,
   phone:string,
   gender:string,
-  adId:string
+  adId:string,
+  userMd5:string,
+  payAccount:string,
 }
 interface SF {
   chatKey:string,
@@ -26,7 +28,9 @@ const fan = {
   facebookName:'',
   phone:'',
   gender:'',
-  adId:''
+  adId:'',
+  userMd5:'',
+  payAccount:''
 }
 const sform = {
   chatKey:'',
@@ -45,6 +49,12 @@ export class FanStore {
   @observable searchFrom =  ''
   @action.bound setFan(data) {
     this.fan = data;
+  }
+  @action.bound setMd5(data) {
+    this.fan.userMd5 = data;
+  }
+  @action.bound setPayAccount(data) {
+    this.fan.payAccount = data;
   }
   @action.bound setPages(data) {
     this.pages = data;
@@ -67,6 +77,7 @@ export class FanStore {
   @action.bound setSFfanPage(data) {
     this.searchForm.fanPage = data;
   }
+  
 }
 
 export const STORE_FAN = 'fanStore';

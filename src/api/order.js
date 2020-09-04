@@ -8,6 +8,10 @@ export const addOrder = (data) => {
 export const getOrderInfo = (params) => {
   return HTTPREQUEST.get(`/scrm-seller/scalpingOrder/${params}`)
 }
+// senderId获取活动信息
+export const getActBySenderId = (params) => {
+  return HTTPREQUEST.get(`/scrm-seller/appraisalActivity/getActivityBySenderId`,params)
+}
 // 更新订单
 export const upOrder = (data) => {
   return HTTPREQUEST.put(`/scrm-seller/scalpingOrder/${data.id}`)

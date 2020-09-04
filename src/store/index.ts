@@ -2,6 +2,7 @@ import { createContext, useContext } from 'react';
 import { STORE_NAVH, NavStore } from './nav';
 import { STORE_USERINFO, UserStore } from './user';
 import { STORE_FAN, FanStore } from './fan';
+import { STORE_ORDER, OrderStore } from './order';
 import { STORE_WSIO, WsioStore } from './socket';
 function createStores() {
   return {
@@ -9,6 +10,7 @@ function createStores() {
     [STORE_USERINFO]: new UserStore(),
     [STORE_FAN]: new FanStore(),
     [STORE_WSIO]: new WsioStore(),
+    [STORE_ORDER]: new OrderStore(),
   };
 }
 
@@ -40,11 +42,18 @@ function useWsioStore() {
   return wsioStore;
 }
 
+// socket
+function useOrderStore() {
+  const { orderStore } = useStores();
+  return orderStore;
+}
+
 export {
   stores,
   StoresContext,
   useNavStore,
   useUserStore,
   useFanStore,
-  useWsioStore
+  useWsioStore,
+  useOrderStore
 };
