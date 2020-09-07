@@ -1,0 +1,29 @@
+.fallback-msg {
+  // 这里最大宽度是由聊天行最大宽度 减去 头像宽度
+    max-width: 500px;
+    min-height: 50px;
+    padding-top: 20px;
+  &-detail {
+    position: relative;
+    padding: 14px 20px;
+    background: #fff;
+    border-radius: 0 10px 10px 10px;
+    border:2px solid #bbb;
+    display: flex;
+    &.right{
+      border:none;
+      border-radius: 10px 0 10px 10px;
+      background:#7685FF;
+    }
+    .pure-text {
+      position: relative;
+      font-size: 24px;
+      color: #666;
+      word-break: break-all;
+      text-decoration: underline;
+      &.right{
+        color:#fff;
+      }
+    }
+  }
+}

@@ -4,7 +4,7 @@ import OrderFormItem from '@/components/orderFormItem'
 import { View, Image, Picker, ScrollView } from "@tarojs/components";
 import { observer } from 'mobx-react';
 import { useNavStore, useFanStore, useOrderStore } from '@/store';
-import { previewImg, chooseImg, showL, hideL, Toast } from '@/utils/index'
+import { previewImg, chooseImg, showL, hideL, Toast, Back } from '@/utils/index'
 import { AtInput, AtList, AtListItem, AtRadio, AtActivityIndicator } from 'taro-ui'
 import { orderForm } from '@/constant/index'
 import Taro, { getCurrentInstance } from '@tarojs/taro'
@@ -20,7 +20,6 @@ import {
   getActBySenderId
 } from '@/api/order'
 import "./index.scss";
-import fan from "@/components/fan";
 const initState = {
   id: '',//订单id
   // 商品信息
@@ -230,38 +229,46 @@ const Order = (props) => {
   const [showpro, setShowPro] = useState(false)
   const { fan } = useFanStore()
   const { tempOrder } = useOrderStore()
-  let type: string = '0'
+  const typeRef = useRef('0')
   useEffect(() => {
     initorder()
-    getAct()
   }, [])
   const initorder = () => {
     const router = getCurrentInstance().router
     let params: any = ''
     if (router) {
       params = router.params
-      type = params.type
-      if (type === '0') {
+      typeRef.current = params.type
+      console.log(params)
+      if (typeRef.current === '0') {
         tempOrder !== '' ? dispatch({ type: 'temp', payload: { tempOrder } }) : ''
-        tempOrder.commentImage?setComImg(tempOrder.commentImage):''
-        tempOrder.orderImage?setOrderImg(tempOrder.orderImage):''
+        tempOrder.commentImage ? setComImg(tempOrder.commentImage) : ''
+        tempOrder.orderImage ? setOrderImg(tempOrder.orderImage) : ''
+        getAct()
       } else {
-        const id = params.id
-        tempOrder !== '' ? dispatch({ type: 'temp', payload: { tempOrder } }) : ''
+        const id = params.id   
         orderinfo(id)
       }
     }
   }
-  const orderinfo = async(id)=>{
-    await getOrderInfo(id).then(res=>{
-      const {data} = res
-      dispatch({ type: 'temp', payload: { tempOrder:data } })
-      dispatch({ type: 'keyword', payload: { keyword:`(${data.scalpingProductId})${data.productTitle}` } })
+  const orderinfo = async (id) => {
+    console.log(tempOrder)
+    await getOrderInfo(id).then(res => {
+      const { data } = res
+      dispatch({ type: 'temp', payload: { tempOrder: data } })
+      dispatch({ type: 'keyword', payload: { keyword: `(${data.scalpingProductId})${data.productTitle}` } })
+      dispatch({ type: 'orderPrice', payload: { orderPrice: data.cashOutPrice - data.orderCommission } })
+      setComImg(data.commentImage)
+      setOrderImg(data.orderImage)
+
+      tempOrder !== '' ? dispatch({ type: 'temp', payload: { tempOrder } }) : ''
+      tempOrder.commentImage ? setComImg(tempOrder.commentImage) : ''
+      tempOrder.orderImage ? setOrderImg(tempOrder.orderImage) : ''
     })
   }
   const getAct = async () => {
     const { pageId, fanId } = fan
-    const p = { pageId, senderId:fanId }
+    const p = { pageId, senderId: fanId }
     await getActBySenderId(p).then(res => {
       const { data } = res
       if (data) {
@@ -275,6 +282,8 @@ const Order = (props) => {
         dispatch({ type: 'keyword', payload: { keyword: `(${productId})${title}` } })
       }
     })
+    dispatch({ type: 'pageId', payload: { buyerName: fan.pageId } })
+    dispatch({ type: 'senderId', payload: { buyerName: fan.fanId } })
     dispatch({ type: 'buyerName', payload: { buyerName: fan.fanName } })
     dispatch({ type: 'adId', payload: { adId: fan.adId } })
     dispatch({ type: 'paypalAccount', payload: { paypalAccount: fan.payAccount } })
@@ -320,7 +329,8 @@ const Order = (props) => {
   }
   const autoSet = async (e) => {
     const item = e.currentTarget.dataset.item
-    const { asin, storeName, id, price, currencyType } = item
+    const { asin, storeName, id, price, currencyType, title } = item
+    dispatch({ type: 'keyword', payload: { keyword: `(${id})${title}` } })
     dispatch({ type: 'scalpingProductId', payload: { scalpingProductId: id } })
     dispatch({ type: 'asin', payload: { asin: asin } })
     dispatch({ type: 'storeName', payload: { storeName: storeName } })
@@ -436,7 +446,7 @@ const Order = (props) => {
         return (
           <View className='comradio'>
             <AtRadio
-              options={item.options}
+              options={item.range}
               value={state[item.key]}
               onClick={(v) => { setState(item, v) }}
             />
@@ -461,7 +471,7 @@ const Order = (props) => {
     }
     const { scalpingProductPrice, cashOutPrice } = formdata
     let checkPrice = true
-    if (type === 'create' && ((cashOutPrice - scalpingProductPrice) / scalpingProductPrice > 0.12)) {
+    if (typeRef.current === '0' && ((cashOutPrice - scalpingProductPrice) / scalpingProductPrice > 0.12)) {
       await Taro.showModal({
         title: '',
         content: '警告！商品金额与订单金额的差异大于12%是否确定创建',
@@ -470,33 +480,34 @@ const Order = (props) => {
       })
     }
     if (checkPrice) {
-      const data = await orderIsExit()
-      if (data !== 0) {
-        Taro.showModal({
-          title: '',
-          content: '订单编号和商品ID已经存在于另一个测评订单中，是否继续添加！',
-          success(res) { res.confirm ? setOrder() : '' }
-        })
-      } else {
-        setOrder()
+      const { id, orderNumber, scalpingProductId } = state
+      const query = {
+        id,
+        orderNumber: orderNumber,
+        scalpingProductId: scalpingProductId
       }
+      await checkHasOrder(query).then(res => {
+        if (res.data !== 0) {
+          Taro.showModal({
+            title: '',
+            content: '订单编号和商品ID已经存在于另一个测评订单中，是否继续添加！',
+            success(res) { res.confirm ? setOrder() : '' }
+          })
+        } else {
+          setOrder()
+        }
+      })
     }
-  }
-  const orderIsExit = async (): Promise<any> => {
-    const { id, orderNumber, scalpingProductId } = state
-    const query = {
-      id,
-      orderNumber: orderNumber,
-      scalpingProductId: scalpingProductId
-    }
-    await checkHasOrder(query).then(res => {
-      return res.data
-    })
   }
   const setOrder = async () => {
-    const fun = type === 'create' ? addOrder : upOrder
+    const fun = typeRef.current === '0' ? addOrder : upOrder
     await fun(state).then(res => {
-      Toast(type === 'create' ? '创建成功！' : '编辑成功', 'none')
+      if (res) {
+        Toast(typeRef.current === '0' ? '创建成功！' : '编辑成功', 'none')
+        setTimeout(() => {
+          Back()
+        }, 1000);
+      }
     })
   }
 

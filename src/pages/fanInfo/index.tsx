@@ -2,13 +2,14 @@ import React, { useRef, useState, useEffect, useReducer } from "react";
 import NavBar from "@/components/navBar";
 import { View, Image, Text } from "@tarojs/components";
 import { observer } from 'mobx-react';
-import { useNavStore, useFanStore } from '@/store';
-import { previewImg } from '@/utils/index'
+import { useNavStore, useFanStore,useOrderStore } from '@/store';
+import { previewImg, NavTo } from '@/utils/index'
 import { typeCashOut, typeOrderS } from '@/utils/filter'
 import { AtActivityIndicator } from 'taro-ui'
 import { fanOrders, fanTags, getFanInfo } from '@/api/fan'
 import "./index.scss";
 import { imgUrl } from "@/servers/baseUrl";
+import { useDidShow } from "@tarojs/taro";
 const initState = {
   fanOrderList: [],
   fanTagsList: []
@@ -33,6 +34,7 @@ const FanInfo = () => {
   const childref = useRef();
   const { navH } = useNavStore();
   const { fan, setFan } = useFanStore()
+  const {setTempOrder} = useOrderStore()
   const [state, dispatch] = useReducer(stateReducer, initState)
   const [orderloading, setOrderLoading] = useState(false)
   const [tagloading, setTagLoading] = useState(false)
@@ -43,9 +45,11 @@ const FanInfo = () => {
   const style = {
     marginTop: navH + 'px'
   }
+  useDidShow(()=>{
+    getorders()
+  })
   useEffect(() => {
     getfandetail()
-    getorders()
     gettags()
   }, [])
   const getfandetail = async () => {
@@ -85,6 +89,12 @@ const FanInfo = () => {
     setMore(!more)
   }
 
+  const handleOrder = (e)=>{
+    const type =e.currentTarget.dataset.type
+    const id = e.currentTarget.dataset.id
+    setTempOrder('')
+    NavTo(`/pages/order/index?type=${type}&id=${id}`)
+  }
   return (
     <View>
       <NavBar title='粉丝详情' />
@@ -107,13 +117,18 @@ const FanInfo = () => {
             <Text className='adid'>adId：{fan.adId}</Text>
           </View>
         </View>
-        <View className='sec-title'>订单信息：</View>
+        <View className='sec-title fx'>
+          <View className=' fx1'>订单信息：</View>
+          <View className='sec-icon fx1' onClick={handleOrder} data-type='0' data-id=''>
+            <View className='at-icon at-icon-file-new'></View>
+          </View>
+        </View>
         <View className={`orderlist ${!more && fanOrderList.length > 3 ? 'seemore' : ''}`}>
           {
             fanOrderList.length > 0 ?
               fanOrderList.map((item, index) => {
                 return (
-                  <View key={index} className='order'>
+                  <View key={index} className='order' onClick={handleOrder} data-type='1' data-id={item.id}>
                     <View className='top'>
                       <View className='left'>
                         <Text className='name break'>{item.scalpingProductName}</Text>

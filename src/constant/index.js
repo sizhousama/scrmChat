@@ -175,7 +175,8 @@ export const orderForm = [{
         otherType: 'text',
         ph:'请输入ID或名称搜索',
         disable:false,
-        require:true
+        require:true,
+        range:[],
       },
       {
         key: 'storeName',
@@ -184,7 +185,8 @@ export const orderForm = [{
         otherType: 'text',
         ph:'店铺名称',
         disable:true,
-        require:true
+        require:true,
+        range:[]
       },
       {
         key: 'asin',
@@ -193,7 +195,8 @@ export const orderForm = [{
         otherType: 'text',
         ph:'asin',
         disable:true,
-        require:true
+        require:true,
+        range:[]
       },
       {
         key: 'scalpingProductPrice',
@@ -202,7 +205,8 @@ export const orderForm = [{
         otherType: 'number',
         ph:'请输入',
         disable:false,
-        require:true
+        require:true,
+        range:[]
       }
     ]
   },
@@ -215,13 +219,16 @@ export const orderForm = [{
         otherType: 'number',
         ph:'请输入',
         disable:false,
-        require:false
+        require:false,
+        range:[]
       },
       {
         key: 'orderImageDate',
         label: '日期选择：',
         type: 'date',
-        require:false
+        disable:false,
+        require:false,
+        range:[]
       },
       {
         key: 'orderPrice',
@@ -230,7 +237,8 @@ export const orderForm = [{
         otherType: 'number',
         ph:'请输入',
         disable:false,
-        require:false
+        require:false,
+        range:[]
       },
       {
         key: 'orderCommission',
@@ -239,7 +247,8 @@ export const orderForm = [{
         otherType: 'number',
         ph:'请输入',
         disable:false,
-        require:false
+        require:false,
+        range:[]
       },
       {
         key: 'cashOutPrice',
@@ -248,13 +257,14 @@ export const orderForm = [{
         otherType: 'number',
         ph:'订单金额 + 佣金',
         disable:true,
-        require:false
+        require:false,
+        range:[]
       },
       {
         key: 'includedTax',
         label: 'Paypal手续费：',
         type: 'radio',
-        options:[
+        range:[
           {label:'包含',value:1},
           {label:'不包含',value:0}
         ],
@@ -264,7 +274,7 @@ export const orderForm = [{
         key: 'orderImgType',
         label: '截图类型：',
         type: 'radio',
-        options:[
+        range:[
           {label:'手机',value:1},
           {label:'电脑',value:2}
         ],
@@ -277,13 +287,16 @@ export const orderForm = [{
         otherType: 'text',
         ph:'请输入',
         disable:false,
-        require:false
+        require:false,
+        range:[]
       },
       {
         key: 'orderImage',
         label: '订单截图：',
         type: 'img',
-        require:false
+        disable:false,
+        require:false,
+        range:[]
       },
     ]
   },
@@ -363,13 +376,16 @@ export const orderForm = [{
         otherType: 'text',
         ph:'请输入',
         disable:false,
-        require:false
+        require:false,
+        range:[]
       },
       {
         key: 'commentImage',
         label: '评论截图：',
         type: 'img',
-        require:false
+        disable:false,
+        require:false,
+        range:[]
       }
     ]
   }

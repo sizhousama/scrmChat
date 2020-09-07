@@ -14,7 +14,7 @@ export const getActBySenderId = (params) => {
 }
 // 更新订单
 export const upOrder = (data) => {
-  return HTTPREQUEST.put(`/scrm-seller/scalpingOrder/${data.id}`)
+  return HTTPREQUEST.put(`/scrm-seller/scalpingOrder/${data.id}`,data)
 }
 // 检查重复
 export const checkHasOrder = (params) => {

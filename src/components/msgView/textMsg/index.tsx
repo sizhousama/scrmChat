@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import { View, Text, RichText } from '@tarojs/components'
+import { View, Text } from '@tarojs/components'
 import { forwardRef } from 'react'
 import './index.scss'
 

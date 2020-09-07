@@ -241,12 +241,13 @@ export function parsePostBack(originMsg) {
  * @description 解析 fallback 类型信息
  */
 export function parseFallBack(originMsg) {
-  const {
-    text
-  } = originMsg
-  msgItem.type = 'text'
-  msgItem.text = text
-  msgItem.otherType = 'link'
+  const { text, attachments } = originMsg
+  msgItem.type = 'fallback'
+  if (text) {
+    msgItem.text = text
+  } else {
+    msgItem.text = attachments[0].payload.url
+  }
 }
 /**
  * @description 处理 generic 中出现的 notify信息

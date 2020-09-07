@@ -8,6 +8,7 @@ import ReplyImg from '@/components/replyImg'
 import SendFlow from '@/components/sendFlow'
 // 消息体组件
 import TextMsg from '@/components/msgView/textMsg';
+import FallBackMsg from '@/components/msgView/fallBackMsg'
 import ImgMsg from '@/components/msgView/imgMsg';
 import SwiperMsg from '@/components/msgView/genericMsg';
 import FileMsg from '@/components/msgView/fileMsg';
@@ -21,7 +22,7 @@ import { formatMsgStatus } from '@/utils/filter'
 import { getHistoryMsg } from '@/api/chat'
 import { getFanInfo } from '@/api/fan'
 import { observer } from 'mobx-react';
-import { useFanStore, useWsioStore, useUserStore } from '@/store';
+import { useFanStore, useWsioStore, useUserStore,useOrderStore } from '@/store';
 import { parseMsg } from '@/utils/parse'
 import { vibrateS } from '@/utils/index'
 import { formatChatTime } from "@/utils/time";
@@ -75,6 +76,7 @@ const LiveChat = () => {
 
   const { fan,setMd5,setPayAccount } = useFanStore()
   const { userInfo } = useUserStore()
+  const {setTempOrder} = useOrderStore()
   const { wsio } = useWsioStore()
   const [pos, setPos] = useState(0)
   const [message, setMessage] = useState('')
@@ -467,6 +469,8 @@ const LiveChat = () => {
     switch (item.type) {
       case 'text':
         return <TextMsg ref={childref} msgItem={item}></TextMsg>
+      case 'fallback':
+        return <FallBackMsg  ref={childref} msgItem={item}></FallBackMsg>
       case 'image':
         return <ImgMsg ref={childref} msgItem={item} fan={fan}></ImgMsg>
       case 'postback':
@@ -540,6 +544,7 @@ const LiveChat = () => {
       sendFile()
     }
     if (id === 3) {
+      setTempOrder('')
       NavTo(`/pages/order/index?type=0`)
     }
     if (id === 4) {

@@ -9,6 +9,12 @@
     width: 100%;
     box-sizing: border-box;
     padding: 20px 60px;
+    .sec-icon{
+      justify-content: flex-end;
+      .at-icon{
+        font-size: 40px;
+      }
+    }
   }
 
   .faninfo {
