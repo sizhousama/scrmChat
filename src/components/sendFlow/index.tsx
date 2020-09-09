@@ -34,12 +34,13 @@ const SendFlow = (props, ref) => {
     getlist()
   }, [])
   const setflow = (e) => {
+    const flow = e.currentTarget.dataset.item
     Taro.showModal({
       title: '',
-      content: '确认发送流程？',
+      content: `确认发送流程'${flow.name}'？`,
       success (res) {
         if (res.confirm) {
-          props.handleClick(e.currentTarget.dataset.item)
+          props.handleClick(flow)
         } else if (res.cancel) {
           
         }

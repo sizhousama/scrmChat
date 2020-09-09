@@ -48,6 +48,7 @@ const initState = {
   // other
   currencyType: '',
   payWay: 1, // 支付方式
+  giftCard: '',//礼品码
   paypalAccount: '', // 支付账号
   buyerName: '',
   pageId: '', // 主页来源
@@ -177,6 +178,16 @@ const stateRducer = (state, action) => {
         ...state,
         acticityId: action.payload.acticityId
       }
+    case 'payWay':
+      return {
+        ...state,
+        payWay: action.payload.payWay
+      }
+    case 'giftCard':
+      return {
+        ...state,
+        giftCard: action.payload.giftCard
+      }
     case 'paypalAccount':
       return {
         ...state,
@@ -220,9 +231,11 @@ const Order = (props) => {
     op: '',
     oc: ''
   })
+  const formref = useRef<any[]>(orderForm)
 
   const [state, dispatch] = useReducer(stateRducer, initState)
   const [products, setProdects] = useState<any[]>([])
+  const [forms, setForms] = useState<any[]>(orderForm)
   const [proloading, setProLoading] = useState(false)
   const [orderImg, setOrderImg] = useState('')
   const [comImg, setComImg] = useState('')
@@ -246,7 +259,7 @@ const Order = (props) => {
         tempOrder.orderImage ? setOrderImg(tempOrder.orderImage) : ''
         getAct()
       } else {
-        const id = params.id   
+        const id = params.id
         orderinfo(id)
       }
     }
@@ -260,6 +273,12 @@ const Order = (props) => {
       dispatch({ type: 'orderPrice', payload: { orderPrice: data.cashOutPrice - data.orderCommission } })
       setComImg(data.commentImage)
       setOrderImg(data.orderImage)
+      if(data.payWay === 5){
+        formref.current[3]['fitems'][0]['disable'] = true
+        formref.current[3]['fitems'][1]['show'] = true
+        formref.current[3]['fitems'][2]['require'] = false
+        setForms(formref.current.slice())
+      }
 
       tempOrder !== '' ? dispatch({ type: 'temp', payload: { tempOrder } }) : ''
       tempOrder.commentImage ? setComImg(tempOrder.commentImage) : ''
@@ -296,7 +315,7 @@ const Order = (props) => {
       ? payload[key] = item.range[v].value
       : payload[key] = v
     dispatch({ type: key, payload })
-    if (key === 'keyword') {
+    if (key === 'keyword' && v.length < 30) {
       getpro(v)
     }
     if (key === 'orderPrice') {
@@ -308,6 +327,16 @@ const Order = (props) => {
       priceref.current.oc = v
       const cp = Number(priceref.current.op) + Number(priceref.current.oc)
       dispatch({ type: 'cashOutPrice', payload: { cashOutPrice: cp } })
+    }
+    if (key === 'payWay') {
+      if (v === '3') {      
+        formref.current[3]['fitems'][1]['show'] = true
+        formref.current[3]['fitems'][2]['require'] = false
+      } else {
+        formref.current[3]['fitems'][1]['show'] = false
+        formref.current[3]['fitems'][2]['require'] = true
+      }
+      setForms(formref.current.slice()) 
     }
   }
   const getpro = async (v) => {
@@ -337,8 +366,11 @@ const Order = (props) => {
     dispatch({ type: 'scalpingProductPrice', payload: { scalpingProductPrice: price } })
     dispatch({ type: 'currencyType', payload: { currencyType: currencyType } })
     await getActByPid({ productId: id }).then(res => {
-      dispatch({ type: 'acticityId', payload: { acticityId: res.data.id } })
+      if (res.data) {
+        dispatch({ type: 'acticityId', payload: { acticityId: res.data.id } })
+      }
     })
+    setShowPro(false)
   }
   const finditem = (item): string => {
     const v = item.range.find(o => o.value === state[item.key])
@@ -386,6 +418,13 @@ const Order = (props) => {
       item.key === 'orderImage' ? setOrderImg('') : setComImg('')
     }, 100);
   }
+  const selectorValue=(item):any=>{
+    for(let i=0;i<item.range.length;i++){
+      if(item.range[i].value===state[item.key]){
+        return i
+      }
+    }
+  }
   const formTypeFilter = (item) => {
     switch (item.type) {
       case 'input':
@@ -397,9 +436,9 @@ const Order = (props) => {
             placeholder={item.ph}
             className='cominput orderinput'
             disabled={item.disable}
-            onFocus={() => { if (item.key === 'keyword') { setShowPro(true); getpro('') } }}
-            onBlur={() => item.key === 'keyword' ? setShowPro(false) : ''}
-            onChange={(v) => { setState(item, v) }} />
+            onFocus={() => { if (item.key === 'keyword') { setShowPro(true); getpro(''); } }}
+            onChange={(v) => { setState(item, v) }}
+            holdKeyboard />
         )
       case 'date':
         return (
@@ -417,10 +456,11 @@ const Order = (props) => {
         return (
           <Picker
             className='compicker'
-            value={state[item.key]}
+            value={selectorValue(item)}
             mode='selector'
             range={item.range}
             rangeKey='label'
+            disabled={item.disable}
             onChange={(e) => { setState(item, e.detail.value) }}>
             <AtList>
               <AtListItem extraText={finditem(item)} />
@@ -469,6 +509,11 @@ const Order = (props) => {
       Toast('请完善测评信息！', 'none')
       return
     }
+    if (formdata.payWay === 5 && formdata.giftCard==='' || 
+    formdata.payWay !== 5 && formdata.paypalAccount==='') {
+      Toast('请完善买家信息！', 'none')
+      return
+    }
     const { scalpingProductPrice, cashOutPrice } = formdata
     let checkPrice = true
     if (typeRef.current === '0' && ((cashOutPrice - scalpingProductPrice) / scalpingProductPrice > 0.12)) {
@@ -510,19 +555,19 @@ const Order = (props) => {
       }
     })
   }
-
   return (
     <View>
       <NavBar title='测评订单' />
-      <View className='order-form' style={style}>
+      <View className='order-form' style={style} >
         {
-          orderForm.map((section, index) => {
+          forms.map((section, index) => {
             return (
               <View className='order-section' key={index}>
                 <View className='section-title'>{section.title}</View>
                 {
                   section.fitems.map((oitem, idx) => {
                     return (
+                      oitem.show?
                       <OrderFormItem
                         key={idx}
                         id={oitem.key}
@@ -532,26 +577,29 @@ const Order = (props) => {
                         formCont={formTypeFilter(oitem)}
                         products={
                           showpro ?
-                            <ScrollView className='proscroll' scrollY>
-                              <View className='probox'>
-                                <AtActivityIndicator isOpened={proloading} mode='center' size={30}></AtActivityIndicator>
-                                {
-                                  products.length > 0 ?
-                                    products.map((pro, idx) => {
-                                      return (
-                                        <View
-                                          key={idx}
-                                          className='pro break'
-                                          onClick={autoSet}
-                                          data-item={pro}
-                                        >{`(${pro.id})${pro.title}`}</View>
-                                      )
-                                    }) : <View className='nodate'>无数据</View>
-                                }
-                              </View>
-                            </ScrollView> : ''
+                            <View className='showpro'>
+                              <ScrollView className='proscroll' scrollY onClick={(e) => e.stopPropagation()}>
+                                <View className='probox' >
+                                  <AtActivityIndicator isOpened={proloading} mode='center' size={30}></AtActivityIndicator>
+                                  {
+                                    products.length > 0 ?
+                                      products.map((pro, idx) => {
+                                        return (
+                                          <View
+                                            key={idx}
+                                            className='pro break'
+                                            onClick={autoSet}
+                                            data-item={pro}
+                                          >{`(${pro.id})${pro.title}`}</View>
+                                        )
+                                      }) : <View className='nodate'>无数据</View>
+                                  }
+                                </View>
+                              </ScrollView>
+                              <View className='closeprobox' onClick={() => setShowPro(false)}>取消</View>
+                            </View> : ''
                         }
-                      ></OrderFormItem>
+                      ></OrderFormItem>:''
                     )
                   })
                 }

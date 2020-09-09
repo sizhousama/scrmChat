@@ -177,6 +177,7 @@ export const orderForm = [{
         disable:false,
         require:true,
         range:[],
+        show:true
       },
       {
         key: 'storeName',
@@ -186,7 +187,8 @@ export const orderForm = [{
         ph:'店铺名称',
         disable:true,
         require:true,
-        range:[]
+        range:[],
+        show:true
       },
       {
         key: 'asin',
@@ -196,17 +198,19 @@ export const orderForm = [{
         ph:'asin',
         disable:true,
         require:true,
-        range:[]
+        range:[],
+        show:true
       },
       {
         key: 'scalpingProductPrice',
-        label: '价格：',
+        label: '商品价格：',
         type: 'input',
         otherType: 'number',
         ph:'请输入',
         disable:false,
         require:true,
-        range:[]
+        range:[],
+        show:true
       }
     ]
   },
@@ -220,15 +224,17 @@ export const orderForm = [{
         ph:'请输入',
         disable:false,
         require:false,
-        range:[]
+        range:[],
+        show:true
       },
       {
         key: 'orderImageDate',
-        label: '日期选择：',
+        label: '订单日期：',
         type: 'date',
         disable:false,
         require:false,
-        range:[]
+        range:[],
+        show:true,
       },
       {
         key: 'orderPrice',
@@ -238,27 +244,30 @@ export const orderForm = [{
         ph:'请输入',
         disable:false,
         require:false,
-        range:[]
+        range:[],
+        show:true
       },
       {
         key: 'orderCommission',
-        label: '佣金：',
+        label: '订单佣金：',
         type: 'input',
-        otherType: 'number',
+        otherType: 'digit',
         ph:'请输入',
         disable:false,
         require:false,
-        range:[]
+        range:[],
+        show:true
       },
       {
         key: 'cashOutPrice',
         label: '返款金额：',
         type: 'input',
-        otherType: 'number',
+        otherType: 'digit',
         ph:'订单金额 + 佣金',
         disable:true,
         require:false,
-        range:[]
+        range:[],
+        show:true
       },
       {
         key: 'includedTax',
@@ -268,7 +277,8 @@ export const orderForm = [{
           {label:'包含',value:1},
           {label:'不包含',value:0}
         ],
-        require:false
+        require:false,
+        show:true,
       },
       {
         key: 'orderImgType',
@@ -278,7 +288,8 @@ export const orderForm = [{
           {label:'手机',value:1},
           {label:'电脑',value:2}
         ],
-        require:false
+        require:false,
+        show:true,
       },
       {
         key: 'orderNote',
@@ -288,7 +299,8 @@ export const orderForm = [{
         ph:'请输入',
         disable:false,
         require:false,
-        range:[]
+        range:[],
+        show:true
       },
       {
         key: 'orderImage',
@@ -296,7 +308,8 @@ export const orderForm = [{
         type: 'img',
         disable:false,
         require:false,
-        range:[]
+        range:[],
+        show:true,
       },
     ]
   },
@@ -307,6 +320,7 @@ export const orderForm = [{
         label: '评论方式：',
         type: 'selector',
         require:true,
+        disable:false,
         range: [{
             value: 0,
             label: '文字留评'
@@ -331,12 +345,14 @@ export const orderForm = [{
             value: 5,
             label: 'feedback'
           }
-        ]
+        ],
+        show:true,
       },
       {
         key: 'cashOutType',
         label: '返款方式：',
         type: 'selector',
+        disable:false,
         require:true,
         range:[
         { value: 12, label: '人工返款' },
@@ -345,7 +361,8 @@ export const orderForm = [{
         { value: 9, label: '评后全返' },
         { value: 6, label: '发货返一半，评后返一半' },
         { value: 8, label: '收货返一半，评后返一半' },
-        { value: 4, label: '下单返一半，评后返一半' }]
+        { value: 4, label: '下单返一半，评后返一半' }],
+        show:true,
       },
       {
         key: 'orderChannelId',
@@ -354,20 +371,23 @@ export const orderForm = [{
         require:true,
         range:[
         { value: 0, label: 'FB' },
-        { value: 1, label: '非FB' }]
+        { value: 1, label: '非FB' }],
+        show:true,
       },
       {
         key: 'amazonOrderStatus',
         label: '亚马逊状态：',
         type: 'selector',
         require:true,
+        disable:false,
         range:[
         { value: 0, label: '无记录' },
         { value: 1, label: '未完成' },
         { value: 2, label: '退货' },
         { value: 3, label: '已发货' },
         { value: 4, label: '其他' },
-        { value: 5, label: '已取消' }]
+        { value: 5, label: '已取消' }],
+        show:true,
       },
       {
         key: 'commentUrl',
@@ -377,7 +397,8 @@ export const orderForm = [{
         ph:'请输入',
         disable:false,
         require:false,
-        range:[]
+        range:[],
+        show:true
       },
       {
         key: 'commentImage',
@@ -385,8 +406,50 @@ export const orderForm = [{
         type: 'img',
         disable:false,
         require:false,
-        range:[]
+        range:[],
+        show:true,
       }
     ]
+  },
+  {
+    title:'买家信息',  
+    fitems:[
+      {
+        key: 'payWay',
+        label: '收款方式：',
+        type: 'selector',
+        require:true,
+        disable:false,
+        range:[
+          { value: 1, label: 'PayPal' },
+          { value: 3, label: 'Alipay(支付宝)' },
+          { value: 4, label: 'WeChat(微信)' },
+          { value: 5, label: '礼品卡' }],
+        show:true,
+      },
+      {
+        key: 'giftCard',
+        label: '礼品码：',
+        type: 'input',
+        otherType: 'text',
+        ph:'请输入',
+        disable:false,
+        require:true,
+        range:[],
+        show:false
+      },
+      {
+        key: 'paypalAccount',
+        label: '收款账号：',
+        type: 'input',
+        otherType: 'text',
+        ph:'请输入',
+        disable:false,
+        require:true,
+        range:[],
+        show:true
+      },
+    ]
   }
+
 ]

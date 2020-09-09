@@ -183,7 +183,7 @@ const Chat = () => {
         })
         if (fan) {
           if (tags !== '' && tags !== null && tags !== undefined) {
-            const parsetags = tags.substr(1, tags.length - 2).split(',').slice(-2)
+            const parsetags = tags.substr(1, tags.length - 2).split(',').slice(0,2)
             fan.tagsArr = parsetags
           } else {
             fan.tagsArr = []
@@ -247,7 +247,7 @@ const Chat = () => {
       list.forEach(item => {
         item.tagsArr = []
         item.formatTime = formatChatTime(item.timestamp)
-        item.tagsArr = item.tags === '' || item.tags === null ? [] : item.tagsArr = item.tags.split(',').slice(-2)
+        item.tagsArr = item.tags === '' || item.tags === null ? [] : item.tagsArr = item.tags.split(',').slice(0,2)
       })
       listref.current = list
       dispatch({
@@ -274,7 +274,7 @@ const Chat = () => {
       list.forEach(item => {
         item.tagsArr = []
         item.formatTime = formatChatTime(item.timestamp)
-        item.tagsArr = item.tags === '' || item.tags === null ? [] : item.tagsArr = item.tags.split(',').slice(-2)
+        item.tagsArr = item.tags === '' || item.tags === null ? [] : item.tagsArr = item.tags.split(',').slice(0,2)
       })
       listref.current = [...listref.current, ...list]
       dispatch({ type: 'list', payload: { list: listref.current } });
@@ -295,7 +295,7 @@ const Chat = () => {
       if (data) {
         data.tagsArr = []
         data.formatTime = formatChatTime(data.timestamp)
-        data.tagsArr = data.tags === '' || data.tags === null ? [] : data.tagsArr = data.tags.split(',').slice(-2)
+        data.tagsArr = data.tags === '' || data.tags === null ? [] : data.tagsArr = data.tags.split(',').slice(0,2)
         data.read = 0
         if (searchForm.chatKey !== '') return
         listref.current = [data, ...listref.current]

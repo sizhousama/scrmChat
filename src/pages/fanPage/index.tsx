@@ -54,7 +54,7 @@ const FanInfo = () => {
             }      
           </View> 
           <Text className='pid'>主页：{fan.pageName}</Text>
-          <Text className='phone'>电话：{fan.phone}</Text>
+          <Text className='phone'>Paypal：{fan.payAccount}</Text>
         </View>
       </View>
       <View className='btn' onClick={goChat}>

@@ -53,9 +53,11 @@ const Users = () => {
   const search = () => {
     parmref.current.facebookName = searchForm.fanKey
     parmref.current.pageId = searchForm.fanPage
+    parmref.current.current=1
   }
   const getfans = async () => {
     setLoading(true)
+    
     await getFans(parmref.current).then(res => {
       const { data } = res
       data.total>parmref.current.size?setHasMore(true):setHasMore(false)

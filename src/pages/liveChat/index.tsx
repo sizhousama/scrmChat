@@ -22,7 +22,7 @@ import { formatMsgStatus } from '@/utils/filter'
 import { getHistoryMsg } from '@/api/chat'
 import { getFanInfo } from '@/api/fan'
 import { observer } from 'mobx-react';
-import { useFanStore, useWsioStore, useUserStore,useOrderStore } from '@/store';
+import { useFanStore, useWsioStore, useUserStore, useOrderStore } from '@/store';
 import { parseMsg } from '@/utils/parse'
 import { vibrateS } from '@/utils/index'
 import { formatChatTime } from "@/utils/time";
@@ -74,9 +74,9 @@ const LiveChat = () => {
   const cursorref = useRef(0)
   const barHeight = getSysInfo().statusBarHeight
 
-  const { fan,setMd5,setPayAccount } = useFanStore()
+  const { fan, setMd5, setPayAccount } = useFanStore()
   const { userInfo } = useUserStore()
-  const {setTempOrder} = useOrderStore()
+  const { setTempOrder } = useOrderStore()
   const { wsio } = useWsioStore()
   const [pos, setPos] = useState(0)
   const [message, setMessage] = useState('')
@@ -91,7 +91,7 @@ const LiveChat = () => {
   const [loading, setLoading] = useState(false) //加载更多...
   const [initLoading, setInitLoading] = useState(false)
   const [hasmore, setHasmore] = useState(false) //是否有更多历史记录
-  const [replyImg, setReplyImg] = useState('')
+  const [replyImg, setReplyImg] = useState<string[]>([])
   const [hisPar, setHisPar] = useState({
     page: 1,
     pageSize: 15,
@@ -123,7 +123,7 @@ const LiveChat = () => {
     const p = { pageId, fanId }
 
     await getFanInfo(p).then(res => {
-      const { lastSendMsgTime,userMd5,payAccount } = res.data
+      const { lastSendMsgTime, userMd5, payAccount } = res.data
       setMd5(userMd5)
       setPayAccount(payAccount)
       if (lastSendMsgTime != undefined && lastSendMsgTime !== '') {
@@ -154,6 +154,7 @@ const LiveChat = () => {
       messageItem = { ...parseMsg(data) }
       const { userId, isServe = true, senderId: newMsgSenderId, recipientId: newMsgRecipientId } = messageItem
       const { fanId: fanSenderId, pageId: fanPageId } = fan
+      // debugger
       const message = fakeref.current.find(item => {
         if (item['mid']) {
           return item['mid'] === messageItem.mid
@@ -179,22 +180,24 @@ const LiveChat = () => {
     })
 
     wsio.on('SEND_MSG_RESPONSE', (data) => {
-      const { msg = '', status, uuid = '', mid = '' } = data
+      const { msg = '', status, uuid = '', mid = '', senderId } = data
       // 收到的状态为3的时候，比状态时间戳小的信息全部改为已读
-      if (status === 3) {
-        console.log(data)
-        const watermark = data.watermark
-        fakeref.current.forEach(item => {
-          if (item.timestamp <= watermark) {
-            item.status = 3
-          }
-        })
-      } else {
+      console.log(data)
+      if (mid !== '') {
         const sendText = fakeref.current.find(item => item.uuid === uuid)
         if (sendText) {
           sendText.status = status
           sendText.errorText = msg
           sendText.mid = mid
+        }
+      }else{
+        if (senderId === fan.fanId && status === 3) {
+          const watermark = data.watermark
+          fakeref.current.forEach(item => {
+            if (item.timestamp <= watermark) {
+              item.status = 3
+            }
+          })
         }
       }
       dispatch({ type: 'fakes', payload: { fakes: fakeref.current } })
@@ -315,9 +318,9 @@ const LiveChat = () => {
       closeModal()
       return
     }
-    if (replyImg !== '') {
-      sendFileSocket([replyImg])
-      setReplyImg('')
+    if (replyImg.length > 0) {
+      sendFileSocket(replyImg)
+      setReplyImg([])
     }
     const { fanId, pageId } = fan
     // 发送参数 当前登录用户userId,聊天对象的senderId,pageId
@@ -470,7 +473,7 @@ const LiveChat = () => {
       case 'text':
         return <TextMsg ref={childref} msgItem={item}></TextMsg>
       case 'fallback':
-        return <FallBackMsg  ref={childref} msgItem={item}></FallBackMsg>
+        return <FallBackMsg ref={childref} msgItem={item}></FallBackMsg>
       case 'image':
         return <ImgMsg ref={childref} msgItem={item} fan={fan}></ImgMsg>
       case 'postback':
@@ -498,7 +501,7 @@ const LiveChat = () => {
   const setReply = (reply) => {
     const text = reply.content
     const result = setInput('msgInput', text, cursorref.current)
-    reply.imgUrl ? setReplyImg(reply.imgUrl) : ''
+    reply.imgs.length > 0 ? setReplyImg(reply.imgs) : ''
     setMessage(result)
     hideKb()
     setShowReply(false)
@@ -525,11 +528,15 @@ const LiveChat = () => {
     }, 100);
   }
   //关闭快捷回复图片
-  const closeReplyImg = () => {
-    setReplyImg('')
-    setTimeout(() => {
-      restPage()
-    }, 100);
+  const closeReplyImg = (i) => {
+    const arr = replyImg.slice(0, i).concat(replyImg.slice(i + 1, replyImg.length))
+    console.log(arr)
+    setReplyImg(arr)
+    if (arr.length === 0) {
+      setTimeout(() => {
+        restPage()
+      }, 100);
+    }
   }
   // 选择工具
   const clickTool = (id) => {
@@ -676,7 +683,7 @@ const LiveChat = () => {
             <AtIcon prefixClass='icon' value='add-circle' color='#666' size='28' className='alicon'></AtIcon>
             {showreply ? <QuickReply ref={childref} pageId={fan.pageId} handleClick={setReply}></QuickReply> : ''}
             {showflow ? <SendFlow ref={childref} handleClick={sendFlow}></SendFlow> : ''}
-            {replyImg !== '' ? <ReplyImg ref={childref} url={replyImg} handleClick={closeReplyImg}></ReplyImg> : ''}
+            {replyImg.length > 0 ? <ReplyImg ref={childref} imgs={replyImg} handleClick={closeReplyImg}></ReplyImg> : ''}
           </View>
         </View>
         {/* 输入发送消息 */}

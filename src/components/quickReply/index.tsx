@@ -40,6 +40,18 @@ const QuickReply = (props, ref) => {
     setLoading(true)
     await getReplys(params).then(res => {
       const { data } = res
+      data.records.forEach(item=>{
+        if(item.imgUrl!==null){
+          if(item.imgUrl.indexOf(',')>-1){
+            item.imgs=item.imgUrl.split(',')
+          }else{
+            item.imgs=[item.imgUrl]
+          }
+        }else{
+          item.imgs=[]
+        }
+      })
+      console.log(data.records)
       dispatch({ type: 'reply', payload: { reply: data.records } })
       setLoading(false)
     })
@@ -68,12 +80,12 @@ const QuickReply = (props, ref) => {
               return (
                 <View className='reply' onClick={setReply} data-item={item}>
                   <View className='leftcontent'>
-                    <Text className='title'>{item.title}</Text>
+                    <Text className='title break'>{item.title}</Text>
                     <Text className='desc twoline'>{item.content}</Text>
                   </View>
                   <View className='opt'>
                     {
-                      item.imgUrl?<Image src={item.imgUrl}></Image>:''
+                      item.imgUrl?<Image src={item.imgs[0]}></Image>:''
                     } 
                   </View>
                 </View>
