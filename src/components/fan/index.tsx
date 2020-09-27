@@ -26,6 +26,7 @@ const Fan = (props, ref) => {
         </View>
         <View className='bot'>
           <Text className='newmsg break'>主页：{props.fan.pageName}</Text>
+          <Text className='time break'>{props.fan.lasttime}</Text>
         </View>
       </View>
     </View>

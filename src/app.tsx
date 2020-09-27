@@ -1,4 +1,4 @@
-import React,{useEffect} from 'react'
+import React, { useEffect } from 'react'
 import { Provider } from 'mobx-react'
 import { stores, StoresContext } from './store';
 import 'taro-ui/dist/style/index.scss'
@@ -6,6 +6,7 @@ import './app.scss'
 import './icon.scss'
 import 'mobx-react-lite/batchingForReactDom'
 import { observer } from 'mobx-react';
+import { useDidShow } from '@tarojs/taro';
 // cnpm install taro-ui@3.0.0-alpha.3
 
 const App = (props) => {

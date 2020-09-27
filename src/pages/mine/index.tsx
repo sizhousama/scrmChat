@@ -40,12 +40,17 @@ const Mine = () => {
           </View>
           <View className='right'>
             <View className='top'>
-              <View className='name'>{userInfo.username}</View>
+              <View className='name'>
+              <Text className='break'>{userInfo.username}</Text>
+               
+              </View>
               <View className='edit' onClick={editinfo}>
                 <View className='at-icon at-icon-edit'></View>
               </View>
             </View>
-            <View className='bot'>公司：{userInfo.companyName}</View>
+            <View className='bot'>
+              <Text className='break'>公司：{userInfo.companyName}</Text>
+            </View>
           </View>
         </View>
       </View>

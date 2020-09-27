@@ -21,7 +21,6 @@ const MyInfo = () => {
     await chooseImg(url, 1).then(res => {
       setAvatar('')
       setAvatar(res[0])
-    }).finally(() => {
       setLoading(false)
     })
   }

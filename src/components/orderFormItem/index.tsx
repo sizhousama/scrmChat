@@ -16,9 +16,9 @@ const OrderFormItem = (props, ref) => {
       <View className='content fx1'>
         {props.formCont}
       </View>
-      <View className='ricon fx'>
+      {/* <View className='ricon fx'>
         <View className='at-icon at-icon-chevron-right'></View>
-      </View>
+      </View> */}
     </View>
   )
 }

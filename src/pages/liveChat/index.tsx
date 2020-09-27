@@ -128,7 +128,7 @@ const LiveChat = () => {
       setPayAccount(payAccount)
       if (lastSendMsgTime != undefined && lastSendMsgTime !== '') {
         try {
-          const lastSendTime = new Date(lastSendMsgTime).getTime()
+          const lastSendTime = new Date(lastSendMsgTime.replace(/-/g,"/")).getTime()
           const now = new Date().getTime()
           if (now - lastSendTime > 24 * 60 * 60 * 1000) {
             setShowTagMsg(true)
@@ -175,14 +175,13 @@ const LiveChat = () => {
         }
       }
       if (!isServe) {
-        vibrateS()
+        // vibrateS()
       }
     })
 
     wsio.on('SEND_MSG_RESPONSE', (data) => {
       const { msg = '', status, uuid = '', mid = '', senderId } = data
       // 收到的状态为3的时候，比状态时间戳小的信息全部改为已读
-      console.log(data)
       if (mid !== '') {
         const sendText = fakeref.current.find(item => item.uuid === uuid)
         if (sendText) {
@@ -190,12 +189,12 @@ const LiveChat = () => {
           sendText.errorText = msg
           sendText.mid = mid
         }
-      }else{
-        if (senderId === fan.fanId && status === 3) {
+      } else {
+        if (senderId === fan.fanId) {
           const watermark = data.watermark
           fakeref.current.forEach(item => {
             if (item.timestamp <= watermark) {
-              item.status = 3
+              item.status = status
             }
           })
         }
@@ -249,7 +248,6 @@ const LiveChat = () => {
         dispatch({ type: 'his', payload: { his: hisarr } })
         tobottom()
       }
-    }).finally(() => {
       setInitLoading(false)
     })
   }
@@ -295,7 +293,6 @@ const LiveChat = () => {
       dispatch({ type: 'his', payload: { his: hisarr } })
       const id = `msg${hisref.current[len].uuid}`
       setCurMsg(id)
-    }).finally(() => {
       setLoading(false)
     })
   }
@@ -333,6 +330,7 @@ const LiveChat = () => {
       msg: msg,
       tag: showTagMsg ? 'ACCOUNT_UPDATE' : ''
     }
+    console.log(socketParams)
     // 假数据
     // TODO: 目前自制的假消息类型只有text
     const fakeText = {
@@ -356,6 +354,7 @@ const LiveChat = () => {
     setMessage('')
 
     wsio.emit('SEND_MSG', socketParams)
+
     tobottom()
     setIsFocus(true)
     // 关闭所有
@@ -601,9 +600,12 @@ const LiveChat = () => {
       tobottom()
     }, 0);
   }
+  const clickTopUserIcon = () => {
+    closeModal()
+  }
   return (
     <View className='live-chat' >
-      <ChatHeader ref={childref} fan={fan}></ChatHeader>
+      <ChatHeader ref={childref} fan={fan} handleClick={clickTopUserIcon}></ChatHeader>
       <AtActivityIndicator isOpened={initLoading} size={36} mode='center'></AtActivityIndicator>
       <ScrollView
         scrollY

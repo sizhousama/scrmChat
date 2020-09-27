@@ -61,6 +61,7 @@
     display: flex;
     align-items: center;
     font-weight: bold;
+    text{width:400px}
   }
   .edit{
     flex:1;
@@ -77,6 +78,7 @@
   align-items: center;
   font-size: 32px;
   color:#fff;
+  text{width:400px}
 }
 .botbox{
   width:100%;

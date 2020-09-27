@@ -8,7 +8,8 @@ import { observer } from 'mobx-react';
 import { useFanStore } from '@/store';
 import { isNeedAddH } from '@/utils/index'
 import { AtActivityIndicator } from 'taro-ui'
-import { useReachBottom,useDidShow } from "@tarojs/taro";
+import { useReachBottom, useDidShow } from "@tarojs/taro";
+import { formatChatTime } from '@/utils/time'
 import './index.scss'
 
 const initState = {
@@ -29,12 +30,12 @@ const Users = () => {
   const cur: number = 1
   const needH = isNeedAddH()
   const childref = useRef();
-  const { hasNew,searchForm} = useFanStore()
+  const { hasNew, searchForm } = useFanStore()
   const listref = useRef<any[]>([])
   const [state, dispatch] = useReducer(stateReducer, initState)
   const [loading, setLoading] = useState(false)
   const [moreloading, setMoredLoading] = useState(false)
-  const [hasmore,setHasMore] = useState(false)
+  const [hasmore, setHasMore] = useState(false)
   const parmref = useRef({
     current: 1,
     size: 10,
@@ -45,7 +46,7 @@ const Users = () => {
     fanGrades: 0
   })
   const { fans } = state
-  
+
   useDidShow(() => {
     search()
     getfans()
@@ -53,28 +54,45 @@ const Users = () => {
   const search = () => {
     parmref.current.facebookName = searchForm.fanKey
     parmref.current.pageId = searchForm.fanPage
-    parmref.current.current=1
+    parmref.current.current = 1
   }
   const getfans = async () => {
     setLoading(true)
-    
+
     await getFans(parmref.current).then(res => {
-      const { data } = res
-      data.total>parmref.current.size?setHasMore(true):setHasMore(false)
-      listref.current = data.records
-      dispatch({ type: 'list', payload: { list: listref.current } })
-    }).finally(() => {
-      setLoading(false)
+      try {
+        const { data } = res
+        data.total > parmref.current.size ? setHasMore(true) : setHasMore(false)
+        listref.current = data.records
+        listref.current.forEach(item => {
+          if (item.lastSendMsgTime) {
+            console.log()
+            item.lasttime = formatChatTime(new Date(item.lastSendMsgTime.replace(/-/g,"/")))
+          } else {
+            item.lasttime = ''
+          }
+        })
+        dispatch({ type: 'list', payload: { list: listref.current } })
+        setLoading(false)
+      } catch (e) {
+        console.log(e)
+      }
     })
   }
   const getmorefans = async () => {
     setMoredLoading(true)
     await getFans(parmref.current).then(res => {
       const { data } = res
-      listref.current = [...listref.current,...data.records] 
+      data.records.forEach(item => {
+        if (item.lastSendMsgTime) {
+          item.lasttime = formatChatTime(new Date(item.lastSendMsgTime.replace(/-/g,"/")))
+        } else {
+          item.lasttime = ''
+        }
+      })
+      listref.current = [...listref.current, ...data.records]
       dispatch({ type: 'list', payload: { list: listref.current } })
-      data.total>listref.current.length?setHasMore(true):setHasMore(false)
-    }).finally(() => {
+      data.total > listref.current.length ? setHasMore(true) : setHasMore(false)
       setMoredLoading(false)
     })
   }
@@ -87,8 +105,8 @@ const Users = () => {
   return (
     <View>
       <AtActivityIndicator isOpened={loading} mode='center'></AtActivityIndicator>
-      <Header ref={childref} title='粉丝' icon='fanlist' />
-      <View className={`fanlist ${needH ? 'needh' : ''}`} >
+      <Header ref={childref} title='粉丝列表' icon='fanlist' />
+      <View className='fanlist' >
         {
           fans.map((fan: any, index) => {
             return (
@@ -97,11 +115,12 @@ const Users = () => {
           })
         }
         {
-          moreloading?
-          <View className='more'>
-            <AtActivityIndicator isOpened={moreloading} mode='center' color='#999'></AtActivityIndicator>
-          </View>:''
+          moreloading ?
+            <View className='more'>
+              <AtActivityIndicator isOpened={moreloading} mode='center' color='#999'></AtActivityIndicator>
+            </View> : ''
         }
+        <View className={`botblock ${needH ? 'needh' : ''}`} ></View>
       </View>
       <TabBar ref={childref} cur={cur} has={hasNew} />
     </View>

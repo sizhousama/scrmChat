@@ -39,7 +39,7 @@ const ChatFan = (props, ref) => {
         </View>
         <View className='bot'>
           <Text className='newmsg break'>{props.fan.msg}</Text>
-          <Text className='date'>{props.fan.formatTime}</Text>
+          <Text className='date break'>{props.fan.formatTime}</Text>
         </View>
       </View>
     </View>

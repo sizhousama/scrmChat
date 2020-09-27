@@ -205,7 +205,7 @@ export const orderForm = [{
         key: 'scalpingProductPrice',
         label: '商品价格：',
         type: 'input',
-        otherType: 'number',
+        otherType: 'digit',
         ph:'请输入',
         disable:false,
         require:true,
@@ -216,11 +216,12 @@ export const orderForm = [{
   },
   {
     title: '订单信息',
-    fitems: [{
+    fitems: [
+      {
         key: 'orderNumber',
         label: '订单编号：',
         type: 'input',
-        otherType: 'number',
+        otherType: 'text',
         ph:'请输入',
         disable:false,
         require:false,
@@ -240,7 +241,7 @@ export const orderForm = [{
         key: 'orderPrice',
         label: '订单金额：',
         type: 'input',
-        otherType: 'number',
+        otherType: 'digit',
         ph:'请输入',
         disable:false,
         require:false,
@@ -279,6 +280,7 @@ export const orderForm = [{
         ],
         require:false,
         show:true,
+        disable:false
       },
       {
         key: 'orderImgType',
@@ -289,6 +291,16 @@ export const orderForm = [{
           {label:'电脑',value:2}
         ],
         require:false,
+        show:true,
+        disable:false
+      },
+      {
+        key: 'categoryId',
+        label: '订单分组：',
+        type: 'selector',
+        require:false,
+        disable:false,
+        range:[],
         show:true,
       },
       {
@@ -315,7 +327,8 @@ export const orderForm = [{
   },
   {
     title: '测评信息',
-    fitems: [{
+    fitems: [
+      {
         key: 'commentWay',
         label: '评论方式：',
         type: 'selector',
@@ -359,9 +372,19 @@ export const orderForm = [{
         { value: 10, label: '评前返' },
         { value: 11, label: '评前半返' },
         { value: 9, label: '评后全返' },
+        { value: 13, label: '发货后全返' },
         { value: 6, label: '发货返一半，评后返一半' },
         { value: 8, label: '收货返一半，评后返一半' },
         { value: 4, label: '下单返一半，评后返一半' }],
+        show:true,
+      },
+      {
+        key: 'isCashout',
+        label: '返款状态：',
+        type: 'selector',
+        disable:true,
+        require:false,
+        range:cashOutStatus,
         show:true,
       },
       {
@@ -373,12 +396,13 @@ export const orderForm = [{
         { value: 0, label: 'FB' },
         { value: 1, label: '非FB' }],
         show:true,
+        disable:false
       },
       {
         key: 'amazonOrderStatus',
         label: '亚马逊状态：',
         type: 'selector',
-        require:true,
+        require:false,
         disable:false,
         range:[
         { value: 0, label: '无记录' },
@@ -434,7 +458,7 @@ export const orderForm = [{
         otherType: 'text',
         ph:'请输入',
         disable:false,
-        require:true,
+        require:false,
         range:[],
         show:false
       },

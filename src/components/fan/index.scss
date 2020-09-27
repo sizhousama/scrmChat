@@ -15,7 +15,6 @@
   .right {
     flex: 1;
     height: 90px;
-    padding-right: 30px;
     display: flex;
     flex-direction: column;
     margin-top:6px;
@@ -42,7 +41,15 @@
   display: flex;
   .newmsg {
     font-size: 24px;
-    width: 450px;
+    width: 350px;
     color: #909399
+  }
+  .time{
+    font-size: 22px;
+    width:200px;
+    padding-right:20px;
+    text-align: right;
+    box-sizing: border-box;
+    color:#909399;
   }
 }

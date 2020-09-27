@@ -17,7 +17,8 @@ import {
   iPcOrderImg,
   getProducts,
   getActByPid,
-  getActBySenderId
+  getActBySenderId,
+  getAllCat
 } from '@/api/order'
 import "./index.scss";
 const initState = {
@@ -36,6 +37,7 @@ const initState = {
   cashOutPrice: '', // 返款金额
   includedTax: 1, // 是否包含手续费
   orderImgType: 1,//截图类型
+  categoryId:'',//订单分组
   orderNote: '', // 订单备注
   orderImage: '', // 订单截图
   //测评信息
@@ -126,6 +128,11 @@ const stateRducer = (state, action) => {
       return {
         ...state,
         orderImgType: action.payload.orderImgType
+      }
+    case 'categoryId':
+      return {
+        ...state,
+        categoryId: action.payload.categoryId
       }
     case 'orderNote':
       return {
@@ -244,8 +251,25 @@ const Order = (props) => {
   const { tempOrder } = useOrderStore()
   const typeRef = useRef('0')
   useEffect(() => {
+    getCatArr()
     initorder()
   }, [])
+  const getCatArr = () =>{
+    getAllCat().then(res=>{
+      if(res){
+        const {data} = res
+        const arr = data.map(item=>{
+          const obj = {
+            value:item.id,
+            label:item.name
+          }
+          return obj
+        })
+        formref.current[1].fitems[7].range = arr
+        setForms(formref.current.slice())
+      }
+    })
+  }
   const initorder = () => {
     const router = getCurrentInstance().router
     let params: any = ''
@@ -254,7 +278,12 @@ const Order = (props) => {
       typeRef.current = params.type
       console.log(params)
       if (typeRef.current === '0') {
-        tempOrder !== '' ? dispatch({ type: 'temp', payload: { tempOrder } }) : ''
+        if (tempOrder !== '') {
+          const { cashOutPrice } = tempOrder
+          dispatch({ type: 'temp', payload: { tempOrder } })
+          dispatch({ type: 'orderCommission', payload: { orderCommission: 0 } })
+          dispatch({ type: 'orderPrice', payload: { orderPrice: cashOutPrice } })
+        }
         tempOrder.commentImage ? setComImg(tempOrder.commentImage) : ''
         tempOrder.orderImage ? setOrderImg(tempOrder.orderImage) : ''
         getAct()
@@ -269,21 +298,58 @@ const Order = (props) => {
     await getOrderInfo(id).then(res => {
       const { data } = res
       dispatch({ type: 'temp', payload: { tempOrder: data } })
+      dispatch({ type: 'orderImageDate', payload: { orderImageDate: data.orderImageDate===null?'':data.orderImageDate } })
       dispatch({ type: 'keyword', payload: { keyword: `(${data.scalpingProductId})${data.productTitle}` } })
       dispatch({ type: 'orderPrice', payload: { orderPrice: data.cashOutPrice - data.orderCommission } })
       setComImg(data.commentImage)
       setOrderImg(data.orderImage)
-      if(data.payWay === 5){
-        formref.current[3]['fitems'][0]['disable'] = true
+      if (data.payWay === 5) {
+        if (data.giftCard !== '' || data.giftCard !== null) {
+          formref.current[3]['fitems'][0]['disable'] = true
+        }
         formref.current[3]['fitems'][1]['show'] = true
         formref.current[3]['fitems'][2]['require'] = false
         setForms(formref.current.slice())
       }
-
-      tempOrder !== '' ? dispatch({ type: 'temp', payload: { tempOrder } }) : ''
+      if(data.cashOutType===12&&data.isCashout===0){
+        formref.current[2]['fitems'][1]['disable'] = true
+        setForms(formref.current.slice())
+      }
+ 
+      if (tempOrder !== '') {
+        const { cashOutPrice } = tempOrder
+        dispatch({ type: 'temp', payload: { tempOrder } })
+        dispatch({ type: 'orderCommission', payload: { orderCommission: 0 } })
+        dispatch({ type: 'orderPrice', payload: { orderPrice: cashOutPrice } })
+      }
       tempOrder.commentImage ? setComImg(tempOrder.commentImage) : ''
       tempOrder.orderImage ? setOrderImg(tempOrder.orderImage) : ''
+
+      if(data.status === 4){
+        formref.current.forEach(item=>{
+          item.fitems.forEach(o=>{
+            if(o.disable!==undefined){
+              o.disable = true
+            }
+          })
+        })
+        setForms(formref.current.slice())
+      }else{
+        formref.current.forEach(item=>{
+          item.fitems.forEach(o=>{
+            if(o.disable!==undefined){
+              o.disable = false
+            }
+            if(['storeName','cashOutPrice','asin','isCashout'].includes(o.key)){
+              o.disable = true
+            }
+          })
+        })
+        setForms(formref.current.slice())
+      }
     })
+
+    
   }
   const getAct = async () => {
     const { pageId, fanId } = fan
@@ -307,6 +373,10 @@ const Order = (props) => {
     dispatch({ type: 'adId', payload: { adId: fan.adId } })
     dispatch({ type: 'paypalAccount', payload: { paypalAccount: fan.payAccount } })
     dispatch({ type: 'userMd5', payload: { userMd5: fan.userMd5 } })
+    formref.current[3]['fitems'][0]['disable'] = false
+    formref.current[3]['fitems'][1]['show'] = false
+    formref.current[3]['fitems'][2]['require'] = true
+    setForms(formref.current.slice())
   }
   const setState = (item, v) => {
     const key = item.key
@@ -329,14 +399,14 @@ const Order = (props) => {
       dispatch({ type: 'cashOutPrice', payload: { cashOutPrice: cp } })
     }
     if (key === 'payWay') {
-      if (v === '3') {      
+      if (v === '3') {
         formref.current[3]['fitems'][1]['show'] = true
         formref.current[3]['fitems'][2]['require'] = false
       } else {
         formref.current[3]['fitems'][1]['show'] = false
         formref.current[3]['fitems'][2]['require'] = true
       }
-      setForms(formref.current.slice()) 
+      setForms(formref.current.slice())
     }
   }
   const getpro = async (v) => {
@@ -351,20 +421,22 @@ const Order = (props) => {
       const { data } = res
       const { records } = data
       setProdects(records)
-    }).finally(() => {
       setProLoading(false)
     })
 
   }
   const autoSet = async (e) => {
+    dispatch({ type: 'keyword', payload: { keyword: '' } })
     const item = e.currentTarget.dataset.item
     const { asin, storeName, id, price, currencyType, title } = item
-    dispatch({ type: 'keyword', payload: { keyword: `(${id})${title}` } })
     dispatch({ type: 'scalpingProductId', payload: { scalpingProductId: id } })
     dispatch({ type: 'asin', payload: { asin: asin } })
     dispatch({ type: 'storeName', payload: { storeName: storeName } })
     dispatch({ type: 'scalpingProductPrice', payload: { scalpingProductPrice: price } })
     dispatch({ type: 'currencyType', payload: { currencyType: currencyType } })
+    setTimeout(() => {
+      dispatch({ type: 'keyword', payload: { keyword: `(${id})${title}` } })
+    }, 100);
     await getActByPid({ productId: id }).then(res => {
       if (res.data) {
         dispatch({ type: 'acticityId', payload: { acticityId: res.data.id } })
@@ -388,7 +460,7 @@ const Order = (props) => {
       dispatch({ type: 'scalpingProductPrice', payload: { scalpingProductPrice: productPrice } })
       dispatch({ type: 'cashOutPrice', payload: { cashOutPrice: amount } })
       dispatch({ type: 'orderImageDate', payload: { orderImageDate: date } })
-    }).finally(() => {
+
       hideL()
     })
   }
@@ -418,12 +490,15 @@ const Order = (props) => {
       item.key === 'orderImage' ? setOrderImg('') : setComImg('')
     }, 100);
   }
-  const selectorValue=(item):any=>{
-    for(let i=0;i<item.range.length;i++){
-      if(item.range[i].value===state[item.key]){
+  const selectorValue = (item): any => {
+    for (let i = 0; i < item.range.length; i++) {
+      if (item.range[i].value === state[item.key]) {
         return i
       }
     }
+  }
+  const returnfalse = ()=>{
+    return false
   }
   const formTypeFilter = (item) => {
     switch (item.type) {
@@ -446,6 +521,7 @@ const Order = (props) => {
             className='compicker'
             value={state[item.key]}
             mode='date'
+            disabled={item.disable}
             onChange={(e) => { setState(item, e.detail.value) }}>
             <AtList>
               <AtListItem extraText={state[item.key]} />
@@ -472,12 +548,12 @@ const Order = (props) => {
           <View className='imgbox'>
             {
               state[item.key] === '' ?
-                <View className='noimg fx' onClick={upImg} data-item={item}>
+                <View className='noimg fx' onClick={item.disable?returnfalse:upImg} data-item={item}>
                   <View className='at-icon at-icon-add'></View>
                 </View> :
                 <View className='orderimg'>
                   <Image src={item.key === 'orderImage' ? orderImg : comImg} onClick={() => previewImg(state[item.key])}></Image>
-                  <View className='icon icon-close' onClick={delImg} data-item={item}></View>
+                  <View className='icon icon-close' onClick={item.disable?returnfalse:delImg} data-item={item}></View>
                 </View>
             }
           </View>
@@ -488,7 +564,7 @@ const Order = (props) => {
             <AtRadio
               options={item.range}
               value={state[item.key]}
-              onClick={(v) => { setState(item, v) }}
+              onClick={(v) => { item.disable?'':setState(item, v) }}
             />
           </View>
         )
@@ -504,13 +580,12 @@ const Order = (props) => {
     }
     if (formdata.commentWay === '' ||
       formdata.cashOutType === '' ||
-      formdata.orderChannelId === '' ||
-      formdata.amazonOrderStatus === '') {
+      formdata.orderChannelId === '') {
       Toast('请完善测评信息！', 'none')
       return
     }
-    if (formdata.payWay === 5 && formdata.giftCard==='' || 
-    formdata.payWay !== 5 && formdata.paypalAccount==='') {
+    if (formdata.payWay === 5 && formdata.giftCard === '' ||
+      formdata.payWay !== 5 && formdata.paypalAccount === '') {
       Toast('请完善买家信息！', 'none')
       return
     }
@@ -557,7 +632,7 @@ const Order = (props) => {
   }
   return (
     <View>
-      <NavBar title='测评订单' />
+      <NavBar title={typeRef.current==='0'?'创建订单':'编辑订单'} />
       <View className='order-form' style={style} >
         {
           forms.map((section, index) => {
@@ -567,39 +642,39 @@ const Order = (props) => {
                 {
                   section.fitems.map((oitem, idx) => {
                     return (
-                      oitem.show?
-                      <OrderFormItem
-                        key={idx}
-                        id={oitem.key}
-                        label={oitem.label}
-                        type={oitem.type}
-                        require={oitem.require}
-                        formCont={formTypeFilter(oitem)}
-                        products={
-                          showpro ?
-                            <View className='showpro'>
-                              <ScrollView className='proscroll' scrollY onClick={(e) => e.stopPropagation()}>
-                                <View className='probox' >
-                                  <AtActivityIndicator isOpened={proloading} mode='center' size={30}></AtActivityIndicator>
-                                  {
-                                    products.length > 0 ?
-                                      products.map((pro, idx) => {
-                                        return (
-                                          <View
-                                            key={idx}
-                                            className='pro break'
-                                            onClick={autoSet}
-                                            data-item={pro}
-                                          >{`(${pro.id})${pro.title}`}</View>
-                                        )
-                                      }) : <View className='nodate'>无数据</View>
-                                  }
-                                </View>
-                              </ScrollView>
-                              <View className='closeprobox' onClick={() => setShowPro(false)}>取消</View>
-                            </View> : ''
-                        }
-                      ></OrderFormItem>:''
+                      oitem.show ?
+                        <OrderFormItem
+                          key={idx}
+                          id={oitem.key}
+                          label={oitem.label}
+                          type={oitem.type}
+                          require={oitem.require}
+                          formCont={formTypeFilter(oitem)}
+                          products={
+                            showpro ?
+                              <View className='showpro'>
+                                <ScrollView className='proscroll' scrollY onClick={(e) => e.stopPropagation()}>
+                                  <View className='probox' >
+                                    <AtActivityIndicator isOpened={proloading} mode='center' size={30}></AtActivityIndicator>
+                                    {
+                                      products.length > 0 ?
+                                        products.map((pro, idx) => {
+                                          return (
+                                            <View
+                                              key={idx}
+                                              className='pro break'
+                                              onClick={autoSet}
+                                              data-item={pro}
+                                            >{`(${pro.id})${pro.title}`}</View>
+                                          )
+                                        }) : <View className='nodate'>无数据</View>
+                                    }
+                                  </View>
+                                </ScrollView>
+                                <View className='closeprobox' onClick={() => setShowPro(false)}>取消</View>
+                              </View> : ''
+                          }
+                        ></OrderFormItem> : ''
                     )
                   })
                 }

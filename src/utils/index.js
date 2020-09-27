@@ -57,7 +57,7 @@ export const isNeedAddH = () => {
   let ish = false
   Taro.getSystemInfo({
     success(res) {
-      if(res.model.indexOf('iPhone X'||'iPhone 11')>-1){
+      if(res.model.indexOf('iPhone X')>-1||res.model.indexOf('iPhone 11')>-1){
         ish=true
       }
     }

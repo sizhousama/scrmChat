@@ -17,6 +17,7 @@ const ImgMsg = (props, ref) => {
   const isR = props.msgItem.isServe
   const [style, setStyle] = useState({})
   const [showorder, setShowOrder] = useState(false)
+  const [showCreate, setshowCreate] = useState(false)
   const [orders, setOrders] = useState<any[]>([])
   const {setTempOrder} = useOrderStore()
   const imgload = (e) => {
@@ -84,6 +85,7 @@ const ImgMsg = (props, ref) => {
     const fun = idx === 0 ? iMbOrderImg : iPcOrderImg
     let obj = {}
     if (idx === 0 || idx === 1) {
+      setshowCreate(true)
       showL('识别中')
       await fun({ imageUrl: img }).then(res => {
         const {id,amount,date,productPrice} = res.data
@@ -94,13 +96,15 @@ const ImgMsg = (props, ref) => {
           orderImageDate:date!==null?date:'',
         }
         setTempOrder(obj)
-      }).finally(() => {
+
+        
         obj['orderImage'] = img
         setTempOrder(obj)
         setShowOrder(true);
         hideL()
       })
     } else {
+      setshowCreate(false)
       setTempOrder({commentImage:img})
       setShowOrder(true)
     }
@@ -151,7 +155,9 @@ const ImgMsg = (props, ref) => {
         </AtModalContent>
         <AtModalAction>
           <Button onClick={() => setShowOrder(false)}>取消</Button>
-          <Button onClick={createOrder}>创建</Button>
+          {
+            showCreate?<Button onClick={createOrder}>创建</Button>:''
+          }
         </AtModalAction>
       </AtModal>
     </View>

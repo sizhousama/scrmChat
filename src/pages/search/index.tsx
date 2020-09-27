@@ -19,7 +19,7 @@ const Search = () => {
   // const [state,dispatch] = useReducer(stateReducer,initState)
   const [selectPage,setSelectP] = useState('无')
   const { pages,searchFrom, searchForm,setSFfanKey,setSFfanPage,setSFchatKey,setSFchatPage } = useFanStore()
-  const minplace = searchFrom === 'message' ? '粉丝名称/邮箱/分配人/adid' : '粉丝名称'
+  const minplace = searchFrom === 'message' ? '粉丝名称/邮箱/分配人/adid/标签' : '粉丝名称'
   
   useEffect(() => {
     if(searchFrom==='message'){
@@ -87,7 +87,7 @@ const Search = () => {
               value={searchFrom==='message'?searchForm.chatKey:searchForm.fanKey}
               onChange={setkey}
             />
-            <View className='searchbtn' onClick={search}>搜索</View>
+            {/* <View className='searchbtn' onClick={search}>搜索</View> */}
           </View>
           <View className='subtitle'>详细筛选：</View>
           <View className='other tagform'>

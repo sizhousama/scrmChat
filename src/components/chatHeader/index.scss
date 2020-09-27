@@ -39,12 +39,14 @@
   .name {
     font-size: 36px;
     color: #101010;
+    width:400px;
   }
 
   .pageid {
     font-size: 22px;
     color: #bbb;
     font-weight: 500;
+    width:400px;
   }
 }
 
@@ -86,6 +88,7 @@
   }
   .picker{
     height: 50px;
+    width:100%;
   }
 }
 // 覆盖样式

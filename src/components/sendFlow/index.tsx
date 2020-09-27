@@ -52,7 +52,7 @@ const SendFlow = (props, ref) => {
     await getFlows(parmref.current).then(res => {
       const { data } = res
       dispatch({ type: 'flows', payload: { flows: data.records } })
-    }).finally(() => {
+
       setLoading(false)
     })
   }

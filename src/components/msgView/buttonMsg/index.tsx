@@ -6,9 +6,14 @@ import './index.scss'
 
 
 const ButtonMsg = (props, ref) => {
+  const copy=()=>{
+    Taro.setClipboardData({
+      data: props.msgItem.text,
+    })
+  }
   return (
     <View className='button-msg'>
-      <View className='pure-text'>
+      <View className='pure-text' onClick={copy}>
         <Text>{props.msgItem.text}</Text>
       </View>
       <View className='button-msg-btns'>

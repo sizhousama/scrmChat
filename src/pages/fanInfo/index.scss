@@ -45,6 +45,7 @@
         color: #101010;
         display: flex;
         margin-bottom: 5px;
+        .fanname{max-width:400px;}
 
         .icon {
           font-size: 30px;
@@ -65,7 +66,8 @@
       .pid {
         font-size: 24px;
         color: #bbb;
-        margin-bottom: 5px
+        margin-bottom: 5px;
+        width:400px;
       }
 
       .adid {
@@ -74,7 +76,18 @@
     }
   }
 }
-
+.amazinfo{
+  margin-bottom:30px;
+  .infobox{
+    width:630px;
+    margin:0 auto;
+    font-size: 24px;
+    .content{
+      width:400px;
+      text-align: right;
+    }
+  }
+}
 .orderlist {
   width: 100%;
   padding: 10px 0;
@@ -169,7 +182,7 @@
   padding: 10px 60px;
 
   .tag {
-    padding: 2px 20px;
+    padding: 4px 20px;
     background: #fff;
     border: 2px solid #7685FF;
     color: #7685FF;
@@ -181,10 +194,17 @@
 }
 
 .nodata {
-  width: 100%;
+  width: 630px;
+  margin:0 auto;
   padding: 20px 0;
   font-size: 28px;
   color: #999;
   text-align: center;
   position: relative;
+  .at-input{
+    margin:0;
+    input{
+      font-size: 26px;
+    }
+  }
 }

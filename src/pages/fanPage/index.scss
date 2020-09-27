@@ -30,21 +30,34 @@ page {
       font-size: 36px;
       color: #101010;
       display: flex;
-      margin-bottom:5px;
+      margin-bottom: 5px;
+      width: 500px;
+
+      .fanname {
+        max-width: 400px;
+      }
+
       .icon {
         font-size: 30px;
         display: flex;
         align-items: center;
         margin-left: 20px;
-        &.icon-male{color:#0084ff}
-        &.icon-female{color:#f2a7c0}
+
+        &.icon-male {
+          color: #0084ff
+        }
+
+        &.icon-female {
+          color: #f2a7c0
+        }
       }
     }
 
     .pid {
       font-size: 24px;
       color: #bbb;
-      margin-bottom: 5px
+      margin-bottom: 5px;
+      width: 400px;
     }
 
     .phone {
@@ -56,7 +69,7 @@ page {
 .fanbody {
   .btn {
     width: 100%;
-    height: 88px;
+    height: 120px;
     background: #fff;
     display: flex;
     align-items: center;
@@ -69,6 +82,166 @@ page {
     .icon {
       font-size: 34px;
       margin-right: 10px;
+    }
+  }
+}
+
+.faninfobox {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 0 20px;
+  background: #fff;
+  margin-top: 20px;
+  .amazinfo{
+    margin-bottom:30px;
+    .infobox{
+      width:630px;
+      margin:0 auto;
+      font-size: 24px;
+      .content{
+        width:400px;
+        text-align: right;
+      }
+    }
+  }
+
+  .sec-title {
+    font-size: 36px;
+    color: #606266;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 20px 60px;
+
+    .sec-icon {
+      justify-content: flex-end;
+
+      .at-icon {
+        font-size: 40px;
+      }
+    }
+  }
+
+
+  .orderlist {
+    width: 100%;
+    padding: 10px 0;
+    height: auto;
+    transition: height .3s ease;
+
+    .order {
+      width: 630px;
+      margin: 0 auto;
+      height: 120px;
+      border-radius: 120px;
+      box-shadow: 0 4px 20px 2px rgba(0, 0, 0, .2);
+      margin-bottom: 40px;
+      box-sizing: border-box;
+      padding: 10px 50px;
+      display: flex;
+      flex-direction: column;
+
+      .top {
+        flex: 1;
+        display: flex;
+        font-weight: 500;
+
+        .left {
+          flex: 2;
+          display: flex;
+          align-items: center;
+          font-size: 24px;
+          color: #606266;
+
+          .name {
+            width: 350px;
+          }
+        }
+
+        .right {
+          @extend .left;
+          flex: 1;
+          font-size: 22px;
+          color: #bbb;
+          display: flex;
+          justify-content: flex-end;
+        }
+
+
+      }
+
+      .bot {
+        @extend .top;
+
+        .left {
+          flex: 1;
+          font-weight: 500;
+
+          .status {
+            font-size: 22px;
+            color: #FF8753;
+          }
+        }
+
+        .right {
+          flex: 1;
+
+          .ordernum {
+            font-size: 22px;
+            color: #bbb;
+          }
+        }
+      }
+    }
+
+    &.seemore {
+      height: 450px;
+      overflow-y: hidden;
+    }
+  }
+
+  .checkmore {
+    width: 100%;
+    text-align: center;
+    font-size: 28px;
+    color: #bbb;
+    height: 40px;
+    line-height: 40px;
+  }
+
+  .taglist {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    box-sizing: border-box;
+    padding: 10px 60px;
+
+    .tag {
+      padding: 4px 20px;
+      background: #fff;
+      border: 2px solid #7685FF;
+      color: #7685FF;
+      font-size: 22px;
+      margin-right: 24px;
+      margin-bottom: 24px;
+      border-radius: 4px;
+    }
+  }
+
+  .nodata {
+    width: 630px;
+    margin: 0 auto;
+    padding: 20px 0;
+    font-size: 28px;
+    color: #999;
+    text-align: center;
+    position: relative;
+
+    .at-input {
+      margin: 0;
+
+      input {
+        font-size: 26px;
+      }
     }
   }
 }

@@ -57,7 +57,6 @@ const MyPages = () => {
         if (overday <= 3) { item.isovertime = true }
       })
       dispatch({ type: 'list', payload: { list: listref.current } })
-    }).finally(() => {
       setLoading(false)
     })
   }

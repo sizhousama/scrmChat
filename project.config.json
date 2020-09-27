@@ -4,7 +4,7 @@
 	"description": "scrmapp",
 	"appid": "wx82c19cdbf0354bb1",
 	"setting": {
-		"urlCheck": false,
+		"urlCheck": true,
 		"es6": false,
 		"enhance": false,
 		"postcss": false,

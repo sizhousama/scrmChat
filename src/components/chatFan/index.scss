@@ -15,7 +15,6 @@
   .right {
     flex: 1;
     height: 120px;
-    padding-right: 30px;
     display: flex;
     flex-direction: column;
     margin-top:6px;
@@ -41,7 +40,6 @@
     width:150px;
     color: #909399;
   }
-
 }
 .tagbox{
   width:100%;
@@ -65,7 +63,7 @@
 
   .newmsg {
     font-size: 24px;
-    width: 360px;
+    width: 350px;
     color: #909399;
     height: 36px;
   }
@@ -75,6 +73,9 @@
     text-align: right;
     font-size: 22px;
     color: #bbbbbb;
+    width:200px;
+    box-sizing: border-box;
+    padding-right: 20px;
   }
 }
 .badge{

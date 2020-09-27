@@ -1,4 +1,5 @@
 export default {
   navigationBarTitleText: '',
-  onReachBottomDistance:20
+  onReachBottomDistance:50,
+  enableShareAppMessage: true
 }

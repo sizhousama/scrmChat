@@ -23,13 +23,13 @@ const QuickReply = (props, ref) => {
   const [loading, setLoading] = useState(false)
   const [state, dispatch] = useReducer(stateReducer, initState)
   const { replys } = state
-  const params = {
+  const paramsref = useRef({
     pageId: props.pageId,
     current: 1,
     size: 999,
     type: 2,
     title: ''
-  }
+  })
   useEffect(() => {
     getlist()
   }, [])
@@ -38,10 +38,10 @@ const QuickReply = (props, ref) => {
   }
   const getlist = async () => {
     setLoading(true)
-    await getReplys(params).then(res => {
+    await getReplys(paramsref.current).then(res => {
       const { data } = res
       data.records.forEach(item=>{
-        if(item.imgUrl!==null){
+        if(item.imgUrl!==null&&item.imgUrl!==''){
           if(item.imgUrl.indexOf(',')>-1){
             item.imgs=item.imgUrl.split(',')
           }else{
@@ -57,7 +57,7 @@ const QuickReply = (props, ref) => {
     })
   }
   const inputChange = (v)=>{
-    params.title = v
+    paramsref.current.title = v
     setKey(v)
   }
   return (

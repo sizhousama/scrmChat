@@ -39,6 +39,10 @@ export const getActByPid = (params) => {
   return HTTPREQUEST.get(`/scrm-seller/appraisalActivity/getActivityByProductId`,params)
 }
 
+// 所有分组
+export const getAllCat = () => {
+  return HTTPREQUEST.get(`/scrm-seller/scalpingOrderCategory/getAllCategory`)
+}
 
 
 

@@ -26,11 +26,11 @@ const ChatHeader = (props, ref) => {
   const getlist = async()=>{
     await getServices().then(res=>{
       const {data} = res
-      let arr:any[] = ['未分配']
+      let arr:any[] = []
       data.forEach((item,index) => {
         arr = [...arr,item.username]
         if(props.fan.serviceName===item.username){
-          setCurser(index+1)
+          setCurser(index)
         }
       });
       listref.current = data
@@ -43,7 +43,7 @@ const ChatHeader = (props, ref) => {
       avatar:'',
       userId:null
     }
-    setServices(e.detail.value)
+    setCurser(e.detail.value)
     setSelectSer(services[e.detail.value])
     listref.current.forEach(item=>{
       if(item.username===services[e.detail.value]){
@@ -64,6 +64,7 @@ const ChatHeader = (props, ref) => {
     })
   }
   const gofaninfo = ()=>{
+    props.handleClick()
     NavTo('/pages/fanInfo/index')
   }
   return (
@@ -74,8 +75,8 @@ const ChatHeader = (props, ref) => {
           <Image src={livechat}></Image>
         </View>
         <View className='left'>
-          <Text className='name'>{props.fan.fanName}</Text>
-          <Text className='pageid'>主页：{props.fan.pageName}</Text>
+          <Text className='name break'>{props.fan.fanName}</Text>
+          <Text className='pageid break'>主页：{props.fan.pageName}</Text>
         </View>
         <View className='right' onClick={gofaninfo}>
           <Image src={user}></Image>

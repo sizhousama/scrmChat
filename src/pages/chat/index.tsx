@@ -14,7 +14,7 @@ import { socketUrl } from '@/servers/baseUrl'
 import { msgAudio, vibrateS, isNeedAddH, SetStorageSync, redirectTo } from '@/utils/index'
 import io from 'socket.io-mp-client'
 import "./index.scss";
-import Taro, { useDidShow, useReachBottom, } from "@tarojs/taro";
+import Taro, { useDidShow, useReachBottom, useShareAppMessage, } from "@tarojs/taro";
 interface Fan {
   fanId: string,
   pageId: string,
@@ -66,7 +66,7 @@ const Chat = () => {
   const { setWsio } = useWsioStore()
   const { setPages, hasNew, setHasNew, searchForm } = useFanStore()
   const { userInfo, setUserInfo, role, setRole } = useUserStore()
-  const { fanlist, loading, moreloading } = state
+  const { fanlist, loading,moreloading } = state
   // 请求参数
   const paramsref = useRef({
     page: 1,
@@ -82,6 +82,12 @@ const Chat = () => {
     setWsio(socket)
     initWebSocket(socket)
   }
+  useShareAppMessage((res:any) => {
+    return {
+      title: 'HiveScrm',
+      path: '/pages/chat/index'
+    }
+  })
   useDidShow(() => {
     role === null?getinfo():''
     search()
@@ -143,7 +149,7 @@ const Chat = () => {
           getfan(params)
         }
         msgAudio()
-        vibrateS()
+        // vibrateS()
 
       } else { // 客服发送消息的时候商家同时可以看到
         let serfan: any = {}
@@ -184,7 +190,7 @@ const Chat = () => {
         if (fan) {
           if (tags !== '' && tags !== null && tags !== undefined) {
             const parsetags = tags.substr(1, tags.length - 2).split(',').slice(0,2)
-            fan.tagsArr = parsetags
+            fan.tagsArr = parsetags.filter(item=>item!=='')
           } else {
             fan.tagsArr = []
           }
@@ -248,6 +254,7 @@ const Chat = () => {
         item.tagsArr = []
         item.formatTime = formatChatTime(item.timestamp)
         item.tagsArr = item.tags === '' || item.tags === null ? [] : item.tagsArr = item.tags.split(',').slice(0,2)
+        item.tagsArr = item.tagsArr.filter(item=>item!=='')
       })
       listref.current = list
       dispatch({
@@ -260,9 +267,8 @@ const Chat = () => {
           return
         }
       }
-    }).finally(() => {
-      dispatch({ type: 'loading', payload: { loading: false } });
     })
+    dispatch({ type: 'loading', payload: { loading: false } });
   }
   // 更多聊天会话列表
   const getMoreList = async () => {
@@ -275,6 +281,7 @@ const Chat = () => {
         item.tagsArr = []
         item.formatTime = formatChatTime(item.timestamp)
         item.tagsArr = item.tags === '' || item.tags === null ? [] : item.tagsArr = item.tags.split(',').slice(0,2)
+        item.tagsArr = item.tagsArr.filter(item=>item!=='')
       })
       listref.current = [...listref.current, ...list]
       dispatch({ type: 'list', payload: { list: listref.current } });
@@ -284,7 +291,6 @@ const Chat = () => {
           return
         }
       }
-    }).finally(() => {
       dispatch({ type: 'moreloading', payload: { ml: false } });
     })
   }
@@ -296,6 +302,7 @@ const Chat = () => {
         data.tagsArr = []
         data.formatTime = formatChatTime(data.timestamp)
         data.tagsArr = data.tags === '' || data.tags === null ? [] : data.tagsArr = data.tags.split(',').slice(0,2)
+        data.tagsArr = data.tagsArr.filter(item=>item!=='')
         data.read = 0
         if (searchForm.chatKey !== '') return
         listref.current = [data, ...listref.current]
@@ -334,9 +341,9 @@ const Chat = () => {
 
   return (
     <View>
-      <Header ref={childref} title='消息' icon='message' />
+      <Header ref={childref} title='消息列表' icon='message' />
       <AtActivityIndicator isOpened={loading} mode='center'></AtActivityIndicator>
-      <View className={`chatfanlist ${needAddH ? 'needh' : ''}`}>
+      <View className='chatfanlist'>
         {
           fanlist.map((item: Fan, index) => {
             return (
@@ -356,6 +363,7 @@ const Chat = () => {
             </View>
             : ''
         }
+        <View className={`botblock ${needAddH ? 'needh' : ''}`} ></View>
       </View>
 
       <TabBar ref={childref} cur={cur} has={hasNew} />
