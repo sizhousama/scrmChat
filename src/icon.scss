@@ -15,6 +15,9 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.icon-wechat:before {
+  content: "\e64f";
+}
 
 .icon-close:before {
   content: "\e610";

@@ -68,6 +68,11 @@ const Mine = () => {
           <View>已绑定邮箱</View>
           <View className='cont'>{userInfo.email}</View>
         </View>
+        {/* <View className='itembox'>
+          <View className='icon icon-wechat'></View>
+          <View>请绑定微信</View>
+          <View className='cont'></View>
+        </View> */}
         <View className='at-row btnbox'>
           <View className='at-col left'>
             <View className='repass' onClick={editPass}>修改密码</View>

@@ -99,6 +99,9 @@
     margin:0 40px;
     font-size: 38px;
   }
+  .icon{
+    @extend .at-icon;
+  }
   .cont{
     color:#bbb;
     font-size: 24px;
@@ -107,7 +110,7 @@
 }
 
 .btnbox{
-  margin-top:240px;
+  margin-top:200px;
   .left{
     display: flex;
     justify-content: flex-end;

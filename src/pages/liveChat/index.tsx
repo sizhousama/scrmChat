@@ -15,7 +15,7 @@ import FileMsg from '@/components/msgView/fileMsg';
 import NotifyMsg from '@/components/msgView/notifyMsg';
 import MediaMsg from '@/components/msgView/mediaMsg';
 import ButtonMsg from '@/components/msgView/buttonMsg';
-import { View, Text, ScrollView, Input } from "@tarojs/components";
+import { View, Text, ScrollView, Input, Textarea } from "@tarojs/components";
 import { AtIcon, AtActivityIndicator } from 'taro-ui'
 import { getSysInfo, genUuid, setInput, chooseImg, getsuffix, getFileType, chooseMsgFile, hideKb, isNeedAddH, NavTo } from '@/utils/index'
 import { formatMsgStatus } from '@/utils/filter'
@@ -85,6 +85,7 @@ const LiveChat = () => {
   const [showreply, setShowReply] = useState(false)
   const [showflow, setShowFlow] = useState(false)
   const [showTagMsg, setShowTagMsg] = useState(false)
+  const [inputh,setInputh] = useState(34)
   const [state, dispatch] = useReducer(listReducer, initState)
   const { historyList, fakes } = state
   const [curMsg, setCurMsg] = useState('')
@@ -101,8 +102,9 @@ const LiveChat = () => {
   })//历史记录参数
   const needH = isNeedAddH()
   const needh = needH ? 32 : 0
-  const diffHeight = barHeight + 190  //176 + 2 2px为border高度
-
+  const foolerref = useRef(54)
+  const diffHeight = barHeight + foolerref.current + 136  //176 + 2 2px为border高度
+  
   const [msgViewStyle, setMsgViewSyle] = useState({
     height: `calc(100vh - ${diffHeight + needh}px)`
   })
@@ -128,7 +130,7 @@ const LiveChat = () => {
       setPayAccount(payAccount)
       if (lastSendMsgTime != undefined && lastSendMsgTime !== '') {
         try {
-          const lastSendTime = new Date(lastSendMsgTime.replace(/-/g,"/")).getTime()
+          const lastSendTime = new Date(lastSendMsgTime.replace(/-/g, "/")).getTime()
           const now = new Date().getTime()
           if (now - lastSendTime > 24 * 60 * 60 * 1000) {
             setShowTagMsg(true)
@@ -352,6 +354,7 @@ const LiveChat = () => {
 
     dispatch({ type: 'fakes', payload: { fakes: fakeref.current } })
     setMessage('')
+    foolerref.current = 54
 
     wsio.emit('SEND_MSG', socketParams)
 
@@ -362,7 +365,6 @@ const LiveChat = () => {
       setShowEmoji(false)
       setShowTools(false)
       setShowReply(false)
-
       setShowFlow(false)
     }, 10);
   }
@@ -603,6 +605,15 @@ const LiveChat = () => {
   const clickTopUserIcon = () => {
     closeModal()
   }
+  const lineChange = (e)=>{
+    const line = e.detail.lineCount
+    if(line===1||line===2){
+      foolerref.current = 54
+    }
+    if(line>=3){
+      foolerref.current = 60
+    }
+  }
   return (
     <View className='live-chat' >
       <ChatHeader ref={childref} fan={fan} handleClick={clickTopUserIcon}></ChatHeader>
@@ -612,7 +623,7 @@ const LiveChat = () => {
         className='msgview'
         style={msgViewStyle}
         scrollIntoView={curMsg}
-        upperThreshold={20}
+        upperThreshold={10}
         onScrollToUpper={morehistorymsg}
         onClick={closeModal}>
         {
@@ -675,40 +686,44 @@ const LiveChat = () => {
         }
       </ScrollView>
 
-      <View className={`fooler`} style={{ height: '54px', bottom: inputbot + 'px', paddingBottom: foolerpb + 'px' }}>
-        {/* 左边工具栏 */}
-        <View className='left'>
-          <View className='emoj' onClick={clickEmojiIcon}>
-            <AtIcon prefixClass='icon' value='smile' color='#666' size='28' className='alicon'></AtIcon>
+      <View id='fooler' className={`fooler`} style={{ minHeight: '54px', bottom: inputbot + 'px', paddingBottom: foolerpb + 'px' }}>
+        <View className='fooler-inner'>
+          {/* 左边工具栏 */}
+          <View className='left'>
+            <View className='emoj' onClick={clickEmojiIcon}>
+              <AtIcon prefixClass='icon' value='smile' color='#666' size='28' className='alicon'></AtIcon>
+            </View>
+            <View className='more' onClick={clickToolsiIcon}>
+              <AtIcon prefixClass='icon' value='add-circle' color='#666' size='28' className='alicon'></AtIcon>
+              {showreply ? <QuickReply ref={childref} pageId={fan.pageId} handleClick={setReply}></QuickReply> : ''}
+              {showflow ? <SendFlow ref={childref} handleClick={sendFlow}></SendFlow> : ''}
+              {replyImg.length > 0 ? <ReplyImg ref={childref} imgs={replyImg} handleClick={closeReplyImg}></ReplyImg> : ''}
+            </View>
           </View>
-          <View className='more' onClick={clickToolsiIcon}>
-            <AtIcon prefixClass='icon' value='add-circle' color='#666' size='28' className='alicon'></AtIcon>
-            {showreply ? <QuickReply ref={childref} pageId={fan.pageId} handleClick={setReply}></QuickReply> : ''}
-            {showflow ? <SendFlow ref={childref} handleClick={sendFlow}></SendFlow> : ''}
-            {replyImg.length > 0 ? <ReplyImg ref={childref} imgs={replyImg} handleClick={closeReplyImg}></ReplyImg> : ''}
+          {/* 输入发送消息 */}
+          <View className='msginput'>
+          <Textarea
+            id='msgInput'
+            adjustPosition={false}
+            value={message}
+            onInput={inputMsg}
+            onFocus={msgInputFocus}
+            onBlur={msgInputBlur}
+            selectionStart={pos}
+            selectionEnd={pos}
+            maxlength={2000}
+            onConfirm={sendMsg}
+            holdKeyboard={true}
+            onKeyboardHeightChange={kbChange}
+            autoHeight={true}
+            onLineChange={lineChange}
+            showConfirmBar={false}
+          ></Textarea>
           </View>
+          {/* 发送按钮 */}
+          <View className='right'>
+          <View className='searchbtn send' onClick={sendMsg}>发送</View>
         </View>
-        {/* 输入发送消息 */}
-        <Input
-          id='msgInput'
-          className='msginput'
-          adjustPosition={false}
-          value={message}
-          onInput={inputMsg}
-          onFocus={msgInputFocus}
-          onBlur={msgInputBlur}
-          selectionStart={pos}
-          selectionEnd={pos}
-          maxlength={2000}
-          confirmType='send'
-          onConfirm={sendMsg}
-          confirmHold={true}
-          holdKeyboard={true}
-          onKeyboardHeightChange={kbChange}
-        ></Input>
-        {/* 发送按钮 */}
-        <View className='searchbtn send' onClick={sendMsg}>
-          发送
         </View>
       </View>
       <View className={`toolsbox`} style={{ height: showtools || showemoji ? '200px' : 0 }}>

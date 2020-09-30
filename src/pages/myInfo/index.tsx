@@ -46,14 +46,14 @@ const MyInfo = () => {
           <View className='left'>昵称：</View>
           <View className='right'>{userInfo.username}</View>
         </View>
-        {/* <View className='listitem'>
-          <View className='left'>性别：</View>
-          <View className='right'>女</View>
-        </View> */}
         <View className='listitem'>
           <View className='left'>邮箱：</View>
           <View className='right'>{userInfo.email}</View>
         </View>
+        {/* <View className='listitem'>
+          <View className='left'>微信：</View>
+          <View className='right'>未绑定</View>
+        </View> */}
       </View>
     </View>
   );
