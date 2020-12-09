@@ -16,8 +16,10 @@ interface Fan {
 interface SF {
   chatKey:string,
   chatPage:string,
+  chatTagList:number[],
   fanKey:string,
-  fanPage:string
+  fanPage:string,
+  operatorType:string
 }
 const fan = {
   pageId:'',
@@ -35,8 +37,10 @@ const fan = {
 const sform = {
   chatKey:'',
   chatPage:'',
+  chatTagList:[],
   fanKey:'',
-  fanPage:''
+  fanPage:'',
+  operatorType:'or'
 }
 
 
@@ -44,6 +48,7 @@ export class FanStore {
   @observable fan:Fan = fan
   @observable pages:any[] = []
   @observable hasNew = false
+  @observable showMsg = true
   // 搜索key
   @observable searchForm:SF = sform
   @observable searchFrom =  ''
@@ -71,13 +76,21 @@ export class FanStore {
   @action.bound setSFchatPage(data) {
     this.searchForm.chatPage = data;
   }
+  @action.bound setSFchatTags(data) {
+    this.searchForm.chatTagList = data;
+  }
+  @action.bound setSFchatOType(data) {
+    this.searchForm.operatorType = data;
+  }
   @action.bound setSFfanKey(data) {
     this.searchForm.fanKey = data;
   }
   @action.bound setSFfanPage(data) {
     this.searchForm.fanPage = data;
   }
-  
+  @action.bound setShowMsg(data) {
+    this.showMsg = data;
+  }
 }
 
 export const STORE_FAN = 'fanStore';

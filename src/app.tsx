@@ -6,10 +6,33 @@ import './app.scss'
 import './icon.scss'
 import 'mobx-react-lite/batchingForReactDom'
 import { observer } from 'mobx-react';
-import { useDidShow } from '@tarojs/taro';
+import Taro from '@tarojs/taro'
 // cnpm install taro-ui@3.0.0-alpha.3
 
 const App = (props) => {
+  
+  useEffect(() => {
+    // 检查是否授权
+    Taro.getSetting({
+      success(res) {
+        if (res.authSetting['scope.userInfo']) {
+          // 检查授权登录是否过期
+          // Taro.checkSession({
+          //   success(res) {
+          //     console.log('已授权')
+          //   },
+          //   fail(err) {
+          //     Toast('授权过期！','none')
+          //     redirectTo('/pages/login/index')
+          //   }
+          // })
+        } else {
+          console.log('未授权')
+        }
+      }
+    })
+  }, [])
+  
   return (
     <Provider {...stores}>
       <StoresContext.Provider value={stores}>

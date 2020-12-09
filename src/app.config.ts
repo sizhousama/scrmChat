@@ -1,9 +1,10 @@
 
 export default {
   pages: [  
+    
     'pages/chat/index',
     'pages/order/index',
-    
+    'pages/login/index',
     'pages/fanPage/index',
     'pages/liveChat/index',
     'pages/mine/index',
@@ -13,7 +14,7 @@ export default {
     'pages/tags/index',
     'pages/myInfo/index',
     'pages/search/index',
-    'pages/login/index',
+    
     'pages/users/index'
 
   ],

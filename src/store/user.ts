@@ -7,7 +7,8 @@ interface UI {
   phone:string,
   username:string,
   pageId:any,
-  userId:number
+  userId:number,
+  wxMiniInfo:any
 }
 const userinfo = {
   avatar:'',
@@ -16,20 +17,30 @@ const userinfo = {
   phone:'',
   username:'',
   pageId:'',
-  userId:0
+  userId:0,
+  wxMiniInfo:''
 }
 export class UserStore {
   @observable userInfo:UI = userinfo
+
   @observable role = null
+
+  @observable allTags:any[] = []
 
   @action.bound setAvatar(url) {
     this.userInfo.avatar = url;
+  }
+  @action.bound setWxInfo(data) {
+    this.userInfo.wxMiniInfo = data;
   }
   @action.bound setUserInfo(data) {
     this.userInfo = data;
   }
   @action.bound setRole(data) {
     this.role = data;
+  }
+  @action.bound setAllTags(data) {
+    this.allTags = data;
   }
 }
 

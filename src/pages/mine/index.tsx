@@ -2,16 +2,18 @@ import React, { useRef, useEffect } from 'react'
 import { View, Image, Text } from '@tarojs/components'
 import TabBar from "../tabbar";
 import mine_w from '@/assets/images/mine_white.png'
-import { NavTo, redirectTo, SetStorageSync } from '@/utils/index'
-import { getUserInfo } from '@/api/info'
+import { NavTo, redirectTo, SetStorageSync, Toast, Back } from '@/utils/index'
 import { observer } from 'mobx-react';
+import { AtButton } from 'taro-ui'
 import { useUserStore, useFanStore } from '@/store';
+import { bindWeCaht } from '@/api/login'
+import Taro from '@tarojs/taro'
 import './index.scss'
 
 const Mine = () => {
   const cur: number = 2
   const childref = useRef();
-  const { userInfo, role, setRole } = useUserStore()
+  const { userInfo, role, setRole, setWxInfo } = useUserStore()
   const { hasNew } = useFanStore()
   const editinfo = () => {
     NavTo('../myInfo/index')
@@ -27,6 +29,50 @@ const Mine = () => {
   const openPage = () => {
     NavTo('../myPages/index')
   }
+  const getUserInfo = (type) => {
+    Taro.login({
+      success: function (res) {
+        if (res.code) {
+          Taro.getUserInfo({
+            success: function (info) {
+              console.log(info)
+              const obj = {
+                code: res.code,
+                info: info.userInfo.nickName,
+                type,
+                userId:''
+              }
+              bindWeCaht(obj).then(res => {
+                try {
+                  if (res) {
+                    Toast(type === 2 ? '绑定成功！' : '解绑成功！', 'none')
+                    type === 2 ? setWxInfo(info.userInfo.nickName) : setWxInfo('')
+                  }
+
+                } catch (err) {
+                  console.log(err)
+                }
+              })
+            }
+          })
+        } else {
+          console.log('登录失败！' + res.errMsg)
+        }
+      }
+    })
+  }
+  const unbind = () => {
+    Taro.showModal({
+      title: '',
+      content: `是否确认解绑？`,
+      success(res) {
+        if (res.confirm) {
+          getUserInfo(1)
+        }
+      }
+    })
+  }
+
   return (
     <View className='minebody'>
       <View className='topbox'>
@@ -41,8 +87,7 @@ const Mine = () => {
           <View className='right'>
             <View className='top'>
               <View className='name'>
-              <Text className='break'>{userInfo.username}</Text>
-               
+                <Text className='break'>{userInfo.username}</Text>
               </View>
               <View className='edit' onClick={editinfo}>
                 <View className='at-icon at-icon-edit'></View>
@@ -68,11 +113,21 @@ const Mine = () => {
           <View>已绑定邮箱</View>
           <View className='cont'>{userInfo.email}</View>
         </View>
-        {/* <View className='itembox'>
+        <View className='itembox'>
           <View className='icon icon-wechat'></View>
-          <View>请绑定微信</View>
-          <View className='cont'></View>
-        </View> */}
+          <View>{userInfo.wxMiniInfo ? '已' : "未"}绑定微信</View>
+          <View className='cont'>{userInfo.wxMiniInfo ? userInfo.wxMiniInfo : "请绑定微信"}</View>
+          <View className='bind'>
+            {
+              userInfo.wxMiniInfo ?
+                <View onClick={unbind} className='unbind'>解绑</View>
+                :
+                <AtButton className='bindbtn' openType='getUserInfo' onGetUserInfo={() => getUserInfo(2)}>
+                  绑定
+                </AtButton>
+            }
+          </View>
+        </View>
         <View className='at-row btnbox'>
           <View className='at-col left'>
             <View className='repass' onClick={editPass}>修改密码</View>

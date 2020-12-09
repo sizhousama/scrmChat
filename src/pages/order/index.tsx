@@ -367,8 +367,8 @@ const Order = (props) => {
         dispatch({ type: 'keyword', payload: { keyword: `(${productId})${title}` } })
       }
     })
-    dispatch({ type: 'pageId', payload: { buyerName: fan.pageId } })
-    dispatch({ type: 'senderId', payload: { buyerName: fan.fanId } })
+    dispatch({ type: 'pageId', payload: { pageId: fan.pageId } })
+    dispatch({ type: 'senderId', payload: { senderId: fan.fanId } })
     dispatch({ type: 'buyerName', payload: { buyerName: fan.fanName } })
     dispatch({ type: 'adId', payload: { adId: fan.adId } })
     dispatch({ type: 'paypalAccount', payload: { paypalAccount: fan.payAccount } })
@@ -574,6 +574,10 @@ const Order = (props) => {
   }
   const submit = async () => {
     const formdata = state
+    if (formdata.senderId === '') {
+      Toast('用户信息异常，请联系售后！', 'none')
+      return
+    }
     if (formdata.scalpingProductId === '' || formdata.scalpingProductPrice === '') {
       Toast('请完善商品信息！', 'none')
       return

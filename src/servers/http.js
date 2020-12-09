@@ -16,8 +16,10 @@ class httpRequest {
       data: data,
       method: method,
       header: {
+        'Accept': 'application/json, text/plain, */*',
         'content-type': contentType,
-        'Authorization': Taro.getStorageSync('Token')
+        'Authorization': Taro.getStorageSync('Token'),
+        'flag':'miniProgram'
       }
     };
     return Taro.request(option);

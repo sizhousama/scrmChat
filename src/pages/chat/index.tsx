@@ -4,17 +4,17 @@ import Header from "@/components/header";
 import ChatFan from "@/components/chatFan";
 import { AtActivityIndicator } from 'taro-ui'
 import { View } from "@tarojs/components";
-import { getFan, getRecentContacts, getAllPage, upRead } from '@/api/fan'
+import { getFan, getRecentContacts, getAllPage, upRead,getAllTag } from '@/api/fan'
 import { formatChatTime } from '@/utils/time'
 import { getUserInfo } from '@/api/info'
 import { observer } from 'mobx-react';
 import { parseMsg, judgeType, judgeMyType } from '@/utils/parse'
 import { useFanStore, useUserStore, useWsioStore } from '@/store';
 import { socketUrl } from '@/servers/baseUrl'
-import { msgAudio, vibrateS, isNeedAddH, SetStorageSync, redirectTo } from '@/utils/index'
+import { msgAudio, vibrateS, isNeedAddH, SetStorageSync, redirectTo,toIndexes } from '@/utils/index'
 import io from 'socket.io-mp-client'
 import "./index.scss";
-import Taro, { useDidShow, useReachBottom, useShareAppMessage, } from "@tarojs/taro";
+import Taro, { useDidShow, useReachBottom, useShareAppMessage,usePullDownRefresh } from "@tarojs/taro";
 interface Fan {
   fanId: string,
   pageId: string,
@@ -28,6 +28,14 @@ interface PM {
   isServe?: boolean,
   text?: string
   recipientId?: string,
+}
+interface SF {
+  page:number,
+  pageSize:number,
+  fanName:string,
+  pageIds:string,
+  tagsId:number[],
+  operatorType:string,
 }
 const initState = {
   fanlist: [],
@@ -65,14 +73,16 @@ const Chat = () => {
   // store
   const { setWsio } = useWsioStore()
   const { setPages, hasNew, setHasNew, searchForm } = useFanStore()
-  const { userInfo, setUserInfo, role, setRole } = useUserStore()
+  const { userInfo, setUserInfo, role, setRole,setAllTags } = useUserStore()
   const { fanlist, loading,moreloading } = state
   // 请求参数
-  const paramsref = useRef({
+  const paramsref = useRef<SF>({
     page: 1,
     pageSize: 10,
     fanName: '',
-    pageIds:''
+    pageIds:'',
+    tagsId:[],
+    operatorType:'and'
   })
   // 创建socket连接
   const conSocket = (userId, pageIdsStr) => {
@@ -82,6 +92,23 @@ const Chat = () => {
     setWsio(socket)
     initWebSocket(socket)
   }
+  useEffect(()=>{
+    getTags()
+  },[])
+  const getTags = async () => {
+    await getAllTag().then(res => {
+      const { data } = res
+      data.forEach(e => {
+        e.act=false
+      });
+      const arr = toIndexes(data, 'tag')
+      setAllTags(arr.slice())
+    })
+  }
+  usePullDownRefresh(() => {
+    getList()
+  })
+
   useShareAppMessage((res:any) => {
     return {
       title: 'HiveScrm',
@@ -94,8 +121,11 @@ const Chat = () => {
     getList()
   })
   const search = () => {
-    paramsref.current.fanName = searchForm.chatKey
-    paramsref.current.pageIds = searchForm.chatPage
+    const {chatKey,chatPage,chatTagList,operatorType} = searchForm
+    paramsref.current.fanName = chatKey
+    paramsref.current.pageIds = chatPage
+    paramsref.current.tagsId = chatTagList
+    // paramsref.current.operatorType = operatorType
   }
   const initWebSocket = (socket) => {
     socket.on('connect', () => {
@@ -129,10 +159,11 @@ const Chat = () => {
         return item['fanId'] === parsedMsg.senderId
       })
 
-      const { text, isServe, recipientId, senderId } = parsedMsg
-      const params = { pageId: recipientId, fanId: senderId }
+      const { isServe, recipientId, senderId } = parsedMsg
+      
       // 粉丝发来的信息则进行处理
       if (!isServe) {
+        const params = { pageId: recipientId, fanId: senderId }
         // 如果 fan 存在
         if (fan !== undefined) {
           fan.msg = judgeType(parsedMsg)
@@ -152,6 +183,7 @@ const Chat = () => {
         // vibrateS()
 
       } else { // 客服发送消息的时候商家同时可以看到
+        const params = { pageId: senderId, fanId: recipientId }
         let serfan: any = {}
         serfan = fans.find(item => {
           return item['fanId'] === parsedMsg.recipientId

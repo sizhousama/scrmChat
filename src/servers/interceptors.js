@@ -16,11 +16,12 @@ const customInterceptor = (chain) => {
         status
       } = data
       if (status !== 1) {
-        Toast(msg,'none')    
-        if (status === '401') {
-          console.log(123)
-          SetStorageSync("Token", "")
-          pageToLogin()    
+        if(msg!=='获取openId失败'){
+          Toast(msg,'none')    
+          if (status === 401) {
+            SetStorageSync("Token", "")
+            pageToLogin()    
+          }
         }
         return Promise.reject(msg || 'Error')
       } else {

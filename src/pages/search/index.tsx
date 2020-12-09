@@ -1,5 +1,5 @@
-import React, { useRef, useState, useEffect,useReducer } from "react";
-import { AtInput, AtForm, AtList, AtListItem, AtTag } from 'taro-ui'
+import React, { useRef, useState, useEffect, useReducer } from "react";
+import { AtInput, AtForm, AtList, AtListItem, AtTag, AtRadio } from 'taro-ui'
 import NavBar from "@/components/navBar";
 import { View, Picker } from "@tarojs/components";
 import { NavTo, SwitchTab } from "@/utils/index"
@@ -15,40 +15,40 @@ import "./index.scss";
 const Search = () => {
   const kref = useRef('')
   const { navH } = useNavStore()
-  const style = { marginTop: navH + 'px'}
+  const style = { marginTop: navH + 'px' }
   // const [state,dispatch] = useReducer(stateReducer,initState)
-  const [selectPage,setSelectP] = useState('无')
-  const { pages,searchFrom, searchForm,setSFfanKey,setSFfanPage,setSFchatKey,setSFchatPage } = useFanStore()
+  const [selectPage, setSelectP] = useState('无')
+  const { pages, searchFrom, searchForm, setSFfanKey, setSFfanPage, setSFchatKey, setSFchatPage, setSFchatTags,setSFchatOType } = useFanStore()
   const minplace = searchFrom === 'message' ? '粉丝名称/邮箱/分配人/adid/标签' : '粉丝名称'
-  
+
   useEffect(() => {
-    if(searchFrom==='message'){
-      if(searchForm.chatPage!==''){
-        const p = pages.find(item=> item.pageId===searchForm.chatPage)
+    if (searchFrom === 'message') {
+      if (searchForm.chatPage !== '') {
+        const p = pages.find(item => item.pageId === searchForm.chatPage)
         setSelectP(p.pageName)
-      }else{
+      } else {
         setSelectP('无')
       }
-    }else{
-      if(searchForm.fanPage!==''){
-        const p = pages.find(item=> item.pageId===searchForm.fanPage)
+    } else {
+      if (searchForm.fanPage !== '') {
+        const p = pages.find(item => item.pageId === searchForm.fanPage)
         setSelectP(p.pageName)
-      }else{
+      } else {
         setSelectP('无')
       }
     }
   }, [])
 
   const setkey = (v) => {
-    searchFrom==='message'?
-    setSFchatKey(v):
-    setSFfanKey(v)
+    searchFrom === 'message' ?
+      setSFchatKey(v) :
+      setSFfanKey(v)
   }
   const onChange = (e) => {
     setSelectP(pages[e.detail.value].pageName)
-    searchFrom==='message'?
-    setSFchatPage(pages[e.detail.value].pageId):
-    setSFfanPage(pages[e.detail.value].pageId)
+    searchFrom === 'message' ?
+      setSFchatPage(pages[e.detail.value].pageId) :
+      setSFfanPage(pages[e.detail.value].pageId)
   }
   const settag = (e) => {
     e.active = true
@@ -57,13 +57,15 @@ const Search = () => {
     NavTo('../tags/index')
   }
   const search = () => {
-    searchFrom==='message'?SwitchTab(`/pages/chat/index`):SwitchTab(`/pages/users/index`)
+    searchFrom === 'message' ? SwitchTab(`/pages/chat/index`) : SwitchTab(`/pages/users/index`)
   }
-  const restform = ()=>{
-    if(searchFrom==='message'){
+  const restform = () => {
+    if (searchFrom === 'message') {
+      setSFchatOType('or')
+      setSFchatTags([])
       setSFchatKey('')
       setSFchatPage('')
-    }else{
+    } else {
       setSFfanKey('')
       setSFfanPage('')
     }
@@ -84,7 +86,7 @@ const Search = () => {
               placeholder={minplace}
               placeholderClass='placestyle'
               clear={true}
-              value={searchFrom==='message'?searchForm.chatKey:searchForm.fanKey}
+              value={searchFrom === 'message' ? searchForm.chatKey : searchForm.fanKey}
               onChange={setkey}
             />
             {/* <View className='searchbtn' onClick={search}>搜索</View> */}
@@ -97,43 +99,40 @@ const Search = () => {
                 <View className='at-icon at-icon-chevron-down'></View>
                 <Picker value={0} className='picker' mode='selector' range={pages} onChange={onChange} rangeKey='pageName'>
                   <AtList>
-                    <AtListItem extraText={selectPage}/>
+                    <AtListItem extraText={selectPage} />
                   </AtList>
                 </Picker>
               </View>
             </View>
           </View>
-          {/* <AtInput
-            className='sinput'
-            title='名称:'
-            name='value1'
-            type='text'
-            placeholder='请输入名称'
-            placeholderClass='placestyle'
-            value={name}
-            onChange={setname}
-          /> */}
-          {/* <View className='other tagform'>
-            <View className='label'>标签：</View>
-            <View className='content'>
-              <AtTag
-                size='normal'
-                active={false}
-                onClick={settag}
-              >标签1111111</AtTag>
-              <AtTag
-                size='normal'
-                active={false}
-                onClick={settag}
-              >标签1</AtTag>
-              <AtTag
-                size='normal'
-                active={false}
-                onClick={settag}
-              >标签www</AtTag>
-            </View>
-          </View>
-          <View className='other'>
+          {
+            searchFrom === 'message' ?
+              <View className='other tagform'>
+                <View className='label'>标签：</View>
+                <View className='content'>
+                  <View className='left'>已选择{searchForm.chatTagList.length}个标签</View>
+                  <View className='right' onClick={navToMoreTag}>选择标签</View>
+                </View>
+              </View> : ""
+          }
+          {/* {
+            searchFrom === 'message' ?
+              <View className='other tagform'>
+                <View className='label'>范围：</View>
+                <View className='content'>
+                  <AtRadio
+                    options={[
+                      { label: '满足一个', value: 'or'},
+                      { label: '满足所有', value: 'and'},
+                    ]}
+                    value={searchForm.operatorType}
+                    onClick={(val)=>setSFchatOType(val)}
+                  />
+                </View>
+              </View> : ""
+          } */}
+
+          {/* <View className='other'>
             <View className='label'></View>
             <View className='more' onClick={navToMoreTag}>查看更多...</View>
           </View> */}

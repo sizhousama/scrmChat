@@ -250,7 +250,7 @@ export const orderForm = [{
       },
       {
         key: 'orderCommission',
-        label: '订单佣金：',
+        label: '额外费用：',
         type: 'input',
         otherType: 'digit',
         ph:'请输入',
@@ -400,7 +400,7 @@ export const orderForm = [{
       },
       {
         key: 'amazonOrderStatus',
-        label: '亚马逊状态：',
+        label: '亚马逊订单状态：',
         type: 'selector',
         require:false,
         disable:false,

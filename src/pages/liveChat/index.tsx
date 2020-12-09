@@ -6,6 +6,7 @@ import Tools from '@/components/chatTools'
 import QuickReply from '@/components/quickReply'
 import ReplyImg from '@/components/replyImg'
 import SendFlow from '@/components/sendFlow'
+import TimeOutMsg from '@/components/timeoutMsg'
 // 消息体组件
 import TextMsg from '@/components/msgView/textMsg';
 import FallBackMsg from '@/components/msgView/fallBackMsg'
@@ -74,7 +75,7 @@ const LiveChat = () => {
   const cursorref = useRef(0)
   const barHeight = getSysInfo().statusBarHeight
 
-  const { fan, setMd5, setPayAccount } = useFanStore()
+  const { fan, setMd5, setPayAccount,showMsg } = useFanStore()
   const { userInfo } = useUserStore()
   const { setTempOrder } = useOrderStore()
   const { wsio } = useWsioStore()
@@ -111,6 +112,7 @@ const LiveChat = () => {
   const [inputbot, setInputBot] = useState(0)
   const [isFocus, setIsFocus] = useState(false)
   const [foolerpb, setFoolerpb] = useState(needh)
+  const [showTimeOut, setShowTimeOut] = useState(false)
   // const [keyboardH, setKeyBoardH] = useState(0)
 
   useEffect(() => {
@@ -134,11 +136,16 @@ const LiveChat = () => {
           const now = new Date().getTime()
           if (now - lastSendTime > 24 * 60 * 60 * 1000) {
             setShowTagMsg(true)
+            showMsg&&setShowTimeOut(true)
           }
         } catch (e) {
           setShowTagMsg(true)
+          showMsg&&setShowTimeOut(true)
         }
-      } else { setShowTagMsg(true) }
+      } else { 
+        setShowTagMsg(true)
+        showMsg&&setShowTimeOut(true)
+      }
     })
   }
   // socket事件
@@ -618,6 +625,7 @@ const LiveChat = () => {
     <View className='live-chat' >
       <ChatHeader ref={childref} fan={fan} handleClick={clickTopUserIcon}></ChatHeader>
       <AtActivityIndicator isOpened={initLoading} size={36} mode='center'></AtActivityIndicator>
+      {showTimeOut&&<TimeOutMsg close={()=>setShowTimeOut(false)}></TimeOutMsg>}
       <ScrollView
         scrollY
         className='msgview'

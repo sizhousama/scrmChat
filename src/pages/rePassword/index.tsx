@@ -6,7 +6,7 @@ import { useNavStore, useUserStore } from '@/store';
 import { checkPass, rePassOrAva,removeToken } from '@/api/info';
 import { AtInput } from 'taro-ui'
 import { Toast,redirectTo } from '@/utils/index'
-import CryptoJS from 'crypto-js'
+// import CryptoJS from 'crypto-js'
 import "./index.scss";
 
 const RePassWord = () => {
@@ -20,12 +20,12 @@ const RePassWord = () => {
     marginTop: navH + 10 + 'px'
   }
   // 加密
-  const Encrypt = (word: string) => {
-    var key = CryptoJS.enc.Utf8.parse('abcdefgabcdefg12')
-    var srcs = CryptoJS.enc.Utf8.parse(word)
-    var encrypted = CryptoJS.AES.encrypt(srcs, key, { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.Pkcs7 })
-    return encrypted.toString()
-  }
+  // const Encrypt = (word: string) => {
+  //   var key = CryptoJS.enc.Utf8.parse('abcdefgabcdefg12')
+  //   var srcs = CryptoJS.enc.Utf8.parse(word)
+  //   var encrypted = CryptoJS.AES.encrypt(srcs, key, { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.Pkcs7 })
+  //   return encrypted.toString()
+  // }
   const changeOriginPass = (v) => {
     setOriginPass(v)
   }
@@ -46,13 +46,13 @@ const RePassWord = () => {
       Toast('两次密码不一致！', 'none')
       return false
     }
-    await checkPass({ password: Encrypt(originPass) }).then(res => {
+    await checkPass({ password: originPass }).then(res => {
       repass()
     })
   }
   const repass = async () => {
     const data = {
-      password: Encrypt(newPass),
+      password: newPass,
       userId: userInfo.userId
     }
     await rePassOrAva(data).then(res => {

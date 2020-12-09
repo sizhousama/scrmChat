@@ -3,3 +3,7 @@ import HTTPREQUEST from "../servers/http"
 export const login = (data) => {
   return HTTPREQUEST.post('/scrm-admin/user/login', data)
 }
+
+export const bindWeCaht = (data) => {
+  return HTTPREQUEST.get('/scrm-admin/user/weiXinBinding', data)
+}
