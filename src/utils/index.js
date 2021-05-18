@@ -326,3 +326,24 @@ export const setInput = (id, data, cursor) => {
   elInput.value = result // 赋值给input的value
   return result
 }
+
+
+export const DecryptData = (str,n)=>{
+  const k = parseInt('-' + n);
+  var string = '';
+  for (var i = 0; i < str.length; i++) {
+    var c = str.charCodeAt(i);
+    // 如果字符串中的某个字符是小写字母
+    if (c >= 97 && c <= 122) {
+      c += k % 26;// 移动key%26位
+      if (c < 97) c += 26;// 向左超界
+      if (c > 122) c -= 26;// 向右超界
+    } else if (c >= 65 && c <= 90) { // 如果字符串中的某个字符是大写字母
+      c += k % 26;// 移动key%26位
+      if (c < 65) c += 26;// 向左超界
+      if (c > 90) c -= 26;// 向右超界
+    }
+    string += String.fromCharCode(c);// 将解密后的字符连成字符串
+  }
+  return string;
+}

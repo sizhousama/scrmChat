@@ -11,7 +11,8 @@ import { observer } from 'mobx-react';
 import { parseMsg, judgeType, judgeMyType } from '@/utils/parse'
 import { useFanStore, useUserStore, useWsioStore } from '@/store';
 import { socketUrl } from '@/servers/baseUrl'
-import { msgAudio, vibrateS, isNeedAddH, SetStorageSync, redirectTo,toIndexes } from '@/utils/index'
+import { msgAudio, isNeedAddH, SetStorageSync, redirectTo,toIndexes,DecryptData } from '@/utils/index'
+import { Base64 } from 'js-base64';
 import io from 'socket.io-mp-client'
 import "./index.scss";
 import Taro, { useDidShow, useReachBottom, useShareAppMessage,usePullDownRefresh } from "@tarojs/taro";
@@ -280,12 +281,13 @@ const Chat = () => {
     dispatch({ type: 'loading', payload: { loading: true } });
     await getRecentContacts(paramsref.current).then(res => {
       const { data } = res
-      data.length > 0 ? setHasMore(true) : setHasMore(false)
-      let list = data
+      const rawdata = JSON.parse(DecryptData(Base64.decode(data), 871481901))
+      rawdata.length > 0 ? setHasMore(true) : setHasMore(false)
+      let list = rawdata
       list.forEach(item => {
         item.tagsArr = []
         item.formatTime = formatChatTime(item.timestamp)
-        item.tagsArr = item.tags === '' || item.tags === null ? [] : item.tagsArr = item.tags.split(',').slice(0,2)
+        item.tagsArr = !item.tags||item.tags === '' || item.tags === null ? [] : item.tagsArr = item.tags.split(',').slice(0,2)
         item.tagsArr = item.tagsArr.filter(item=>item!=='')
       })
       listref.current = list
@@ -307,12 +309,13 @@ const Chat = () => {
     dispatch({ type: 'moreloading', payload: { ml: true } });
     await getRecentContacts(paramsref.current).then(res => {
       const { data } = res
-      data.length > 0 ? setHasMore(true) : setHasMore(false)
-      let list = data
+      const rawdata = JSON.parse(DecryptData(Base64.decode(data), 871481901))
+      rawdata.length > 0 ? setHasMore(true) : setHasMore(false)
+      let list = rawdata
       list.forEach(item => {
         item.tagsArr = []
         item.formatTime = formatChatTime(item.timestamp)
-        item.tagsArr = item.tags === '' || item.tags === null ? [] : item.tagsArr = item.tags.split(',').slice(0,2)
+        item.tagsArr = !item.tags||item.tags === '' || item.tags === null ? [] : item.tagsArr = item.tags.split(',').slice(0,2)
         item.tagsArr = item.tagsArr.filter(item=>item!=='')
       })
       listref.current = [...listref.current, ...list]
@@ -330,14 +333,15 @@ const Chat = () => {
   const getfan = async (data) => {
     await getFan(data).then(res => {
       const { data } = res
-      if (data) {
-        data.tagsArr = []
-        data.formatTime = formatChatTime(data.timestamp)
-        data.tagsArr = data.tags === '' || data.tags === null ? [] : data.tagsArr = data.tags.split(',').slice(0,2)
-        data.tagsArr = data.tagsArr.filter(item=>item!=='')
-        data.read = 0
+      const rawdata = JSON.parse(DecryptData(Base64.decode(data), 871481901))
+      if (rawdata) {
+        rawdata.tagsArr = []
+        rawdata.formatTime = formatChatTime(rawdata.timestamp)
+        rawdata.tagsArr = !rawdata.tags || rawdata.tags === '' || rawdata.tags === null ? [] : rawdata.tagsArr = rawdata.tags.split(',').slice(0,2)
+        rawdata.tagsArr = rawdata.tagsArr.filter(item=>item!=='')
+        rawdata.read = 0
         if (searchForm.chatKey !== '') return
-        listref.current = [data, ...listref.current]
+        listref.current = [rawdata, ...listref.current]
         dispatch({ type: 'list', payload: { list: listref.current }})
         setHasNew(true)
       }

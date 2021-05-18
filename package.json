@@ -39,12 +39,15 @@
     "@tarojs/react": "3.0.6",
     "@tarojs/runtime": "3.0.6",
     "@tarojs/taro": "3.0.6",
+    "js-base64": "^3.6.0",
     "mobx": "^4.8.0",
     "mobx-react": "^6.1.4",
+    "pyfl": "^1.1.4",
     "react": "^16.10.0",
     "react-dom": "^16.10.0",
     "socket.io-client": "^2.3.0",
-    "socket.io-mp-client": "^1.1.19"
+    "socket.io-mp-client": "^1.1.19",
+    "taro-ui": "^3.0.0-alpha.3"
   },
   "devDependencies": {
     "@types/webpack-env": "^1.13.6",

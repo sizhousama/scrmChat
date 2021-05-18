@@ -25,7 +25,8 @@ import { getFanInfo } from '@/api/fan'
 import { observer } from 'mobx-react';
 import { useFanStore, useWsioStore, useUserStore, useOrderStore } from '@/store';
 import { parseMsg } from '@/utils/parse'
-import { vibrateS } from '@/utils/index'
+import {DecryptData} from '@/utils/index'
+import { Base64 } from 'js-base64';
 import { formatChatTime } from "@/utils/time";
 import "./index.scss";
 interface RI {
@@ -216,11 +217,12 @@ const LiveChat = () => {
     setInitLoading(true)
     await getHistoryMsg(hisPar).then(res => {
       const { data } = res
-      const hm = data.length > 0
+      const rawdata = JSON.parse(DecryptData(Base64.decode(data), 871481901))
+      const hm = rawdata.length > 0
       setHasmore(hm)
       let isbreak = false // 判断返回的数据
       let hisarr = hisref.current
-      data.forEach(item => {
+      rawdata.forEach(item => {
         if (isbreak || item.msg === null) return
         if (item.fanId !== hisPar.senderId) {
           isbreak = true
@@ -271,11 +273,12 @@ const LiveChat = () => {
     setLoading(true)
     await getHistoryMsg(hisPar).then(res => {
       const { data } = res
-      const hm = data.length > 0
+      const rawdata = JSON.parse(DecryptData(Base64.decode(data), 871481901))
+      const hm = rawdata.length > 0
       setHasmore(hm)
       let hisarr = hisref.current
-      const len = data.length
-      data.forEach(item => {
+      const len = rawdata.length
+      rawdata.forEach(item => {
         if (item.msg === null) return
         const { delivery, read, userName, userId } = item
         const parsedItem = JSON.parse(item.msg)

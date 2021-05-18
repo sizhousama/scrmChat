@@ -70,55 +70,22 @@ const MyPages = () => {
     <View>
       <NavBar title='授权主页' />
       <AtActivityIndicator isOpened={loading} mode='center'></AtActivityIndicator>
-      <View style={style}>
+      <View style={style} className='pagebody'>
+        <View className='fx accthead'>
+          <View className='fx1'>主页Id</View>
+          <View className='fx1'>主页名称</View>
+          <View className='fx1'>授权账号</View>
+        </View>
         {
           pages.map((item, index) => {
             return (
-              <View className='accbox' key={index} onClick={openAcc} data-key={index}>
-                <View className='accordion'>
-                  <View className='left'>{item.facebookEmail}</View>
-                  <View className='mid'>
-                    {
-                      item.expireTime - new Date().getTime() > 0 ?
-                        <Text>剩余<Text className={`stime ${item.isovertime ? 'warn' : ''}`}>{item.overday}</Text>天</Text> : ''
-                    }
-                    {
-                      item.expireTime - new Date().getTime() > 0 ?
-                        <Text>{item.endDate}</Text> :
-                        <Text style={{ color: 'red' }}>授权已过期</Text>
-                    }
-                  </View>
-                  <View className='right'>
-                    {
-                      item.open ?
-                        <View className='at-icon at-icon-chevron-up'></View>
-                        : <View className='at-icon at-icon-chevron-down'></View>
-                    }
-                  </View>
+              <View className='pagebox' key={index}>
+                <View className='fx1'>{item.pageId}</View>
+                <View className='fx1'>
+                  <Text className='pname break'>{item.pageName}</Text>
                 </View>
-                <View className={`accbody ${item.open ? 'opend' : ''}`}>
-                  <View className='fx accthead'>
-                    <View className='fx1'>主页Id</View>
-                    <View className='fx1'>主页名称</View>
-                    <View className='fx1'>国家</View>
-                  </View>
-                  {
-                    item.pageConfigs ?
-                      item.pageConfigs.map((p, i) => {
-                        return (
-                          <View key={i} className='pagebox'>
-                            <View className='fx1'>{p.pageId}</View>
-                            <View className='fx1'>
-                              <Text className='pname break'>{p.pageName}</Text>
-                            </View>
-                            <View className='fx1'>{p.country}</View>
-                          </View>
-                        )
-                      }) : ''
-                  }
-                </View>
+                <View className='fx1'>{item.facebookName}</View>
               </View>
-
             )
           })
         }

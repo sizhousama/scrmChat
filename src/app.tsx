@@ -7,6 +7,7 @@ import './icon.scss'
 import 'mobx-react-lite/batchingForReactDom'
 import { observer } from 'mobx-react';
 import Taro from '@tarojs/taro'
+
 // cnpm install taro-ui@3.0.0-alpha.3
 
 const App = (props) => {
