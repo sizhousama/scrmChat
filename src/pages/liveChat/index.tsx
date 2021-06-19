@@ -222,13 +222,15 @@ const LiveChat = () => {
       setHasmore(hm)
       let isbreak = false // 判断返回的数据
       let hisarr = hisref.current
-      rawdata.forEach(item => {
+      rawdata.forEach((item,i) => {
         if (isbreak || item.msg === null) return
         if (item.fanId !== hisPar.senderId) {
           isbreak = true
           return
         }
+        
         const { delivery, read, userName, userId } = item
+        if(item.msg){
         const parsedItem = JSON.parse(item.msg)
         let regroupItem: RI = { ...parseMsg(parsedItem) }
         regroupItem.userId = userId
@@ -251,6 +253,7 @@ const LiveChat = () => {
               regroupItem.status = 3
             }
           }
+        }
         }
       })
 

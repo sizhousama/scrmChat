@@ -6,10 +6,11 @@ import Fan from "@/components/fan";
 import { getFans } from '@/api/fan'
 import { observer } from 'mobx-react';
 import { useFanStore } from '@/store';
-import { isNeedAddH } from '@/utils/index'
+import { isNeedAddH,DecryptData } from '@/utils/index'
 import { AtActivityIndicator } from 'taro-ui'
 import { useReachBottom, useDidShow } from "@tarojs/taro";
 import { formatChatTime } from '@/utils/time'
+import { Base64 } from 'js-base64';
 import './index.scss'
 
 const initState = {
@@ -62,11 +63,11 @@ const Users = () => {
     await getFans(parmref.current).then(res => {
       try {
         const { data } = res
-        data.total > parmref.current.size ? setHasMore(true) : setHasMore(false)
-        listref.current = data.records
+        const rawdata = JSON.parse(DecryptData(Base64.decode(data), 871481901))
+        rawdata.total > parmref.current.size ? setHasMore(true) : setHasMore(false)
+        listref.current = rawdata.records
         listref.current.forEach(item => {
           if (item.lastSendMsgTime) {
-            console.log()
             item.lasttime = formatChatTime(new Date(item.lastSendMsgTime.replace(/-/g,"/")))
           } else {
             item.lasttime = ''
@@ -83,16 +84,17 @@ const Users = () => {
     setMoredLoading(true)
     await getFans(parmref.current).then(res => {
       const { data } = res
-      data.records.forEach(item => {
+      const rawdata = JSON.parse(DecryptData(Base64.decode(data), 871481901))
+      rawdata.records.forEach(item => {
         if (item.lastSendMsgTime) {
           item.lasttime = formatChatTime(new Date(item.lastSendMsgTime.replace(/-/g,"/")))
         } else {
           item.lasttime = ''
         }
       })
-      listref.current = [...listref.current, ...data.records]
+      listref.current = [...listref.current, ...rawdata.records]
       dispatch({ type: 'list', payload: { list: listref.current } })
-      data.total > listref.current.length ? setHasMore(true) : setHasMore(false)
+      rawdata.total > listref.current.length ? setHasMore(true) : setHasMore(false)
       setMoredLoading(false)
     })
   }

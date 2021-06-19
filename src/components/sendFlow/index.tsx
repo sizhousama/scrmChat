@@ -78,7 +78,7 @@ const SendFlow = (props, ref) => {
           {
             flows.map((item, index) => {
               return (
-                <View className='fx flow' onClick={setflow} data-item={item}>
+                <View key={index} className='fx flow' onClick={setflow} data-item={item} >
                   <Text className='name'>{item.name}</Text>
                 </View>
               )

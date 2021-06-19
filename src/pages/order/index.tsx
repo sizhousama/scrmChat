@@ -8,6 +8,9 @@ import { previewImg, chooseImg, showL, hideL, Toast, Back } from '@/utils/index'
 import { AtInput, AtList, AtListItem, AtRadio, AtActivityIndicator } from 'taro-ui'
 import { orderForm } from '@/constant/index'
 import Taro, { getCurrentInstance } from '@tarojs/taro'
+import { getFanInfo } from '@/api/fan'
+import {DecryptData} from '@/utils/index'
+import { Base64 } from 'js-base64';
 import {
   addOrder,
   upOrder,
@@ -35,8 +38,8 @@ const initState = {
   orderPrice: '',//订单金额
   orderCommission: '', // 订单佣金
   cashOutPrice: '', // 返款金额
-  includedTax: 1, // 是否包含手续费
-  orderImgType: 1,//截图类型
+  includedTax: '1', // 是否包含手续费
+  orderImgType: '1',//截图类型
   categoryId:'',//订单分组
   orderNote: '', // 订单备注
   orderImage: '', // 订单截图
@@ -269,6 +272,7 @@ const Order = (props) => {
         setForms(formref.current.slice())
       }
     })
+    
   }
   const initorder = () => {
     const router = getCurrentInstance().router
@@ -276,7 +280,6 @@ const Order = (props) => {
     if (router) {
       params = router.params
       typeRef.current = params.type
-      console.log(params)
       if (typeRef.current === '0') {
         if (tempOrder !== '') {
           const { cashOutPrice } = tempOrder
@@ -287,10 +290,21 @@ const Order = (props) => {
         tempOrder.commentImage ? setComImg(tempOrder.commentImage) : ''
         tempOrder.orderImage ? setOrderImg(tempOrder.orderImage) : ''
         getAct()
+        console.log(1)
       } else {
         const id = params.id
         orderinfo(id)
+        console.log(2)
       }
+      const { pageId, fanId } = fan
+      getFanInfo({ pageId, fanId }).then(res=>{
+        const {data} = res
+        const rawdata = JSON.parse(DecryptData(Base64.decode(data), 871481901))
+        console.log(rawdata)
+        if(rawdata.orderNumber){
+          dispatch({ type: 'orderNumber', payload: { orderNumber: rawdata.orderNumber } })
+        }
+      })
     }
   }
   const orderinfo = async (id) => {

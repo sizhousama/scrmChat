@@ -7,3 +7,7 @@ export const login = (data) => {
 export const bindWeCaht = (data) => {
   return HTTPREQUEST.get('/scrm-admin/user/weiXinBinding', data)
 }
+
+export const getCaptcha = (data) => {
+  return HTTPREQUEST.get('/scrm-admin/user/captcha', data)
+}

@@ -275,8 +275,8 @@ export const orderForm = [{
         label: 'Paypal手续费：',
         type: 'radio',
         range:[
-          {label:'包含',value:1},
-          {label:'不包含',value:0}
+          {label:'包含',value:'1'},
+          {label:'不包含',value:'0'}
         ],
         require:false,
         show:true,
@@ -287,8 +287,8 @@ export const orderForm = [{
         label: '截图类型：',
         type: 'radio',
         range:[
-          {label:'手机',value:1},
-          {label:'电脑',value:2}
+          {label:'手机',value:'1'},
+          {label:'电脑',value:'2'}
         ],
         require:false,
         show:true,
