@@ -1,16 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, forwardRef, useCallback } from 'react'
 import { View, Image,Text, Button, ScrollView } from '@tarojs/components'
-import { previewImg, Toast, showL, hideL, NavTo } from '@/utils/index'
+import { previewImg, showL, hideL, NavTo } from '@/utils/index'
 import {typeOrderS} from '@/utils/filter'
-import { forwardRef } from 'react'
 import Taro from '@tarojs/taro'
 import { observer } from 'mobx-react';
-import { useOrderStore } from '@/store';
-import { fanOrders } from '@/api/fan'
-import { iPcOrderImg, iMbOrderImg } from '@/api/order'
+import { useOrderStore, useUserStore } from '@/store';
+import { iPcOrderImg, iMbOrderImg, orderList } from '@/api/order'
 import { AtModal, AtModalContent, AtModalAction } from "taro-ui"
 import './index.scss'
-import order from '@/pages/order'
+
 
 const ImgMsg = (props, ref) => {
   const img = props.msgItem.imgUrl
@@ -20,6 +18,18 @@ const ImgMsg = (props, ref) => {
   const [showCreate, setshowCreate] = useState(false)
   const [orders, setOrders] = useState<any[]>([])
   const {setTempOrder} = useOrderStore()
+  const {type} = useUserStore()
+
+  const params = useCallback(() => {
+    const { pageId, fanId,userMd5,whatsappAccountId, whatsappUserId, instagramAccountId,instagramUserId } = props.fan
+    switch(type){
+      case 'messenger': return { pageId,senderId:fanId,userMd5 }
+      case 'whatsapp': return { whatsappAccountId,whatsappUserId }
+      case 'ins': return { instagramAccountId,instagramUserId }
+      default: return { pageId,senderId:fanId,userMd5 }
+    }
+  },[props.fan, type])
+
   const imgload = (e) => {
     const w = e.detail.width; //获取图片真实宽度
     const h = e.detail.height; //获取图片真实高度
@@ -50,15 +60,16 @@ const ImgMsg = (props, ref) => {
     width = parseInt(String(width))
     height = parseInt(String(height))
 
-    const style = {
+    setStyle({
       width: width + 'px',
       height: 'auto'
-    }
-    setStyle(style)
+    })
   }
+
   const viewimg = () => {
     previewImg(img)
   }
+
   const longPress = () => {
     if (!isR) {
       Taro.showActionSheet({
@@ -73,14 +84,14 @@ const ImgMsg = (props, ref) => {
       })
     }
   }
+
   const getorder = async () => {
-    const {fanId,userMd5} = props.fan
-    const p = { senderId:fanId,userMd5}
-    await fanOrders(p).then(res => {
+    await orderList(params()).then(res => {
       const { data } = res
       setOrders(data.records)
     })
   }
+
   const identifyImg = async (idx) => {
     const fun = idx === 0 ? iMbOrderImg : iPcOrderImg
     let obj = {}
@@ -126,7 +137,7 @@ const ImgMsg = (props, ref) => {
           style={style}
         ></Image>
       </View>
-      <AtModal isOpened={showorder} closeOnClickOverlay={true}>
+      <AtModal isOpened={showorder} closeOnClickOverlay>
         <AtModalContent>
           <ScrollView className='order-scroll' scrollY>
             {

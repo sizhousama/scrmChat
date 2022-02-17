@@ -8,6 +8,12 @@
   background: #fff;
   border-top: 2px solid #eee;
   border-bottom: 2px solid #eee;
+  padding: 0;
+  box-sizing: border-box;
+  .disabled{
+    font-size: 28px;
+    padding: 0 30px;
+  }
   &-inner{
     width:100%;
     height:100%;
@@ -19,29 +25,23 @@
   .left {
     flex: 1;
     display: flex;
-    margin-left: 20px;
     align-items: center;
     height: 68px;
-
+    margin-right: 20px;
     .emoj {
       flex: 1;
       height: 100%;
       display: flex;
       align-items: center;
+      justify-content: flex-end;
     }
-
     .more {
-      flex: 1;
-      height: 100%;
-      display: flex;
-      align-items: center;
+      @extend .emoj;
     }
-
   }
 
   .msginput {
-    width: 440px;
-    // height:68px;
+    width: 450px;
     min-height: 68px;
     max-height: 92px;
     border-radius: 8px;

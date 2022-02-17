@@ -2,5 +2,6 @@ export default {
   navigationBarTitleText: '',
   enablePullDownRefresh: true,
   onReachBottomDistance:50,
-  enableShareAppMessage: true
+  enableShareAppMessage: true,
+  navigationStyle:'custom'
 }

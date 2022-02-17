@@ -14,9 +14,8 @@
  * }
  */
 
-import {
-  hasProperty
-} from '@/utils/index'
+import { hasProperty } from '@/utils/index'
+
 let msgItem = {}
 
 export function parseMsg(fbMsg) {

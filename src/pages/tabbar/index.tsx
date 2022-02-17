@@ -1,33 +1,21 @@
-import React, { useEffect, useRef } from 'react'
-import { AtBadge } from 'taro-ui'
-import { View, Image, Text } from '@tarojs/components'
-import { useState, forwardRef } from 'react'
+import React ,{ forwardRef }from 'react'
+import { AtBadge, AtIcon } from 'taro-ui'
+import { View } from '@tarojs/components'
 import Taro from '@tarojs/taro'
-import {isNeedAddH} from '@/utils/index'
+import { isNeedAddH } from '@/utils/index'
+import { useUserStore } from '@/store'
 import './index.scss'
+
+
 const TabBar = (props, ref) => {
-  // const childref = useRef()
   const needAddH = isNeedAddH()
-  
-  const [tabList, setTabList] = useState(
-    [
-      {
-        title: '',
-        image: '../../assets/images/chat.png',
-        selectedImage: '../../assets/images/chat_act.png'
-      },
-      {
-        title: '',
-        image: '../../assets/images/fans.png',
-        selectedImage: '../../assets/images/fans_act.png'
-      },
-      {
-        title: '',
-        image: '../../assets/images/mine.png',
-        selectedImage: '../../assets/images/mine_act.png'
-      }
-    ]
-  )
+  const { themeColor } = useUserStore()
+  const tabList = [ 
+    { title: '', icon: 'chat' },
+    { title: '', icon: 'user' },
+    { title: '', icon: 'mine' }
+  ]
+
   const handleClick = v => {
     const id = v.currentTarget.dataset.key
     if (id === 0) {
@@ -52,7 +40,13 @@ const TabBar = (props, ref) => {
               data-key={index}
             >
               <AtBadge dot={index === 0 && props.has}>
-                <Image src={props.cur === index ? item.selectedImage : item.image} />
+                <AtIcon
+                  prefixClass='icon'
+                  value={item.icon}
+                  color={props.cur === index ? themeColor : '#666'}
+                  size='24'
+                  className='alicon'
+                />
               </AtBadge>
             </View>
           )

@@ -9,17 +9,17 @@
 }
 
 .sinput {
+  width: 100%;
   padding: 0;
   margin: 0;
   margin-bottom: 32px;
   color: #606266;
-
   &::after {
     display: none;
   }
 
   label {
-    width: 120px;
+    width: 160px;
     margin: 0;
     margin-left: 14px;
     font-size: 28px;
@@ -96,7 +96,7 @@
   display: flex;
 
   .label {
-    width: 120px;
+    width: 140px;
     margin: 0;
     margin-left: 14px;
     line-height: 60px;
@@ -171,7 +171,7 @@
 // }
 
 .picker {
-  width: 500px;
+  width:400px;
   height: 100%;
 
   .at-list {
@@ -203,13 +203,13 @@
     max-width: 100%;
     width: 100%;
     text-align: left;
-    margin-left:-34px;
     color:#606266;
     line-height: 28px;
   }
   .at-list__item .item-extra__info {
     color:#606266;
     font-size: 28px;
+    padding: 0;
   }
 }
 

@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState, useReducer } from 'react'
-import { View, Image, Text, ScrollView } from '@tarojs/components'
-import { AtTabBar, AtActivityIndicator, AtInput } from 'taro-ui'
-import { forwardRef } from 'react'
-import { getAllTagNew } from '@/api/fan'
+import React, { useEffect, useRef, useState, useReducer, forwardRef } from 'react'
+import { View, Text, ScrollView } from '@tarojs/components'
+import { AtActivityIndicator, AtInput } from 'taro-ui'
+import { getAllTagNew } from '@/api/utils'
 import './index.scss'
+
 const initState = {
   tags: []
 }
@@ -35,6 +35,7 @@ const AddFanTag = (props, ref) => {
   }
   const addtag = (e) => {
     props.add(e.currentTarget.dataset.item)
+    close()
   }
   const getlist = async () => {
     setLoading(true)
@@ -52,9 +53,9 @@ const AddFanTag = (props, ref) => {
   }
   return (
     <View className='mask' onClick={close}>
-      <View className='replybox' onClick={(e) => e.stopPropagation()}>
+      <View className='tag-box' onClick={(e) => e.stopPropagation()}>
         <View className='topheader'>添加标签</View>
-        <View className='search'>
+        <View className='tag-search'>
           <AtInput
             name='replyInput'
             value={key}

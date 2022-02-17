@@ -1,0 +1,30 @@
+.list-item{
+  width: 100%;
+  min-height: 88px;
+  display: flex;
+  padding: 0 40px;
+  font-size: 28px;
+  border-bottom: 2px solid #eee;
+  box-sizing: border-box;
+  .base{
+    flex:1;
+    display: flex;
+    align-items: center;
+  }
+  .extra{
+    flex:1;
+    display: flex;
+    align-items: center;
+    padding-right:40px;
+    justify-content: flex-end;
+    box-sizing: border-box;
+    color:#666;
+  }
+  .alicon{
+    margin-right:16px;
+  }
+  .at-icon{
+    position: absolute;
+    right: 40px;
+  }
+}

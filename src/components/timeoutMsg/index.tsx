@@ -1,7 +1,6 @@
-import React, { useEffect, useRef, useState, useReducer } from 'react'
+import React, { useEffect, useRef, useState, useReducer , forwardRef } from 'react'
 import { View, Image, Text, ScrollView, RichText } from '@tarojs/components'
 import { AtCheckbox,AtButton  } from 'taro-ui'
-import { forwardRef } from 'react'
 import {previewImg} from '@/utils/index'
 import { observer } from 'mobx-react';
 import { useFanStore} from '@/store';
@@ -54,18 +53,18 @@ const TimeOutMsg = (props, ref) => {
             <View className='footer'>
               <View className='footer-left'>
                 <AtCheckbox 
-                options={options}
-                selectedList={selected}
-                onChange={changeTips}
+                  options={options}
+                  selectedList={selected}
+                  onChange={changeTips}
                 ></AtCheckbox>
               </View>
               <View className='footer-right'>
                 <AtButton 
-                type='primary' 
-                size='small' 
-                full={false} 
-                circle={true}
-                onClick={clickKnow}
+                  type='primary' 
+                  size='small' 
+                  full={false} 
+                  circle
+                  onClick={clickKnow}
                 >我知道了</AtButton>
               </View>
             </View>

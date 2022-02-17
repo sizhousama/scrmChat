@@ -1,16 +1,21 @@
 
+.back-icon{
+  width: 88px;
+  height:88px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
 .chatinfo {
   display: flex;
   height: 88px;
+  border-top: 2px solid #eee;
   border-bottom: 2px solid #eee;
-
-  .icon {
-    width: 80px;
-    display: flex;
-    align-items: center;
-    margin-left: 60px;
-  }
-
+  padding:0 30px;
   .left {
     flex: 4;
     display: flex;
@@ -27,53 +32,25 @@
   }
 }
 
-.chatinfo .icon {
-  image {
-    width: 56px;
-    height: 45px;
-    margin-bottom:10px;
-  }
-}
-
 .chatinfo .left {
   .name {
-    font-size: 36px;
+    font-size: 24px;
     color: #101010;
-    width:400px;
-  }
-
-  .pageid {
-    font-size: 22px;
-    color: #bbb;
-    font-weight: 500;
     width:400px;
   }
 }
 
 .chatinfo .right {
   image {
-    width: 48px;
-    height: 48px;
-    margin-right: 50px;
-  }
-}
-
-.navbar {
-  border-bottom: 1px solid #eee;
-
-  .left {
-    flex: 1;
-
-    .at-icon {
-      color: #7685FF;
-    }
+    width: 32px;
+    height: 32px;
+    margin-right: 20px;
   }
 }
 
 .serselect {
   width: 200px;
-  height: 50px;
-  border: 2px solid #ddd;
+  height: 30px;
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -81,13 +58,12 @@
   position: relative;
 
   .at-icon-chevron-down {
-    position: absolute;
-    right: 10px;
     font-size: 26px;
     z-index: 99;
+    margin:0 5px;
   }
   .picker{
-    height: 50px;
+    height: 30px;
     width:100%;
   }
 }
@@ -95,25 +71,23 @@
 .at-list{
   border-radius: 10px;
   width:160px;
-  height: 100%;
+  height: 30px;
 }
 .at-list__item .item-extra{
   width:100%;
+  height: 30px;
   text-align: left;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: 30px;
 }
 .at-list__item-content {
   display: none;
 }
 .at-list__item .item-extra__info{
-  font-size: 24px;
+  font-size: 20px;
   color:#bbb;
-  margin-left:20px;
-  height: 100%;
-  line-height: 46px;
-  padding:0;
 }
 .at-list::after{display:none}
 .at-list__item{padding:0}

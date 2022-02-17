@@ -1,13 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { View, Text, Image, Picker } from '@tarojs/components'
-import { AtList, AtListItem } from 'taro-ui'
+import React, { useState, useEffect, useRef,forwardRef, useCallback } from 'react'
+import { View, Text, Picker } from '@tarojs/components'
+import { AtList, AtListItem, AtIcon } from 'taro-ui'
 import { Back, getSysInfo, Toast,NavTo } from '@/utils/index'
-import {getServices} from '@/api/chat'
-import {upFanService} from '@/api/fan'
-import livechat from '@/assets/images/livechat.png'
-import user from '@/assets/images/mine.png'
+import {getServices} from '@/api/utils'
+import {upMessengerFanService} from '@/api/messenger/fan'
+import {upWaFanService} from '@/api/wa/fan'
+import { upInsFanService } from '@/api/ins/fan'
+import { useUserStore } from '@/store'
 import './index.scss'
-import { forwardRef } from 'react'
+
+
 
 const ChatHeader = (props, ref) => {
   const listref = useRef<any>([])
@@ -15,15 +17,24 @@ const ChatHeader = (props, ref) => {
   const [selectSer, setSelectSer] = useState(props.fan.serviceName?props.fan.serviceName:'未分配')
   const [curser,setCurser] = useState(0)
   const barHeight = getSysInfo().statusBarHeight
-  const blockStyle = {
+  const { type } = useUserStore()
+  const blockStyle:any = {
     width: "100%",
     height: barHeight + 44 + 'px',
-    background: "#fff"
+    background: "#fff",
+    position: 'relative'
   }
-  useEffect(() => {
-    getlist()
-  }, [])
-  const getlist = async()=>{
+
+  const upFanService = (data) => {
+    switch(type){
+      case 'messenger': return upMessengerFanService(data)
+      case 'whatsapp': return upWaFanService(data)
+      case 'ins': return upInsFanService(data)
+      default: return upMessengerFanService(data)
+    }
+  }
+  
+  const getlist = useCallback(async()=>{
     await getServices().then(res=>{
       const {data} = res
       let arr:any[] = []
@@ -36,7 +47,8 @@ const ChatHeader = (props, ref) => {
       listref.current = data
       setServices(arr)
     })
-  }
+  },[props.fan.serviceName])
+
   const onChange = (e) => {
     let service = {
       username:'',
@@ -50,51 +62,56 @@ const ChatHeader = (props, ref) => {
         service = item
       }
     })
-    const { pageId, fanId } = props.fan
+    const { pageId, fanId, whatsappUserId, whatsappAccountId, instagramAccountId, instagramUserId } = props.fan
     const { username, avatar, userId } = service
     const params = {
       pageId,
       fanId,
+      whatsappUserList: [{ whatsappUserId, whatsappAccountId }],
+      instagramUserList: [{ instagramUserId, instagramAccountId }],
       serviceId: userId,
       serviceName: username,
       serviceAvatar: avatar
     }
-    upFanService(params).then(res=>{
+    upFanService(params).then(()=>{
       Toast('分配客服成功！','none')
     })
   }
+
   const gofaninfo = ()=>{
     props.handleClick()
     NavTo('/pages/fanInfo/index')
   }
+
+  const fanName = () => {
+    if(type === 'messenger') return <Text className='name break'>{props.fan.fanName}</Text>
+    if(type === 'whatsapp') return <Text className='name break'>{props.fan.whatsappUserName}</Text>
+    if(type === 'ins') return <Text className='name break'>{props.fan.instagramUserName}</Text>
+  }
+
+  useEffect(() => {
+    getlist()
+  }, [getlist])
+
   return (
     <View>
-      <View style={blockStyle}></View>
-      <View className='chatinfo' style={{ height: '44px' }}>
-        <View className='icon'>
-          <Image src={livechat}></Image>
-        </View>
-        <View className='left'>
-          <Text className='name break'>{props.fan.fanName}</Text>
-          <Text className='pageid break'>主页：{props.fan.pageName}</Text>
-        </View>
-        <View className='right' onClick={gofaninfo}>
-          <Image src={user}></Image>
-        </View>
-      </View>
-      <View className='navbar' style={{ height: '44px' }}>
-        <View className='left' onClick={Back}>
+      <View style={blockStyle}>
+        <View className='back-icon' onClick={Back}>
           <View className='at-icon at-icon-chevron-left'></View>
         </View>
-        <View className='right'>
-          <View className='serselect'>
-            <View className='at-icon at-icon-chevron-down'></View>
-            <Picker className='picker' mode='selector' value={curser} range={services} onChange={onChange}>
+        <View className='bottom'>会话</View>
+      </View>
+      <View className='chatinfo' style={{ height: '44px' }}>
+        <View className='left'>
+          {fanName()}
+          <Picker className='picker' mode='selector' value={curser} range={services} onChange={onChange}>
               <AtList>
                 <AtListItem extraText={selectSer} />
               </AtList>
             </Picker>
-          </View>
+        </View>
+        <View className='right' onClick={gofaninfo}>
+          <AtIcon prefixClass='icon' value='mine' color='#333' size='16' className='alicon'></AtIcon>
         </View>
       </View>
     </View>

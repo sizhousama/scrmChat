@@ -4,7 +4,7 @@ export const login = (data) => {
   return HTTPREQUEST.post('/scrm-admin/user/login', data)
 }
 
-export const bindWeCaht = (data) => {
+export const bindWeChat = (data) => {
   return HTTPREQUEST.get('/scrm-admin/user/weiXinBinding', data)
 }
 

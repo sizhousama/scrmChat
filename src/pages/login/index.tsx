@@ -1,8 +1,8 @@
 import React, { useState,useEffect } from 'react'
 import wechat from '@/assets/images/wechat.png'
 import { View, Image, Text } from '@tarojs/components'
-import { AtInput, AtForm, AtButton } from 'taro-ui'
-import { login, bindWeCaht,getCaptcha } from '@/api/login'
+import { AtInput, AtButton } from 'taro-ui'
+import { login,getCaptcha } from '@/api/login'
 import { Toast, SetStorageSync, SwitchTab } from '@/utils/index'
 // import CryptoJS from 'crypto-js'
 import { observer } from 'mobx-react';
@@ -17,6 +17,7 @@ const Login = () => {
   const [verKey, setcodekey] = useState('')
   const [ptype, setPtype] = useState<any>('password')
   const [focus, setFocus] = useState(false)
+  const req = true
 
   useEffect(() => {
     getcode()
@@ -28,9 +29,7 @@ const Login = () => {
     if (type === 1) {
       obj = {
         userName,
-        password,
-        verCode,
-        verKey
+        password
       }
     } else {
       obj = { code }
@@ -68,9 +67,6 @@ const Login = () => {
   const inputPassWord = (v) => {
     setpassword(v)
   }
-  const inputCode = (v) => {
-    setcode(v)
-  }
   const seePass = () => {
     if (ptype === 'text') {
       setPtype('password')
@@ -83,8 +79,7 @@ const Login = () => {
       success: function (res) {
         if (res.code) {
           Taro.getUserInfo({
-            success: function (info) {
-              console.log(res.code)
+            success: function () {
               handleLogin(2, res.code)
             }
           })
@@ -96,13 +91,12 @@ const Login = () => {
   }
   return (
     <View className='loginbody'>
-      <View className='head'>
-        <Image src='https://www.hivescrm.cn/static/img/logo.55b4565b.png' />
-      </View>
+      <View className='head'></View>
       <Text className='name'>HIVE SCRM</Text>
+      <Text className='sub'>用技术让出海营销极致简单</Text>
       <View className='username'>
         <AtInput
-          required={true}
+          required={req}
           className='input'
           name='userName'
           placeholder='请输入账号...'
@@ -114,7 +108,7 @@ const Login = () => {
       <View className='password'>
         <AtInput
           name='userPass'
-          required={true}
+          required={req}
           type={ptype}
           className='input'
           placeholder='请输入密码...'
@@ -126,33 +120,15 @@ const Login = () => {
         </View>
       </View>
       
-      <View className='codebox'>
-        <View className='code'>
-          <AtInput
-            name='userCode'
-            required={true}
-            className='input'
-            placeholder='请输入验证码...'
-            value={verCode}
-            onChange={inputCode}
-          />
-        </View>
-        <View className='codeimg' onClick={getcode}>
-          <Image src={codeimg}></Image>
-        </View>
-      </View>
       <AtButton className='submit' onClick={() => handleLogin(1, '')} >立即登录</AtButton>
       <View className='other-login'>
         ———&nbsp;&nbsp;&nbsp;其他登录&nbsp;&nbsp;&nbsp;———
       </View>
       <View className='login-type'>
         <View className='login-type-item'>
-          <View className='login-type-item-top'>
-            <AtButton openType='getUserInfo' onGetUserInfo={getUserInfo}>
-              <Image style={{ width: '22px', height: '22px', marginTop: '5px' }} src={wechat}></Image>
-            </AtButton>
-          </View>
-          <View className='login-type-item-bot'>微信登录</View>
+          <AtButton openType='getUserInfo' onGetUserInfo={getUserInfo}>
+            <Image style={{ width: '22px', height: '22px', marginTop: '5px' }} src={wechat}></Image>
+          </AtButton>
         </View>
       </View>
     </View>

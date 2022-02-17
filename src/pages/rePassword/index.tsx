@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from "react";
-import NavBar from "@/components/navBar";
+import React, { useState } from "react";
 import { View } from "@tarojs/components";
 import { observer } from 'mobx-react';
 import { useNavStore, useUserStore } from '@/store';
@@ -66,45 +65,43 @@ const RePassWord = () => {
 
   return (
     <View>
-      <NavBar title='修改密码' btn={<View className='navbtn' onClick={save}>保存</View>} />
-      <View style={style}>
-        <View className='listitem'>
-          <View className='left'>原密码：</View>
-          <View className='right'>
-            <AtInput
-              name='origin'
-              className='pinput'
-              type='password'
-              value={originPass}
-              onChange={changeOriginPass}
-            ></AtInput>
-          </View>
-        </View>
-        <View className='listitem'>
-          <View className='left'>新密码：</View>
-          <View className='right'>
-            <AtInput
-              name='new'
-              className='pinput'
-              type='password'
-              value={newPass}
-              onChange={changeNewPass}
-            ></AtInput>
-          </View>
-        </View>
-        <View className='listitem'>
-          <View className='left'>确认新密码：</View>
-          <View className='right'>
-            <AtInput
-              name='renew'
-              className='pinput'
-              type='password'
-              value={renewPass}
-              onChange={changeRenewPass}
-            ></AtInput>
-          </View>
+      <View className='listitem'>
+        <View className='left'>原密码：</View>
+        <View className='right'>
+          <AtInput
+            name='origin'
+            className='pinput'
+            type='password'
+            value={originPass}
+            onChange={changeOriginPass}
+          ></AtInput>
         </View>
       </View>
+      <View className='listitem'>
+        <View className='left'>新密码：</View>
+        <View className='right'>
+          <AtInput
+            name='new'
+            className='pinput'
+            type='password'
+            value={newPass}
+            onChange={changeNewPass}
+          ></AtInput>
+        </View>
+      </View>
+      <View className='listitem'>
+        <View className='left'>确认新密码：</View>
+        <View className='right'>
+          <AtInput
+            name='renew'
+            className='pinput'
+            type='password'
+            value={renewPass}
+            onChange={changeRenewPass}
+          ></AtInput>
+        </View>
+      </View>
+      <View className='navbtn' onClick={save}>保存</View>
     </View>
   );
 };

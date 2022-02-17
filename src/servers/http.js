@@ -1,4 +1,5 @@
 import Taro from '@tarojs/taro'
+import qs from 'qs'
 import {getBaseUrl} from './baseUrl'
 import interceptors from './interceptors'
 
@@ -26,7 +27,8 @@ class httpRequest {
   }
 
   get(url, data = "") {
-    let option = { url, data };
+    const d = qs.stringify(data, { arrayFormat: 'repeat' })
+    let option = { url: url + `?${d}`, data: '' }
     return this.baseOptions(option);
   }
 

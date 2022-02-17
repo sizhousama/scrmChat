@@ -1,13 +1,9 @@
-import React, { useEffect, useRef, useContext } from 'react'
-import { View, Image, Text } from '@tarojs/components'
-import { forwardRef } from 'react'
+import React, { forwardRef } from 'react'
+import { View, Text } from '@tarojs/components'
 import './index.scss'
+
 const Tools = (props, ref) => {
   const tools = [
-    {
-      icon: 'at-icon at-icon-message',
-      name: '快捷回复'
-    },
     {
       icon: 'at-icon at-icon-image',
       name: '图片'
@@ -17,12 +13,16 @@ const Tools = (props, ref) => {
       name: '文件'
     },
     {
-      icon: 'at-icon at-icon-file-new',
-      name: '订单'
-    },
-    {
       icon: 'icon icon-flow',
       name: '流程'
+    },
+    {
+      icon: 'at-icon at-icon-message',
+      name: '快捷回复'
+    },
+    {
+      icon: 'at-icon at-icon-file-new',
+      name: '订单'
     }
   ]
   const clicktool = (e) => {

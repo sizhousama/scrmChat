@@ -1,29 +1,27 @@
 // 请求地址
-export const getBaseUrl = (url) => {
-  let BASE_URL = '';
-  if (process.env.NODE_ENV === 'development') {
-    //开发环境 
-    // BASE_URL = 'https://back.hivescrm.cn'
-    BASE_URL = 'https://back.hivemarket.top'
-  } else {
-    // 生产环境
-    // BASE_URL = 'https://back.hivemarket.top'
-    BASE_URL = 'https://back.hivescrm.cn'
+
+const urlObj = {
+  'development':{
+    baseUrl: 'https://back.hivescrm3.top',
+    imgUrl: 'https://image.hivescrm.cn/image_test',
+  },
+  'production':{
+    baseUrl: 'https://back.hivescrm.cn',
+    imgUrl: 'https://image.hivescrm.cn/image',
+    // baseUrl: 'https://back.hivescrm3.top',
+    // imgUrl: 'https://image.hivescrm.cn/image_test',
   }
-  return BASE_URL
+}
+
+export const getBaseUrl = () => {
+  return urlObj[process.env.NODE_ENV].baseUrl
 }
 // 图片地址
-export const imgUrl = (url) => {
-  let IMG_URL = '';
-  IMG_URL = process.env.NODE_ENV === 'development' ? 'https://image.hivescrm.cn/image_test' :'https://image.hivescrm.cn/image'
-  // IMG_URL = process.env.NODE_ENV === 'development' ? 'https://image.hivescrm.cn/image' :'https://image.hivescrm.cn/image'
-  return IMG_URL
+export const imgUrl = () => {
+  return urlObj[process.env.NODE_ENV].imgUrl
 }
 
 // socket地址
-export const socketUrl = (url) => {
-  let SOCKET_URL = '';
-  SOCKET_URL = process.env.NODE_ENV === 'development' ? 'https://back.hivemarket.top?' : 'https://back.hivescrm.cn?'
-  // SOCKET_URL = process.env.NODE_ENV === 'development' ? 'https://back.hivescrm.cn?' : 'https://back.hivescrm.cn?' 
-  return SOCKET_URL
+export const socketUrl = () => {
+  return `${urlObj[process.env.NODE_ENV].baseUrl}?`
 }

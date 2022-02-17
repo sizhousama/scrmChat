@@ -1,4 +1,3 @@
 export default {
-  navigationBarTitleText: '',
-  navigationStyle:'custom'
+  navigationBarTitleText: '选择标签'
 }

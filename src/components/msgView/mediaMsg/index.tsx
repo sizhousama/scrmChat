@@ -1,6 +1,5 @@
-import React, { useState,useEffect, useRef } from 'react'
-import { View, Text, Video, Audio } from '@tarojs/components'
-import { forwardRef } from 'react'
+import React, { useState, forwardRef } from 'react'
+import { View, Video } from '@tarojs/components'
 import Taro from "@tarojs/taro";
 import './index.scss'
 

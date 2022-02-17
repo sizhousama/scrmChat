@@ -1,5 +1,9 @@
 import HTTPREQUEST from "../servers/http"
 
+// 订单列表
+export const orderList = (params) => {
+  return HTTPREQUEST.get('/scrm-seller/scalpingOrder/scalpingOrders',params)
+}
 // 添加订单
 export const addOrder = (data) => {
   return HTTPREQUEST.post('/scrm-seller/scalpingOrder', data)

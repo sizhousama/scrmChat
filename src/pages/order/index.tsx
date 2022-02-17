@@ -1,15 +1,15 @@
-import React, { useRef, useState, useEffect, useReducer } from "react";
-import NavBar from "@/components/navBar";
+import React, { useRef, useState, useEffect, useReducer, useCallback } from "react";
 import OrderFormItem from '@/components/orderFormItem'
 import { View, Image, Picker, ScrollView } from "@tarojs/components";
 import { observer } from 'mobx-react';
-import { useNavStore, useFanStore, useOrderStore } from '@/store';
-import { previewImg, chooseImg, showL, hideL, Toast, Back } from '@/utils/index'
+import { useFanStore, useOrderStore, useUserStore } from '@/store';
+import { previewImg, chooseImg, showL, hideL, Toast, Back ,DecryptData} from '@/utils/index'
 import { AtInput, AtList, AtListItem, AtRadio, AtActivityIndicator } from 'taro-ui'
 import { orderForm } from '@/constant/index'
-import Taro, { getCurrentInstance } from '@tarojs/taro'
-import { getFanInfo } from '@/api/fan'
-import {DecryptData} from '@/utils/index'
+import Taro, { getCurrentInstance, useDidShow } from '@tarojs/taro'
+import { getMessengerFanInfo } from "@/api/messenger/fan";
+import { getWaFanInfo } from "@/api/wa/fan";
+import { getInsFanInfo } from "@/api/ins/fan";
 import { Base64 } from 'js-base64';
 import {
   addOrder,
@@ -24,6 +24,7 @@ import {
   getAllCat
 } from '@/api/order'
 import "./index.scss";
+
 const initState = {
   id: '',//订单id
   // 商品信息
@@ -32,9 +33,11 @@ const initState = {
   storeName: '', // 店铺名称
   asin: '', // ASIN
   scalpingProductPrice: '', // 商品价格
+  storeType: '',
   //订单信息
   orderNumber: '', // 订单编号
   orderImageDate: '', // 订单日期
+  amazonOrderStatus: 0,
   orderPrice: '',//订单金额
   orderCommission: '', // 订单佣金
   cashOutPrice: '', // 返款金额
@@ -43,11 +46,11 @@ const initState = {
   categoryId:'',//订单分组
   orderNote: '', // 订单备注
   orderImage: '', // 订单截图
-  //测评信息
+  //活动信息
   commentWay: '', // 评论方式
   cashOutType: '', // 返款方式
   orderChannelId: 0, // 订单来源
-  amazonOrderStatus: '', // 亚马逊订单状态
+  acticityId: '',
   commentUrl: '', // 评论链接
   commentImage: '', // 评论截图
   // other
@@ -58,10 +61,11 @@ const initState = {
   buyerName: '',
   pageId: '', // 主页来源
   senderId: '', // 粉丝id
-  acticityId: '', // 活动ID
   adId: '', // 广告id
   profileUrl: '',
-  userMd5: ''
+  userMd5: '',
+  whatsappAccountId: '',
+  instagramAccountId: '',
 }
 const stateRducer = (state, action) => {
   switch (action.type) {
@@ -96,6 +100,11 @@ const stateRducer = (state, action) => {
         ...state,
         scalpingProductPrice: action.payload.scalpingProductPrice
       }
+    case 'storeType':
+      return {
+        ...state,
+        storeType: action.payload.storeType
+      }
     // 订单信息
     case 'orderNumber':
       return {
@@ -106,6 +115,11 @@ const stateRducer = (state, action) => {
       return {
         ...state,
         orderImageDate: action.payload.orderImageDate
+      }
+    case 'amazonOrderStatus':
+      return {
+        ...state,
+        amazonOrderStatus: action.payload.amazonOrderStatus
       }
     case 'orderPrice':
       return {
@@ -147,7 +161,7 @@ const stateRducer = (state, action) => {
         ...state,
         orderImage: action.payload.orderImage
       }
-    // 测评信息
+    // 活动信息
     case 'commentWay':
       return {
         ...state,
@@ -162,6 +176,11 @@ const stateRducer = (state, action) => {
       return {
         ...state,
         orderChannelId: action.payload.orderChannelId
+      }
+    case 'acticityId':
+      return {
+        ...state,
+        acticityId: action.payload.acticityId
       }
     case 'amazonOrderStatus':
       return {
@@ -182,11 +201,6 @@ const stateRducer = (state, action) => {
       return {
         ...state,
         currencyType: action.payload.currencyType
-      }
-    case 'acticityId':
-      return {
-        ...state,
-        acticityId: action.payload.acticityId
       }
     case 'payWay':
       return {
@@ -228,15 +242,21 @@ const stateRducer = (state, action) => {
         ...state,
         userMd5: action.payload.userMd5
       }
+    case 'whatsappAccountId':
+      return {
+        ...state,
+        whatsappAccountId: action.payload.whatsappAccountId
+      }
+    case 'instagramAccountId':
+      return {
+        ...state,
+        instagramAccountId: action.payload.instagramAccountId
+      }
     default:
       return state
   }
 }
 const Order = (props) => {
-  const { navH } = useNavStore();
-  const style = {
-    marginTop: navH + 'px'
-  }
   const priceref = useRef({
     op: '',
     oc: ''
@@ -252,12 +272,40 @@ const Order = (props) => {
   const [showpro, setShowPro] = useState(false)
   const { fan } = useFanStore()
   const { tempOrder } = useOrderStore()
+  const { type } = useUserStore()
   const typeRef = useRef('0')
-  useEffect(() => {
-    getCatArr()
-    initorder()
-  }, [])
-  const getCatArr = () =>{
+  
+  const params = useCallback(() => {
+    const { pageId, fanId,userMd5,whatsappAccountId, whatsappUserId, instagramAccountId,instagramUserId } = fan
+    switch(type){
+      case 'messenger': return { pageId,senderId:fanId,userMd5 }
+      case 'whatsapp': return { whatsappAccountId,whatsappUserId }
+      case 'ins': return { instagramAccountId,instagramUserId }
+      default: return { pageId,senderId:fanId }
+    }
+  },[fan, type])
+
+  const getFanInfo = useCallback((data) =>{
+    switch(type){
+      case 'messenger': return getMessengerFanInfo(data)
+      case 'whatsapp': return getWaFanInfo(data)
+      case 'ins': return getInsFanInfo(data)
+      default: return getMessengerFanInfo(data)
+    }
+  },[type])
+
+  const setFormItemField = (key, field, value) => {
+    formref.current.forEach((item=>{
+      item.fitems.forEach(item2=>{
+        if(item2.key === key){
+          item2[field] = value
+        }
+      })
+    }))
+    setForms(formref.current.slice())
+  }
+
+  const getCatArr = useCallback(() =>{
     getAllCat().then(res=>{
       if(res){
         const {data} = res
@@ -268,47 +316,12 @@ const Order = (props) => {
           }
           return obj
         })
-        formref.current[1].fitems[7].range = arr
-        setForms(formref.current.slice())
+        setFormItemField('categoryId', 'range', arr)
       }
     })
-    
-  }
-  const initorder = () => {
-    const router = getCurrentInstance().router
-    let params: any = ''
-    if (router) {
-      params = router.params
-      typeRef.current = params.type
-      if (typeRef.current === '0') {
-        if (tempOrder !== '') {
-          const { cashOutPrice } = tempOrder
-          dispatch({ type: 'temp', payload: { tempOrder } })
-          dispatch({ type: 'orderCommission', payload: { orderCommission: 0 } })
-          dispatch({ type: 'orderPrice', payload: { orderPrice: cashOutPrice } })
-        }
-        tempOrder.commentImage ? setComImg(tempOrder.commentImage) : ''
-        tempOrder.orderImage ? setOrderImg(tempOrder.orderImage) : ''
-        getAct()
-        console.log(1)
-      } else {
-        const id = params.id
-        orderinfo(id)
-        console.log(2)
-      }
-      const { pageId, fanId } = fan
-      getFanInfo({ pageId, fanId }).then(res=>{
-        const {data} = res
-        const rawdata = JSON.parse(DecryptData(Base64.decode(data), 871481901))
-        console.log(rawdata)
-        if(rawdata.orderNumber){
-          dispatch({ type: 'orderNumber', payload: { orderNumber: rawdata.orderNumber } })
-        }
-      })
-    }
-  }
-  const orderinfo = async (id) => {
-    console.log(tempOrder)
+  },[])
+
+  const orderinfo = useCallback(async (id) => {
     await getOrderInfo(id).then(res => {
       const { data } = res
       dispatch({ type: 'temp', payload: { tempOrder: data } })
@@ -319,15 +332,13 @@ const Order = (props) => {
       setOrderImg(data.orderImage)
       if (data.payWay === 5) {
         if (data.giftCard !== '' || data.giftCard !== null) {
-          formref.current[3]['fitems'][0]['disable'] = true
+          setFormItemField('payWay', 'disable', true)
         }
-        formref.current[3]['fitems'][1]['show'] = true
-        formref.current[3]['fitems'][2]['require'] = false
-        setForms(formref.current.slice())
+        setFormItemField('giftCard', 'show', true)
+        setFormItemField('paypalAccount', 'require', false)
       }
       if(data.cashOutType===12&&data.isCashout===0){
-        formref.current[2]['fitems'][1]['disable'] = true
-        setForms(formref.current.slice())
+        setFormItemField('cashOutType', 'disable', true)
       }
  
       if (tempOrder !== '') {
@@ -336,8 +347,8 @@ const Order = (props) => {
         dispatch({ type: 'orderCommission', payload: { orderCommission: 0 } })
         dispatch({ type: 'orderPrice', payload: { orderPrice: cashOutPrice } })
       }
-      tempOrder.commentImage ? setComImg(tempOrder.commentImage) : ''
-      tempOrder.orderImage ? setOrderImg(tempOrder.orderImage) : ''
+      tempOrder.commentImage && setComImg(tempOrder.commentImage)
+      tempOrder.orderImage && setOrderImg(tempOrder.orderImage)
 
       if(data.status === 4){
         formref.current.forEach(item=>{
@@ -364,8 +375,9 @@ const Order = (props) => {
     })
 
     
-  }
-  const getAct = async () => {
+  },[tempOrder])
+
+  const getAct = useCallback(async () => {
     const { pageId, fanId } = fan
     const p = { pageId, senderId: fanId }
     await getActBySenderId(p).then(res => {
@@ -381,17 +393,40 @@ const Order = (props) => {
         dispatch({ type: 'keyword', payload: { keyword: `(${productId})${title}` } })
       }
     })
-    dispatch({ type: 'pageId', payload: { pageId: fan.pageId } })
-    dispatch({ type: 'senderId', payload: { senderId: fan.fanId } })
-    dispatch({ type: 'buyerName', payload: { buyerName: fan.fanName } })
-    dispatch({ type: 'adId', payload: { adId: fan.adId } })
-    dispatch({ type: 'paypalAccount', payload: { paypalAccount: fan.payAccount } })
-    dispatch({ type: 'userMd5', payload: { userMd5: fan.userMd5 } })
-    formref.current[3]['fitems'][0]['disable'] = false
-    formref.current[3]['fitems'][1]['show'] = false
-    formref.current[3]['fitems'][2]['require'] = true
-    setForms(formref.current.slice())
-  }
+  },[fan])
+
+  const channel = useCallback(() => {
+    switch(type){
+      case 'messenger': return 0
+      case 'whatsapp': return 2
+      case 'ins': return 4
+      default: return 0
+    }
+  },[type])
+
+  const setDefault = useCallback(() => {
+    const { pageId, fanId, fanName, adId, payAccount, userMd5, whatsappAccountId, whatsappUserId, instagramAccountId, instagramUserId } = fan
+    dispatch({ type: 'pageId', payload: { pageId: pageId } })
+    dispatch({ type: 'senderId', payload: { senderId: fanId } })
+    dispatch({ type: 'whatsappAccountId', payload: { whatsappAccountId: whatsappAccountId } })
+    dispatch({ type: 'instagramAccountId', payload: { instagramAccountId: instagramAccountId } })
+    dispatch({ type: 'buyerName', payload: { buyerName: fanName } })
+    dispatch({ type: 'adId', payload: { adId: adId } })
+    dispatch({ type: 'paypalAccount', payload: { paypalAccount: payAccount } })
+    dispatch({ type: 'userMd5', payload: { userMd5: userMd5 } })
+    dispatch({ type: 'orderChannelId', payload: { orderChannelId: channel() } })
+    type !== 'messenger' && setFormItemField('orderChannelId', 'disable', true)
+    if(type === 'whatsapp'){
+      dispatch({ type: 'senderId', payload: { senderId: whatsappUserId } })
+    }
+    if(type === 'ins'){
+      dispatch({ type: 'senderId', payload: { senderId: instagramUserId } })
+    }
+    setFormItemField('payWay', 'disable', false)
+    setFormItemField('giftCard', 'show', false)
+    setFormItemField('paypalAccount', 'require', true)
+  },[channel, fan, type])
+
   const setState = (item, v) => {
     const key = item.key
     const payload = {}
@@ -414,15 +449,16 @@ const Order = (props) => {
     }
     if (key === 'payWay') {
       if (v === '3') {
-        formref.current[3]['fitems'][1]['show'] = true
-        formref.current[3]['fitems'][2]['require'] = false
+        setFormItemField('giftCard', 'show', true)
+        setFormItemField('paypalAccount', 'require', false)
       } else {
-        formref.current[3]['fitems'][1]['show'] = false
-        formref.current[3]['fitems'][2]['require'] = true
+        setFormItemField('giftCard', 'show', false)
+        setFormItemField('paypalAccount', 'require', true)
       }
       setForms(formref.current.slice())
     }
   }
+
   const getpro = async (v) => {
     setProLoading(true)
     const query = {
@@ -439,15 +475,17 @@ const Order = (props) => {
     })
 
   }
+
   const autoSet = async (e) => {
     dispatch({ type: 'keyword', payload: { keyword: '' } })
     const item = e.currentTarget.dataset.item
-    const { asin, storeName, id, price, currencyType, title } = item
+    const { asin, storeName, id, price, currencyType, title, storeType } = item
     dispatch({ type: 'scalpingProductId', payload: { scalpingProductId: id } })
     dispatch({ type: 'asin', payload: { asin: asin } })
     dispatch({ type: 'storeName', payload: { storeName: storeName } })
     dispatch({ type: 'scalpingProductPrice', payload: { scalpingProductPrice: price } })
     dispatch({ type: 'currencyType', payload: { currencyType: currencyType } })
+    dispatch({ type: 'storeType', payload: { storeType: storeType } })
     setTimeout(() => {
       dispatch({ type: 'keyword', payload: { keyword: `(${id})${title}` } })
     }, 100);
@@ -458,11 +496,13 @@ const Order = (props) => {
     })
     setShowPro(false)
   }
+
   const finditem = (item): string => {
     const v = item.range.find(o => o.value === state[item.key])
     if (!v) return ''
     return v.label
   }
+
   const identifyImg = async (img, key) => {
     showL('识别中')
     const idway = state.orderImgType
@@ -478,6 +518,7 @@ const Order = (props) => {
       hideL()
     })
   }
+
   const upImg = async (e) => {
     const item = e.currentTarget.dataset.item
     const url = '/scrm-seller/utils/uploadFile'
@@ -494,6 +535,7 @@ const Order = (props) => {
       }
     })
   }
+
   const delImg = (e) => {
     e.stopPropagation()
     const item = e.currentTarget.dataset.item
@@ -504,6 +546,7 @@ const Order = (props) => {
       item.key === 'orderImage' ? setOrderImg('') : setComImg('')
     }, 100);
   }
+
   const selectorValue = (item): any => {
     for (let i = 0; i < item.range.length; i++) {
       if (item.range[i].value === state[item.key]) {
@@ -511,9 +554,11 @@ const Order = (props) => {
       }
     }
   }
+
   const returnfalse = ()=>{
     return false
   }
+
   const formTypeFilter = (item) => {
     switch (item.type) {
       case 'input':
@@ -527,7 +572,8 @@ const Order = (props) => {
             disabled={item.disable}
             onFocus={() => { if (item.key === 'keyword') { setShowPro(true); getpro(''); } }}
             onChange={(v) => { setState(item, v) }}
-            holdKeyboard />
+            holdKeyboard
+          />
         )
       case 'date':
         return (
@@ -536,7 +582,8 @@ const Order = (props) => {
             value={state[item.key]}
             mode='date'
             disabled={item.disable}
-            onChange={(e) => { setState(item, e.detail.value) }}>
+            onChange={(e) => { setState(item, e.detail.value) }}
+          >
             <AtList>
               <AtListItem extraText={state[item.key]} />
             </AtList>
@@ -551,7 +598,8 @@ const Order = (props) => {
             range={item.range}
             rangeKey='label'
             disabled={item.disable}
-            onChange={(e) => { setState(item, e.detail.value) }}>
+            onChange={(e) => { setState(item, e.detail.value) }}
+          >
             <AtList>
               <AtListItem extraText={finditem(item)} />
             </AtList>
@@ -578,7 +626,7 @@ const Order = (props) => {
             <AtRadio
               options={item.range}
               value={state[item.key]}
-              onClick={(v) => { item.disable?'':setState(item, v) }}
+              onClick={(v) => { !item.disable && setState(item, v) }}
             />
           </View>
         )
@@ -586,6 +634,7 @@ const Order = (props) => {
         return ''
     }
   }
+
   const submit = async () => {
     const formdata = state
     if (formdata.senderId === '') {
@@ -599,11 +648,10 @@ const Order = (props) => {
     if (formdata.commentWay === '' ||
       formdata.cashOutType === '' ||
       formdata.orderChannelId === '') {
-      Toast('请完善测评信息！', 'none')
+      Toast('请完善活动信息！', 'none')
       return
     }
-    if (formdata.payWay === 5 && formdata.giftCard === '' ||
-      formdata.payWay !== 5 && formdata.paypalAccount === '') {
+    if (formdata.payWay !== 5 && !formdata.paypalAccount) {
       Toast('请完善买家信息！', 'none')
       return
     }
@@ -629,7 +677,7 @@ const Order = (props) => {
           Taro.showModal({
             title: '',
             content: '订单编号和商品ID已经存在于另一个测评订单中，是否继续添加！',
-            success(res) { res.confirm ? setOrder() : '' }
+            success(res2) { res2.confirm && setOrder() }
           })
         } else {
           setOrder()
@@ -637,6 +685,7 @@ const Order = (props) => {
       })
     }
   }
+
   const setOrder = async () => {
     const fun = typeRef.current === '0' ? addOrder : upOrder
     await fun(state).then(res => {
@@ -648,10 +697,49 @@ const Order = (props) => {
       }
     })
   }
+
+  const initorder = useCallback(() => {
+    const router = getCurrentInstance().router
+    let p: any = ''
+    if (router) {
+      Taro.setNavigationBarTitle({title:'创建订单'})
+      p = router.params
+      typeRef.current = p.type
+      if (typeRef.current === '0') {
+        if (tempOrder !== '') {
+          const { cashOutPrice } = tempOrder
+          dispatch({ type: 'temp', payload: { tempOrder } })
+          dispatch({ type: 'orderCommission', payload: { orderCommission: 0 } })
+          dispatch({ type: 'orderPrice', payload: { orderPrice: cashOutPrice } })
+        }
+        tempOrder.commentImage && setComImg(tempOrder.commentImage)
+        tempOrder.orderImage && setOrderImg(tempOrder.orderImage)
+        type === 'messenger' && getAct()
+        setDefault()
+      } else {
+        Taro.setNavigationBarTitle({title:'编辑订单'})
+        const id = p.id
+        orderinfo(id)
+      }
+      getFanInfo(params()).then(res=>{
+        const {data} = res
+        const rawdata = JSON.parse(DecryptData(Base64.decode(data), 871481901))
+        console.log(rawdata)
+        if(rawdata.orderNumber){
+          dispatch({ type: 'orderNumber', payload: { orderNumber: rawdata.orderNumber } })
+        }
+      })
+    }
+  },[getAct, getFanInfo, orderinfo, params, setDefault, tempOrder, type])
+
+  useDidShow(()=>{
+    getCatArr()
+    initorder()
+  })
+
   return (
     <View>
-      <NavBar title={typeRef.current==='0'?'创建订单':'编辑订单'} />
-      <View className='order-form' style={style} >
+      <View className='order-form' >
         {
           forms.map((section, index) => {
             return (
@@ -660,7 +748,7 @@ const Order = (props) => {
                 {
                   section.fitems.map((oitem, idx) => {
                     return (
-                      oitem.show ?
+                      oitem.show &&
                         <OrderFormItem
                           key={idx}
                           id={oitem.key}
@@ -669,17 +757,17 @@ const Order = (props) => {
                           require={oitem.require}
                           formCont={formTypeFilter(oitem)}
                           products={
-                            showpro ?
+                            showpro &&
                               <View className='showpro'>
                                 <ScrollView className='proscroll' scrollY onClick={(e) => e.stopPropagation()}>
                                   <View className='probox' >
                                     <AtActivityIndicator isOpened={proloading} mode='center' size={30}></AtActivityIndicator>
                                     {
                                       products.length > 0 ?
-                                        products.map((pro, idx) => {
+                                        products.map((pro, idx2) => {
                                           return (
                                             <View
-                                              key={idx}
+                                              key={idx2}
                                               className='pro break'
                                               onClick={autoSet}
                                               data-item={pro}
@@ -690,9 +778,9 @@ const Order = (props) => {
                                   </View>
                                 </ScrollView>
                                 <View className='closeprobox' onClick={() => setShowPro(false)}>取消</View>
-                              </View> : ''
+                              </View>
                           }
-                        ></OrderFormItem> : ''
+                        ></OrderFormItem>
                     )
                   })
                 }
@@ -701,7 +789,7 @@ const Order = (props) => {
           })
         }
         <View className='bot fx'>
-          <View className='searchbtn btn' onClick={submit}>保存</View>
+          <View className='searchbtn btn' onClick={submit}>提交</View>
         </View>
       </View>
     </View>

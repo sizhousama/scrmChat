@@ -5,6 +5,7 @@
   display: flex;
   position: fixed;
   bottom:0;
+  border-top: 1px solid #f7f7f7;
   z-index:99;
   .tab{
     flex:1;
@@ -13,9 +14,7 @@
     align-items: center;
     justify-content: center;
   }
-  .tab image{
-    width:48px;
-    height:48px;
+  .alicon{
+    font-weight: 100;
   }
-
 }

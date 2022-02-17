@@ -1,14 +1,14 @@
-
 .fanbox {
   width: 100%;
   height: 170px;
   display: flex;
   align-items: center;
+  border-bottom:2px solid #f7f7f7;
 
   .left {
-    width: 120px;
-    height: 120px;
-    margin-left: 60px;
+    width: 100px;
+    height: 100px;
+    margin-left: 40px;
     margin-right: 20px;
   }
 
@@ -22,8 +22,8 @@
 }
 
 .head {
-  width: 120px;
-  height: 120px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
 }
 
@@ -50,9 +50,7 @@
     height:30px;
     line-height: 30px;
     padding:0 10px;
-    border:2px solid #7685FF;
     border-radius: 4px;
-    color:#7685FF;
     margin-right: 10px;
     font-size: 20px;
     max-width: 124px;

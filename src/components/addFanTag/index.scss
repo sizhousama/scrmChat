@@ -8,7 +8,7 @@
   position: fixed;
   top:0;
 }
-.replybox{
+.tag-box{
   width:680px;
   height:600px;
   border-radius: 10px;
@@ -19,13 +19,12 @@
     height: 80px;
     line-height: 80px;
     box-sizing: border-box;
-    padding-left: 60px;
+    padding-left: 30px;
     font-size: 28px;
-    color: #7685FF;
     border-bottom: 2px solid #eee;
   }
 }
-.search{
+.tag-search{
   width:100%;
   height:88px;
   box-sizing: border-box;

@@ -1,0 +1,25 @@
+.account{
+  width:100%;
+  box-sizing: border-box;
+  padding: 0 30px;
+  margin-bottom: 30px;
+  &-title{
+    font-size: 28px;
+    margin-bottom:30px;
+  }
+  .alicon{margin-right:10px}
+  &-box{
+    width:100%;
+    padding:30px;
+    box-sizing: border-box;
+    border-radius: 10px;
+    background:#f7f7f7;
+    font-size: 26px;
+    &-item{
+      margin-bottom:30px;
+    }
+    &-item:last-child{
+      margin:0
+    }
+  }
+}

@@ -1,10 +1,13 @@
-import React, { useEffect, useRef, useState, useReducer } from 'react'
-import { View, Image, Text, ScrollView } from '@tarojs/components'
-import { AtTabBar, AtActivityIndicator, AtInput } from 'taro-ui'
-import { forwardRef } from 'react'
-import { getFlows } from '@/api/chat'
+import React, { useEffect, useRef, useState, useReducer, forwardRef, useCallback } from 'react'
+import { View, Text, ScrollView } from '@tarojs/components'
+import { AtActivityIndicator, AtInput } from 'taro-ui'
+import { getMessengerFlows } from '@/api/messenger'
+import { getWaFlows } from '@/api/wa'
 import Taro from "@tarojs/taro";
+import { useUserStore } from '@/store'
 import './index.scss'
+
+
 const initState = {
   flows: []
 }
@@ -20,9 +23,9 @@ const stateReducer = (state, action) => {
   }
 }
 const SendFlow = (props, ref) => {
+  const { type } = useUserStore()
   const [key, setKey] = useState('')
   const [loading, setLoading] = useState(false)
-  const [openModal, setOpenModal] = useState(false)
   const [state, dispatch] = useReducer(stateReducer, initState)
   const { flows } = state
   const parmref = useRef({
@@ -30,9 +33,15 @@ const SendFlow = (props, ref) => {
     size: 999,
     name: ''
   })
-  useEffect(() => {
-    getlist()
-  }, [])
+
+  const getFlows = useCallback((data) => {
+    switch(type){
+      case 'messenger': return getMessengerFlows(data)
+      case 'whatsapp': return getWaFlows(data)
+      default: return getMessengerFlows(data)
+    }
+  },[type])
+  
   const setflow = (e) => {
     const flow = e.currentTarget.dataset.item
     Taro.showModal({
@@ -47,22 +56,28 @@ const SendFlow = (props, ref) => {
       }
     })
   }
-  const getlist = async () => {
+
+  const getlist = useCallback(async () => {
     setLoading(true)
     await getFlows(parmref.current).then(res => {
       const { data } = res
       dispatch({ type: 'flows', payload: { flows: data.records } })
-
       setLoading(false)
     })
-  }
+  },[getFlows])
+
   const inputChange = (v) => {
     parmref.current.name = v
     setKey(v)
   }
+
+  useEffect(() => {
+    getlist()
+  }, [getlist])
+
   return (
     <View className='flowbox' onClick={(e) => e.stopPropagation()}>
-      <View className='topheader'>流程</View>
+      {/* <View className='topheader'>流程</View> */}
       <View className='search'>
         <AtInput
           name='flowInput'

@@ -1,12 +1,12 @@
-import React, { useRef, useState, useEffect, useReducer } from "react";
-import NavBar from "@/components/navBar";
-import { View, Image, Text } from "@tarojs/components";
+import React, { useRef, useState, useEffect, useReducer, useCallback } from "react";
+import { View, Text } from "@tarojs/components";
 import { getUserPages } from '@/api/info'
 import { observer } from 'mobx-react';
 import { useNavStore, useUserStore } from '@/store';
 import { AtActivityIndicator } from 'taro-ui'
 import { pageFormatda } from '@/utils/time'
 import "./index.scss";
+
 const initState = {
   pages: []
 }
@@ -26,13 +26,10 @@ const MyPages = () => {
   const { navH } = useNavStore();
   const { userInfo } = useUserStore()
   const [loading, setLoading] = useState(false)
-  const style = { marginTop: navH + 10 + 'px' }
   const [state, dispatch] = useReducer(stateReducer, initState)
   const { pages } = state
-  useEffect(() => {
-    getpage()
-  }, [])
-  const getpage = async () => {
+  
+  const getpage = useCallback(async () => {
     const p = {
       current: 1,
       size: 99,
@@ -59,18 +56,16 @@ const MyPages = () => {
       dispatch({ type: 'list', payload: { list: listref.current } })
       setLoading(false)
     })
-  }
-  const openAcc = (e) => {
-    const i = e.currentTarget.dataset.key
-    listref.current[i].open = !listref.current[i].open
-    dispatch({ type: 'list', payload: { list: listref.current } })
-  }
+  },[userInfo.userId])
+
+  useEffect(() => {
+    getpage()
+  }, [getpage])
 
   return (
     <View>
-      <NavBar title='授权主页' />
       <AtActivityIndicator isOpened={loading} mode='center'></AtActivityIndicator>
-      <View style={style} className='pagebody'>
+      <View className='pagebody'>
         <View className='fx accthead'>
           <View className='fx1'>主页Id</View>
           <View className='fx1'>主页名称</View>

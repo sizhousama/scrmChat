@@ -1,10 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { View, Image, Text } from '@tarojs/components'
-import './index.scss'
-import { forwardRef } from 'react'
+import React, { forwardRef, useState } from 'react'
+import { View } from '@tarojs/components'
 import {IndexesArr} from '@/constant/index'
 import {Toast} from '@/utils/index'
 import Taro from "@tarojs/taro";
+import './index.scss'
 
 const Header = (props, ref) => {
   const list = IndexesArr
@@ -36,10 +35,10 @@ const Header = (props, ref) => {
         list.map((item, index) => {
           return (
             <View
-            key={index}
-            className={`indexitem ${cur===item.title?'act':''}`}
-            onClick={clickIndex}
-            data-key={item.key}
+              key={index}
+              className={`indexitem ${cur===item.title?'act':''}`}
+              onClick={clickIndex}
+              data-key={item.key}
             >{item.title}</View>
           )
         })

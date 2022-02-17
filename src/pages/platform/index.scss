@@ -1,0 +1,20 @@
+
+.platform{
+  width:100%;
+  height:88px;
+  display: flex;
+  align-items: center;
+  padding: 0 30px;
+  border-bottom:2px solid #eee;
+  font-size: 28px;
+  &.act{
+    color:#fff;
+  }
+  .at-icon{
+    position: absolute;
+    right:30px;
+  }
+  .alicon{
+    margin-right: 30px;
+  }
+}

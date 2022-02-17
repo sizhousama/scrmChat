@@ -9,6 +9,17 @@ export const formatMsgStatus =(val) =>{
     default: return '发送中'
   }
 }
+
+export const formatWaMsgStatus = (val) => {
+  switch (val) {
+    case '': return '发送中'
+    case 'sent': return '发送成功'
+    case 'delivered': return '已送达'
+    case 'read': return '已读'
+    case 'failed': return '发送失败'
+    default: return '发送中'
+  }
+}
 // 订单状态
 export const typeOrderS =(val) =>{
   switch (val) {

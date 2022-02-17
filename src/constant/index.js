@@ -238,6 +238,25 @@ export const orderForm = [{
         show:true,
       },
       {
+        key: 'amazonOrderStatus',
+        label: '店铺订单状态',
+        type: 'selector',
+        disable:false,
+        require:false,
+        range:[
+          { value: 0, label: 'Select' },
+          { value: 1, label: 'Pending' },
+          { value: 2, label: 'Unshipped' },
+          { value: 3, label: 'Shipped' },
+          { value: 4, label: 'PartiallyShipped' },
+          { value: 5, label: 'Canceled' },
+          { value: 6, label: 'Unfulfillable' },
+          { value: 7, label: 'InvoiceUnconfirmed' },
+          { value: 8, label: 'PendingAvailability' }
+        ],
+        show:true,
+      },
+      {
         key: 'orderPrice',
         label: '订单金额：',
         type: 'input',
@@ -326,7 +345,7 @@ export const orderForm = [{
     ]
   },
   {
-    title: '测评信息',
+    title: '活动信息',
     fitems: [
       {
         key: 'commentWay',
@@ -379,39 +398,29 @@ export const orderForm = [{
         show:true,
       },
       {
-        key: 'isCashout',
-        label: '返款状态：',
-        type: 'selector',
-        disable:true,
-        require:false,
-        range:cashOutStatus,
-        show:true,
-      },
-      {
         key: 'orderChannelId',
         label: '订单来源：',
         type: 'selector',
         require:true,
         range:[
-        { value: 0, label: 'FB' },
-        { value: 1, label: '非FB' }],
+          { value: 0, label: 'FB' },
+          { value: 1, label: '非FB' },
+          { value: 2, label: 'WhatsApp' },
+          { value: 4, label: 'Instagram' }
+        ],
         show:true,
         disable:false
       },
       {
-        key: 'amazonOrderStatus',
-        label: '亚马逊订单状态：',
-        type: 'selector',
+        key: 'acticityId',
+        label: '活动Id：',
+        type: 'input',
+        otherType: 'text',
+        ph:'请输入',
+        disable:true,
         require:false,
-        disable:false,
-        range:[
-        { value: 0, label: '无记录' },
-        { value: 1, label: '未完成' },
-        { value: 2, label: '退货' },
-        { value: 3, label: '已发货' },
-        { value: 4, label: '其他' },
-        { value: 5, label: '已取消' }],
-        show:true,
+        range:[],
+        show:true
       },
       {
         key: 'commentUrl',

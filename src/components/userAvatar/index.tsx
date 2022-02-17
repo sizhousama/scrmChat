@@ -1,51 +1,64 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { View, Image, Text } from '@tarojs/components'
-import './index.scss'
-import { forwardRef } from 'react'
+import React, { useState, forwardRef } from 'react'
+import { View, Image } from '@tarojs/components'
 import { AtAvatar } from 'taro-ui'
 import { NavTo } from '@/utils/index'
 import { imgUrl } from '@/servers/baseUrl'
-import fan from '../fan'
+import { useUserStore } from '@/store'
+import './index.scss'
 
-const userAvatar = (props, ref) => {
+
+const UserAvatar = (props, ref) => {
+  const { type } = useUserStore()
   const [error, setError] = useState(false)
   const isR = props.msgItem.isServe
-  const isfake = props.msgItem.fake
   const userId = props.msgItem.userId
-  const pageId = props.fan.pageId
-  const name = props.fan.pageName
-  const fanId = props.fan.fanId
+  
   const baseUrl = imgUrl()
   
-  const avatar = isR
+  const avatar = () =>{
+    if(type === 'whatsapp'){
+      return isR
+      ? userId !== 0
+        ? `${baseUrl}/sys/user/avatar/${userId}.jpg?v=${props.redom}`
+        : props.accountHead
+      : `${baseUrl}/whatsapp/header/${props.fan.whatsappAccountUserId}/${props.fan.whatsappUserId}.jpg`
+    }
+    if(type === 'ins'){
+      return isR
+      ? userId !== 0
+        ? `${baseUrl}/sys/user/avatar/${userId}.jpg?v=${props.redom}`
+        : `${baseUrl}/instagram/header/${props.fan.instagramAccountUserId}.jpg`
+      : `${baseUrl}/instagram/header/${props.fan.instagramAccountUserId}/${props.fan.instagramUserId}.jpg`
+    }
+    return isR
     ? userId !== 0
       ? `${baseUrl}/sys/user/avatar/${userId}.jpg?v=${props.redom}`
-      : `${baseUrl}/header/${pageId}.jpg`
-    : `${baseUrl}/header/${pageId}/${fanId}.jpg`
+      : `${baseUrl}/header/${props.fan.pageId}.jpg`
+    : `${baseUrl}/header/${props.fan.pageId}/${props.fan.fanId}.jpg`
+  }
 
+  const name = () => {
+    switch(type){
+      case 'messenger': return props.fan.pageName
+      case 'whatsapp': return props.fan.whatsappUserName
+      case 'ins': return props.fan.instagramUserName
+      default: return props.fan.pageName
+    }
+  }
 
   const clickAva = () => {
-    !isR ? NavTo('/pages/fanInfo/index') : ''
+    !isR && NavTo('/pages/fanInfo/index')
   }
-  const loadErr = () => {
-    setError(true)
-  }
+
   return (
     <View>
       {
-        error ? 
-        <AtAvatar 
-        className={`avatar ${isR ? 'ra' : 'la'}`} 
-        text={name}></AtAvatar>
-          : <Image
-            className={`avatar ${isR ? 'ra' : 'la'}`}
-            src={avatar}
-            onClick={clickAva}
-            onError={loadErr}
-          ></Image>
+        error
+        ? <AtAvatar className={`avatar ${isR ? 'ra' : 'la'}`} text={name()}></AtAvatar>
+        : <Image className={`avatar ${isR ? 'ra' : 'la'}`} src={avatar()} onClick={clickAva} onError={()=>setError(true)}></Image>
       }
     </View>
   )
 }
 
-export default forwardRef(userAvatar)
+export default forwardRef(UserAvatar)

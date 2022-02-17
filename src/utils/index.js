@@ -1,11 +1,12 @@
 import Taro from "@tarojs/taro";
 import pyfl from 'pyfl'
 import {
-  IndexesArr
-} from "../constant/index"
-import {
   getBaseUrl
 } from '@/servers/baseUrl'
+import {
+  IndexesArr
+} from "../constant/index"
+
 // 轻提示
 export const Toast = (title, icon, dur) => {
   icon = icon || 'success'
@@ -96,8 +97,12 @@ export const redirectTo = (url) => {
   })
 }
 // 隐藏键盘
-export const hideKb = (url) => {
-  Taro.hideKeyboard()
+export const hideKb = () => {
+  Taro.hideKeyboard({
+    complete: res => {
+      console.log('hideKeyboard res', res)
+    }  
+  })
 }
 // 震动
 export const vibrateS = () => {
@@ -114,8 +119,8 @@ export const msgAudio = () => {
 
 //上传
 export const upload = (url, imgPaths, count, length, list,type) => {
-  return new Promise((resolve, reject) => {
-    imgPaths.forEach((item,index) => {
+  return new Promise((resolve) => {
+    imgPaths.forEach((item) => {
       Taro.uploadFile({
         url,
         filePath: type==='img'?item:item.path,
@@ -145,7 +150,7 @@ export const upload = (url, imgPaths, count, length, list,type) => {
         fail(err) {
           console.log(err)
         },
-        complete(res) {
+        complete() {
           count++
           if (count == length) {
             resolve(list)

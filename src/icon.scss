@@ -1,10 +1,6 @@
 @font-face {font-family: "iconfont";
-  src: url('./assets/icon/iconfont.eot?t=1597717675337'); /* IE9 */
-  src: url('./assets/icon/iconfont.eot?t=1597717675337#iefix') format('embedded-opentype'), /* IE6-IE8 */
-  // url('data:application/x-font-woff2;charset=utf-8;base64,d09GMgABAAAAAAMUAAsAAAAABtwAAALFAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHEIGVgCCcAqBZIFbATYCJAMICwYABCAFhG0HMhsDBhHVk3lkf4MMDleAHwRpjGl2WIGds907G5KXLxv6O+q3XGQdUCk8BQkAAAAAEDzP74869787AhrhNIlep3UUO0PZbUIapA1tQGC739pFGQUcYIIJDMzzgAtDbDFtbWmQhI/6TrktDYBDOcHFLlYvbSoxA8ANLqGY6qCJRr83qbP3bW6GrlFx71iS87yfviMdK1zIryT45S+EoYtD1UyggMwHSVzmHhjAcM5zARprtZusBSmAdxi74AWehgBHoZLJKa9txZ6yJwmQNzUxhH3BSSmL2BO2DStL5AY27PPA+gSuR78vnx0Ei83AzmkcLxul8DjOiTG5CL0BAtZyeoCtAwOSgUJuY7AeQxjOcKRUkUCp5/hycRGokaP+85CJne4MIBgyn4nlsR+1xAKgnj1cAkxgrN5us5wD0tC34+lJcmQfnr8oX93v+W87jn4sb/L4oU9lH79/5610wx3v7X7Y+Hj5/fq7wTjnwunY3KEFsp+gHg17hYe77O17Pd1BGqb73OzTGrjhsHPfrXfv0nydp5fn7My8w+yKQ8/8pb0e7NSh9U2KlAxP051wT/lnCB747Qfcco8KwG+t59GYi1ZMA/Z3YBL8yU4qAMo5dtAqoKNagKUEmzuscOQILiCrp39TpT63HRX2fG7ebCckA8NeNFKxyWDDSSrYslcAjpJUrHfiZQ5DygFItANAuHsNFlcfwXD3GanYv2DD13+w5R4AR+3itaOT2NCSyqgFHZg/JEvduxpRceYNw7tqznMi/Av5TB5YxrkcuWJHXmLO+QmriAfP1GAH52GtBAdTRitjFDm2afJN3zRaaoMioxZ0YP6QLHUftBZV+fkbhnfV3NFQp34hn6l7WMZ5APIq7IMaHuU15yesIh48U4MdDMNaCY7mYRmtjHGC/9gmp5kfKhy3F7e/2wY4YssscXIM5pOm6hn6MAAAAAA=') format('woff2'),
-  url('./assets/icon/iconfont.woff?t=1597717675337') format('woff'),
+  src: url('./assets/icon/iconfont.woff?t=1597717675337') format('woff'),
   url('./assets/icon/iconfont.ttf?t=1597717675337') format('truetype'), /* chrome, firefox, opera, Safari, Android, iOS 4.2+ */
-  url('./assets/icon/iconfont.svg?t=1597717675337#iconfont') format('svg'); /* iOS 4.1- */
 }
 
 .icon {
@@ -13,6 +9,58 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-translate:before {
+  content: "\e6ba";
+}
+
+.icon-copy:before {
+  content: "\e612";
+}
+
+.icon-wx:before {
+  content: "\e62b";
+}
+
+.icon-power:before {
+  content: "\e614";
+}
+
+.icon-page:before {
+  content: "\e618";
+}
+
+.icon-yingyong:before {
+  content: "\e61c";
+}
+
+.icon-key:before {
+  content: "\e60a";
+}
+
+.icon-mine:before {
+  content: "\e60c";
+}
+
+.icon-user:before {
+  content: "\e60d";
+}
+
+.icon-chat:before {
+  content: "\e60e";
+}
+
+.icon-ins:before {
+  content: "\e763";
+}
+
+.icon-messenger:before {
+  content: "\e767";
+}
+
+.icon-whatsapp:before {
+  content: "\e776";
 }
 
 .icon-wechat:before {

@@ -10,10 +10,25 @@
     border-radius: 0 10px 10px 10px;
     border:2px solid #bbb;
     display: flex;
+    flex-direction: column;
+    position: relative;
+    .line{
+      width:100%;
+      border-top: 2px dashed #999;
+      margin: 16px 0;
+    }
     &.right{
       border:none;
       border-radius: 10px 0 10px 10px;
       background:#7685FF;
+    }
+    .trans-text{
+      font-size: 24px;
+      color: #666;
+      word-break: break-all;
+      &.right{
+        color: #fff;
+      }
     }
     .pure-text {
       position: relative;
@@ -42,6 +57,35 @@
       bottom: -20px;
       color: red;
       right: 0;
+    }
+    .tools{
+      // width: 120px;
+      display: inline-flex;
+      position: absolute;
+      top: -120px;
+      background: #333;
+      color:#fff;
+      padding: 20px;
+      border-radius: 10px;
+      &.left{
+        left: 0;
+      }
+      &.right{
+        right:0;
+      }
+      .tool{
+        width: 60px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      .icon{
+        font-size: 40px;
+      }
+      .tool-label{
+        font-size: 20px;
+      }
     }
   }
 }

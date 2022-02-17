@@ -2,28 +2,25 @@ import Taro from "@tarojs/taro"
 import { pageToLogin } from "./utils"
 import { HTTP_STATUS } from './config'
 import {Toast,SetStorageSync} from '../utils/index'
+
 const customInterceptor = (chain) => {
 
   const requestParams = chain.requestParams
 
   return chain.proceed(requestParams).then(res => {
     if (res.statusCode === HTTP_STATUS.SUCCESS) {
-      const {
-        data
-      } = res
-      const {
-        msg,
-        status
-      } = data
+      const { data } = res
+      const { msg, status } = data
+      const errmsg = data.data||msg
       if (status !== 1) {
         if(msg!=='获取openId失败'){
-          Toast(msg,'none')    
+          Toast(errmsg,'none')
           if (status === 401) {
             SetStorageSync("Token", "")
             pageToLogin()    
           }
         }
-        return Promise.reject(msg || 'Error')
+        return Promise.reject(errmsg || 'Error')
       } else {
         return data
       }

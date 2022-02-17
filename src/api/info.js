@@ -3,9 +3,21 @@ import HTTPREQUEST from "../servers/http"
 export const getUserInfo = () => {
   return HTTPREQUEST.get('/scrm-admin/user/info')
 }
+// 获取会话数量
+export const getMessageNumber = (params) => {
+  return HTTPREQUEST.get(`/scrm-report/sellerUsageSummary/getAllUserCount`)
+}
 // 获取用户主页信息
 export const getUserPages = (params) => {
   return HTTPREQUEST.get('/scrm-message/pageConfig/getPageListForProfile',params)
+}
+// 授权账号
+export const getWaAccounts = (params) =>{
+  return HTTPREQUEST.get('/scrm-whatsapp-message/whatsappAccount/whatsappAccounts',params)
+}
+// inszhuye
+export const getInsPages = (params) =>{
+  return HTTPREQUEST.get('/scrm-instagram-message/instagramAccount/getPageListForProfile',params)
 }
 // 检查密码
 export const checkPass = (data) => {
@@ -19,3 +31,4 @@ export const rePassOrAva = (data) => {
 export const removeToken = () => {
   return HTTPREQUEST.get('/scrm-admin/user/removeToken')
 }
+

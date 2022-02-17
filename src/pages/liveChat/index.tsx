@@ -1,10 +1,10 @@
-import React, { useRef, useState, useEffect, useReducer } from "react";
+import React, { useRef, useState, useEffect, useReducer, useCallback } from "react";
+import { useDidShow } from "@tarojs/taro";
 import ChatHeader from "@/components/chatHeader";
 import UserAvatar from '@/components/userAvatar';
 import Emoji from '@/components/emoji'
 import Tools from '@/components/chatTools'
 import QuickReply from '@/components/quickReply'
-import ReplyImg from '@/components/replyImg'
 import SendFlow from '@/components/sendFlow'
 import TimeOutMsg from '@/components/timeoutMsg'
 // 消息体组件
@@ -16,19 +16,20 @@ import FileMsg from '@/components/msgView/fileMsg';
 import NotifyMsg from '@/components/msgView/notifyMsg';
 import MediaMsg from '@/components/msgView/mediaMsg';
 import ButtonMsg from '@/components/msgView/buttonMsg';
-import { View, Text, ScrollView, Input, Textarea } from "@tarojs/components";
+import { View, Text, ScrollView, Textarea } from "@tarojs/components";
 import { AtIcon, AtActivityIndicator } from 'taro-ui'
-import { getSysInfo, genUuid, setInput, chooseImg, getsuffix, getFileType, chooseMsgFile, hideKb, isNeedAddH, NavTo } from '@/utils/index'
+import { getSysInfo, genUuid, setInput, chooseImg, getsuffix, getFileType, chooseMsgFile, hideKb, isNeedAddH, NavTo ,DecryptData } from '@/utils/index'
 import { formatMsgStatus } from '@/utils/filter'
-import { getHistoryMsg } from '@/api/chat'
-import { getFanInfo } from '@/api/fan'
+import { getMessengerHistoryMsg, sendMessengerReply } from '@/api/messenger'
+import { getMessengerFanInfo } from '@/api/messenger/fan'
+import { translateMsg } from '@/api/utils'
 import { observer } from 'mobx-react';
 import { useFanStore, useWsioStore, useUserStore, useOrderStore } from '@/store';
 import { parseMsg } from '@/utils/parse'
-import {DecryptData} from '@/utils/index'
 import { Base64 } from 'js-base64';
 import { formatChatTime } from "@/utils/time";
 import "./index.scss";
+
 interface RI {
   timestamp?: string | number,
   status?: number,
@@ -77,7 +78,7 @@ const LiveChat = () => {
   const barHeight = getSysInfo().statusBarHeight
 
   const { fan, setMd5, setPayAccount,showMsg } = useFanStore()
-  const { userInfo } = useUserStore()
+  const { type, userInfo, themeColor, messageCount } = useUserStore()
   const { setTempOrder } = useOrderStore()
   const { wsio } = useWsioStore()
   const [pos, setPos] = useState(0)
@@ -87,70 +88,60 @@ const LiveChat = () => {
   const [showreply, setShowReply] = useState(false)
   const [showflow, setShowFlow] = useState(false)
   const [showTagMsg, setShowTagMsg] = useState(false)
-  const [inputh,setInputh] = useState(34)
   const [state, dispatch] = useReducer(listReducer, initState)
   const { historyList, fakes } = state
   const [curMsg, setCurMsg] = useState('')
   const [loading, setLoading] = useState(false) //加载更多...
   const [initLoading, setInitLoading] = useState(false)
   const [hasmore, setHasmore] = useState(false) //是否有更多历史记录
+  const [showMsgTools, setShowMsgTools] = useState(false)
   const [replyImg, setReplyImg] = useState<string[]>([])
   const [hisPar, setHisPar] = useState({
     page: 1,
     pageSize: 15,
     pageId: fan.pageId,
-    senderId: fan.fanId,
-    userId: 0
+    senderId: fan.fanId
   })//历史记录参数
   const needH = isNeedAddH()
   const needh = needH ? 32 : 0
   const foolerref = useRef(54)
-  const diffHeight = barHeight + foolerref.current + 136  //176 + 2 2px为border高度
+  const diffHeight = barHeight + foolerref.current + 92  //176 + 2 2px为border高度
   
   const [msgViewStyle, setMsgViewSyle] = useState({
     height: `calc(100vh - ${diffHeight + needh}px)`
   })
   const [inputbot, setInputBot] = useState(0)
-  const [isFocus, setIsFocus] = useState(false)
   const [foolerpb, setFoolerpb] = useState(needh)
   const [showTimeOut, setShowTimeOut] = useState(false)
-  // const [keyboardH, setKeyBoardH] = useState(0)
-
-  useEffect(() => {
-    console.log(fan)
-    initSocket()
-    historymsg()
-    tagMsg()
-  }, [])
+  
   //判断是否显示标签消息
-  const tagMsg = async () => {
+  const getUser = useCallback(async () => {
     const { pageId, fanId } = fan
-    const p = { pageId, fanId }
-
-    await getFanInfo(p).then(res => {
-      const { lastSendMsgTime, userMd5, payAccount } = res.data
-      setMd5(userMd5)
-      setPayAccount(payAccount)
-      if (lastSendMsgTime != undefined && lastSendMsgTime !== '') {
-        try {
-          const lastSendTime = new Date(lastSendMsgTime.replace(/-/g, "/")).getTime()
-          const now = new Date().getTime()
-          if (now - lastSendTime > 24 * 60 * 60 * 1000) {
-            setShowTagMsg(true)
-            showMsg&&setShowTimeOut(true)
-          }
-        } catch (e) {
+    const p = { pageId, senderId:fanId }
+    const { data } = await getMessengerFanInfo(p)
+    const rawdata = JSON.parse(DecryptData(Base64.decode(data), 871481901))
+    const { lastSendMsgTime, userMd5, payAccount } = rawdata
+    setMd5(userMd5)
+    setPayAccount(payAccount)
+    if (lastSendMsgTime) {
+      try {
+        const lastSendTime = new Date(lastSendMsgTime.replace(/-/g, "/")).getTime()
+        const now = new Date().getTime()
+        if (now - lastSendTime > 24 * 60 * 60 * 1000) {
           setShowTagMsg(true)
-          showMsg&&setShowTimeOut(true)
+          showMsg && setShowTimeOut(true)
         }
-      } else { 
+      } catch (e) {
         setShowTagMsg(true)
-        showMsg&&setShowTimeOut(true)
+        showMsg && setShowTimeOut(true)
       }
-    })
-  }
+    } else { 
+      setShowTagMsg(true)
+      showMsg && setShowTimeOut(true)
+    }
+  },[fan, setMd5, setPayAccount, showMsg])
   // socket事件
-  const initSocket = () => {
+  const initSocket = useCallback(() => {
     wsio.on('SEND_MSG', (data) => {
       let messageItem: MI = {
         isServe: false,
@@ -165,7 +156,7 @@ const LiveChat = () => {
       const { userId, isServe = true, senderId: newMsgSenderId, recipientId: newMsgRecipientId } = messageItem
       const { fanId: fanSenderId, pageId: fanPageId } = fan
       // debugger
-      const message = fakeref.current.find(item => {
+      const msg = fakeref.current.find(item => {
         if (item['mid']) {
           return item['mid'] === messageItem.mid
         } else {
@@ -173,7 +164,7 @@ const LiveChat = () => {
         }
       })
 
-      if (!message) {
+      if (!msg) {
         if (((isServe && newMsgSenderId === fanPageId) && (newMsgRecipientId === fanSenderId)) || ((!isServe && newMsgSenderId === fanSenderId) && (newMsgRecipientId === fanPageId))) {
           messageItem.status = 1
           messageItem.uuid = genUuid()
@@ -211,11 +202,11 @@ const LiveChat = () => {
       }
       dispatch({ type: 'fakes', payload: { fakes: fakeref.current } })
     })
-  }
+  },[fan, wsio])
   // 获取历史记录
-  const historymsg = async () => {
+  const historymsg = useCallback(async () => {
     setInitLoading(true)
-    await getHistoryMsg(hisPar).then(res => {
+    await getMessengerHistoryMsg(hisPar).then(res => {
       const { data } = res
       const rawdata = JSON.parse(DecryptData(Base64.decode(data), 871481901))
       const hm = rawdata.length > 0
@@ -229,12 +220,14 @@ const LiveChat = () => {
           return
         }
         
-        const { delivery, read, userName, userId } = item
+        const { delivery, read, userName, userId, translateText } = item
         if(item.msg){
         const parsedItem = JSON.parse(item.msg)
-        let regroupItem: RI = { ...parseMsg(parsedItem) }
+        let regroupItem: any = { ...parseMsg(parsedItem) }
         regroupItem.userId = userId
         regroupItem.userName = userName
+        regroupItem.translateText = translateText
+        regroupItem.showTools = false
         regroupItem.uuid = genUuid()
         if (regroupItem && regroupItem.timestamp) {
           if (regroupItem.type !== '') {
@@ -264,7 +257,13 @@ const LiveChat = () => {
       }
       setInitLoading(false)
     })
-  }
+  },[hisPar])
+
+  useEffect(() => {
+    initSocket()
+    historymsg()
+    type === 'messenger' && getUser()
+  }, [fan, getUser, historymsg, initSocket, type])
   // 获取更多历史记录
   const morehistorymsg = async () => {
     if (!hasmore) {
@@ -274,7 +273,7 @@ const LiveChat = () => {
     params.page++
     setHisPar(params)
     setLoading(true)
-    await getHistoryMsg(hisPar).then(res => {
+    await getMessengerHistoryMsg(hisPar).then(res => {
       const { data } = res
       const rawdata = JSON.parse(DecryptData(Base64.decode(data), 871481901))
       const hm = rawdata.length > 0
@@ -283,11 +282,13 @@ const LiveChat = () => {
       const len = rawdata.length
       rawdata.forEach(item => {
         if (item.msg === null) return
-        const { delivery, read, userName, userId } = item
+        const { delivery, read, userName, userId, translateText } = item
         const parsedItem = JSON.parse(item.msg)
-        let regroupItem: RI = { ...parseMsg(parsedItem) }
+        let regroupItem: any = { ...parseMsg(parsedItem) }
         regroupItem.userId = userId
         regroupItem.userName = userName
+        regroupItem.translateText = translateText
+        regroupItem.showTools = false
         regroupItem.uuid = genUuid()
         if (regroupItem && regroupItem.timestamp) {
           if (regroupItem.type !== '') {
@@ -372,7 +373,6 @@ const LiveChat = () => {
     wsio.emit('SEND_MSG', socketParams)
 
     tobottom()
-    setIsFocus(true)
     // 关闭所有
     setTimeout(() => {
       setShowEmoji(false)
@@ -404,9 +404,9 @@ const LiveChat = () => {
       const name = item.name ? item.name : item
       const elements = { payload: { url }, name }
       let originType = getsuffix(url)
-      const type = getFileType(originType) === 'video' || getFileType(originType) === 'radio'
+      const t = getFileType(originType) === 'video' || getFileType(originType) === 'radio'
         ? 'media' : getFileType(originType)
-      originType = type === 'media' ? getFileType(getsuffix(url)) : getsuffix(url)
+      originType = t === 'media' ? getFileType(getsuffix(url)) : getsuffix(url)
       const socketParams = {
         uuid: uuid,
         userId: userInfo.userId,
@@ -418,7 +418,7 @@ const LiveChat = () => {
       const fakeText = {
         uuid: uuid,
         mid: '',
-        type, // 定义的类型，例如文件被定义为 file，mp3 4 会被定义为 media
+        type: t, // 定义的类型，例如文件被定义为 file，mp3 4 会被定义为 media
         originType, // 原始类型，例如 mp4,mp3
         elements: [elements], // 渲染dom结构，目前只有图片类型有
         filename: name, // 文件类型的 文件名
@@ -481,17 +481,48 @@ const LiveChat = () => {
   const kbChange = (e) => {
     kbref.current = e.detail.height
   }
+  const openTools = (msg) => {
+    msg.showTools = true
+    console.log(msg)
+    hisref.current.forEach(item =>{
+      if(msg.mid !== item.mid){
+        item.showTools = false
+      }
+    })
+    fakeref.current.forEach(item =>{
+      if(msg.mid !== item.mid){
+        item.showTools = false
+      }
+    })
+    dispatch({ type: 'his', payload: { his: hisref.current } })
+    dispatch({ type: 'fakes', payload: { fakes: fakeref.current } })
+  }
+  const translateText = async (msg) => {
+    const {data} = await translateMsg({mid:msg.mid})
+    hisref.current.forEach(item =>{
+      if(msg.mid === item.mid){
+        item.translateText = data
+      }
+    })
+    fakeref.current.forEach(item =>{
+      if(msg.mid === item.mid){
+        item.translateText = data
+      }
+    })
+    dispatch({ type: 'his', payload: { his: hisref.current } })
+    dispatch({ type: 'fakes', payload: { fakes: fakeref.current } })
+  }
   // 动态组件
   const msgComponent = (item, idx) => {
     switch (item.type) {
       case 'text':
-        return <TextMsg ref={childref} msgItem={item}></TextMsg>
+        return <TextMsg ref={childref} msgItem={item} show={item.showTools} open={() => openTools(item)} translate={() => translateText(item)}></TextMsg>
       case 'fallback':
         return <FallBackMsg ref={childref} msgItem={item}></FallBackMsg>
       case 'image':
         return <ImgMsg ref={childref} msgItem={item} fan={fan}></ImgMsg>
       case 'postback':
-        return <TextMsg ref={childref} msgItem={item}></TextMsg>
+        return <TextMsg ref={childref} msgItem={item} show={item.showTools} open={() => openTools(item)} translate={() => translateText(item)}></TextMsg>
       case 'generic':
         return <SwiperMsg ref={childref} msgItem={item}></SwiperMsg>
       case 'file':
@@ -512,11 +543,10 @@ const LiveChat = () => {
     setMessage(result)//input赋值
   }
   // 插入快捷回复
-  const setReply = (reply) => {
-    const text = reply.content
-    const result = setInput('msgInput', text, cursorref.current)
-    reply.imgs.length > 0 ? setReplyImg(reply.imgs) : ''
-    setMessage(result)
+  const setReply = async(reply) => {
+    const {pageId, fanId} = fan
+    const p = {pageId, senderId:fanId, id: reply.id}
+    await sendMessengerReply(p)
     hideKb()
     setShowReply(false)
     setTimeout(() => {
@@ -541,35 +571,26 @@ const LiveChat = () => {
       restPage()
     }, 100);
   }
-  //关闭快捷回复图片
-  const closeReplyImg = (i) => {
-    const arr = replyImg.slice(0, i).concat(replyImg.slice(i + 1, replyImg.length))
-    console.log(arr)
-    setReplyImg(arr)
-    if (arr.length === 0) {
-      setTimeout(() => {
-        restPage()
-      }, 100);
-    }
-  }
   // 选择工具
   const clickTool = (id) => {
     restPage()
     if (id === 0) {
-      setShowReply(true)
-    }
-    if (id === 1) {
       sendImg()
     }
-    if (id === 2) {
+    if (id === 1) {
       sendFile()
     }
+    if (id === 2) {
+      setstyle(diffHeight + 200)
+      setShowFlow(true)
+    }
     if (id === 3) {
-      setTempOrder('')
-      NavTo(`/pages/order/index?type=0`)
+      setstyle(diffHeight + 200)
+      setShowReply(true)
     }
     if (id === 4) {
-      setShowFlow(true)
+      setTempOrder('')
+      NavTo(`/pages/order/index?type=0`)
     }
   }
   // 重置页面
@@ -585,12 +606,16 @@ const LiveChat = () => {
     restPage()
     setShowReply(false)
     setShowFlow(false)
+    hisref.current.forEach(item => {item.showTools = false})
+    dispatch({ type: 'his', payload: { his: hisref.current } })
+    fakeref.current.forEach(item => {item.showTools = false})
+    dispatch({ type: 'fake', payload: { fake: fakeref.current } })
   }
   // 点击表情icon
   const clickEmojiIcon = () => {
     setFoolerpb(0)
     setCurMsg('')
-    !showemoji ? setstyle(diffHeight + 200) : ''
+    !showemoji && setstyle(diffHeight + 200)
     hideKb()
     setShowEmoji(true)
     setShowTools(false)
@@ -605,7 +630,7 @@ const LiveChat = () => {
   const clickToolsiIcon = () => {
     setFoolerpb(0)
     setCurMsg('')
-    !showtools ? setstyle(diffHeight + 200) : ''
+    !showtools && setstyle(diffHeight + 200)
     hideKb()
     setShowTools(true)
     setShowEmoji(false)
@@ -627,6 +652,47 @@ const LiveChat = () => {
       foolerref.current = 60
     }
   }
+
+  const msgContent = () => {
+    if(messageCount.msgUserCount >= messageCount.limit){
+      return <View className='disabled'>会话数超过限制{messageCount.limit}！</View>
+    }
+    return (
+      <View className='fooler-inner'>
+        <View className='left'>
+          <View className='emoj' onClick={clickEmojiIcon}>
+            <AtIcon prefixClass='icon' value='smile' color='#666' size='28' className='alicon'></AtIcon>
+          </View>
+          <View className='more' onClick={clickToolsiIcon}>
+            <AtIcon prefixClass='icon' value='add-circle' color='#666' size='28' className='alicon'></AtIcon>
+          </View>
+        </View>
+        <View className='msginput'>
+          <Textarea
+            id='msgInput'
+            adjustPosition={false}
+            value={message}
+            onInput={inputMsg}
+            onFocus={msgInputFocus}
+            onBlur={msgInputBlur}
+            selectionStart={pos}
+            selectionEnd={pos}
+            maxlength={2000}
+            onConfirm={sendMsg}
+            holdKeyboard
+            onKeyboardHeightChange={kbChange}
+            autoHeight
+            onLineChange={lineChange}
+            showConfirmBar={false}
+          ></Textarea>
+        </View>
+        <View className='right'>
+          <View className='searchbtn send' style={{background: themeColor}} onClick={sendMsg}>发送</View>
+        </View>
+      </View>
+    )
+  }
+
   return (
     <View className='live-chat' >
       <ChatHeader ref={childref} fan={fan} handleClick={clickTopUserIcon}></ChatHeader>
@@ -639,7 +705,8 @@ const LiveChat = () => {
         scrollIntoView={curMsg}
         upperThreshold={10}
         onScrollToUpper={morehistorymsg}
-        onClick={closeModal}>
+        onClick={closeModal}
+      >
         {
           loading ?
             <View className='more'>
@@ -700,49 +767,14 @@ const LiveChat = () => {
         }
       </ScrollView>
 
-      <View id='fooler' className={`fooler`} style={{ minHeight: '54px', bottom: inputbot + 'px', paddingBottom: foolerpb + 'px' }}>
-        <View className='fooler-inner'>
-          {/* 左边工具栏 */}
-          <View className='left'>
-            <View className='emoj' onClick={clickEmojiIcon}>
-              <AtIcon prefixClass='icon' value='smile' color='#666' size='28' className='alicon'></AtIcon>
-            </View>
-            <View className='more' onClick={clickToolsiIcon}>
-              <AtIcon prefixClass='icon' value='add-circle' color='#666' size='28' className='alicon'></AtIcon>
-              {showreply ? <QuickReply ref={childref} pageId={fan.pageId} handleClick={setReply}></QuickReply> : ''}
-              {showflow ? <SendFlow ref={childref} handleClick={sendFlow}></SendFlow> : ''}
-              {replyImg.length > 0 ? <ReplyImg ref={childref} imgs={replyImg} handleClick={closeReplyImg}></ReplyImg> : ''}
-            </View>
-          </View>
-          {/* 输入发送消息 */}
-          <View className='msginput'>
-          <Textarea
-            id='msgInput'
-            adjustPosition={false}
-            value={message}
-            onInput={inputMsg}
-            onFocus={msgInputFocus}
-            onBlur={msgInputBlur}
-            selectionStart={pos}
-            selectionEnd={pos}
-            maxlength={2000}
-            onConfirm={sendMsg}
-            holdKeyboard={true}
-            onKeyboardHeightChange={kbChange}
-            autoHeight={true}
-            onLineChange={lineChange}
-            showConfirmBar={false}
-          ></Textarea>
-          </View>
-          {/* 发送按钮 */}
-          <View className='right'>
-          <View className='searchbtn send' onClick={sendMsg}>发送</View>
-        </View>
-        </View>
+      <View id='fooler' className='fooler' style={{ minHeight: '54px', bottom: inputbot + 'px', paddingBottom: foolerpb + 'px' }}>
+        {msgContent()}
       </View>
-      <View className={`toolsbox`} style={{ height: showtools || showemoji ? '200px' : 0 }}>
-        {showemoji ? <Emoji ref={childref} msg={message} handleClick={setemoji}></Emoji> : ''}
-        {showtools ? <Tools ref={childref} handleClick={clickTool}></Tools> : ''}
+      <View className='toolsbox' style={{ height: showtools || showemoji || showreply || showflow ? '200px' : 0 }}>
+        {showemoji && <Emoji ref={childref} msg={message} handleClick={setemoji}></Emoji>}
+        {showtools && <Tools ref={childref} handleClick={clickTool}></Tools>}
+        {showreply && <QuickReply ref={childref} pageId={fan.pageId} handleClick={setReply}></QuickReply>}
+        {showflow && <SendFlow ref={childref} handleClick={sendFlow}></SendFlow>}
       </View>
     </View>
   );

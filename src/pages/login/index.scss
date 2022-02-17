@@ -1,59 +1,51 @@
 .loginbody {
   width: 100%;
   height: 100vh;
-  background: #444;
+  background: #fff;
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: url('https://image.hivescrm.cn/image_test/2020/08/29/378af4e6-9daa-4b0e-9453-a4db6e3a65d6.png');
-  background-size: 100%;
 }
 
 .head {
   width: 120px;
   height: 120px;
   margin-top: 14vh;
-
-  image {
-    width: 100%;
-    height: 100%;
-    background: #f4d231;
-    border-radius: 50%;
-  }
+  background-image: url('../../assets/images/logo.png');
+  background-size: 100%;
+  background-repeat: no-repeat;
 }
 
 .name {
   font-size: 48px;
   font-weight: 700;
-  color: #fff;
   margin-top: 40px;
+  letter-spacing: 8px;
+}
+.sub{
+  font-size: 24px;
+  color:#999;
+  letter-spacing: 8px;
 }
 
 .username {
   width: 620px;
   height: 80px;
-  border-radius: 80px;
-  border: 1px solid #fff;
-  // border-top:0;
+  border-bottom: 1px solid #eee;
   margin-top: 90px;
   position: relative;
-
   input {
-    color: #fff;
     font-size: 28px;
     width: 500px;
-    padding-left: 30px;
+    padding-left: 20px;
   }
-
   .input {
     background: transparent;
-    color: #fff;
     height: 100%;
     display: flex;
     align-items: center;
     padding: 0;
   }
-
   .input::after {
     display: none;
   }
@@ -69,36 +61,9 @@
     top: 0;
     right: 10px;
     font-size: 40px;
-    color: #fff;
+    color: #999;
     z-index: 100;
     line-height: 84px;
-  }
-}
-
-.code {
-  @extend .username;
-  width:360px;
-  margin-top: 60px;
-  input {
-    color: #fff;
-    font-size: 28px;
-    width: 300px;
-    padding-left: 30px;
-  }
-  
-}
-.codebox{
-  width:620px;
-  display: flex;
-  .codeimg{
-    width:240px;
-    height:60px;
-    margin-top:60px;
-    margin-left:20px;
-    image{
-      width:100%;
-      height:80px;
-    }
   }
 }
 
@@ -124,7 +89,7 @@
   width:100%;
   margin-top:100px;
   text-align: center;
-  color:#fff;
+  color:#999;
   font-size: 26px;
 }
 
@@ -135,26 +100,13 @@
   margin-top:30px;
   &-item{
     width:100px;
-    &-top{
-      width:100%;
-      height:100px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      .at-button{
-        width:72px;
-        height: 72px;
-        padding:0;
-        border:none;
-        border-radius: 50%;
-        background:#fff;
-      }
-    }
-    &-bot{
-      width:100%;
-      color:#fff;
-      font-size: 24px;
-      margin-top:10px;
+    .at-button{
+      width:72px;
+      height: 72px;
+      padding:0;
+      border:none;
+      border-radius: 50%;
+      background:#f7f7f7;
     }
   }
 }

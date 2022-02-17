@@ -22,10 +22,11 @@ const userinfo = {
 }
 export class UserStore {
   @observable userInfo:UI = userinfo
-
   @observable role = null
-
   @observable allTags:any[] = []
+  @observable type = 'messenger'
+  @observable themeColor = '#5880F4'
+  @observable messageCount:any = {}
 
   @action.bound setAvatar(url) {
     this.userInfo.avatar = url;
@@ -41,6 +42,15 @@ export class UserStore {
   }
   @action.bound setAllTags(data) {
     this.allTags = data;
+  }
+  @action.bound setType(data) {
+    this.type = data;
+  }
+  @action.bound setColor(data) {
+    this.themeColor = data;
+  }
+  @action.bound setMessageCount(data) {
+    this.messageCount = data;
   }
 }
 

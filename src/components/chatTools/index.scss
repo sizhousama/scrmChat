@@ -3,7 +3,7 @@
   height:100%;
   box-sizing: border-box;
   padding:40px 55px;
-  background: #f3f3f3;
+  background: #f7f7f7;
   display: flex;
   flex-wrap: wrap;
   .tool {
@@ -22,21 +22,18 @@
       justify-content: center;
       align-items: center;
       .at-icon {
-        font-size: 46px;
-        color: #7685ff; 
-        font-weight: bold; 
+        font-size: 42px;
+        color: #888;
       }
       .icon-flow{
-        font-size: 46px;
-        color: #7685ff; 
-        font-weight: bold; 
+        font-size: 42px;
+        color: #888;
       }
     }
     .label{
       font-size: 22px;
-      color:#666;
+      color:#888;
       padding:8px 0;
     }
-    
   }
 }

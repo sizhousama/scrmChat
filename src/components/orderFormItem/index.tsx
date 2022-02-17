@@ -1,9 +1,6 @@
 import React, { forwardRef } from 'react'
-import { View, Image, Text } from '@tarojs/components'
-import { imgUrl } from '@/servers/baseUrl'
-import { NavTo } from '@/utils/index'
+import { View, Text } from '@tarojs/components'
 import { observer } from 'mobx-react';
-import { useFanStore } from '@/store';
 import './index.scss'
 
 const OrderFormItem = (props, ref) => {
@@ -16,9 +13,6 @@ const OrderFormItem = (props, ref) => {
       <View className='content fx1'>
         {props.formCont}
       </View>
-      {/* <View className='ricon fx'>
-        <View className='at-icon at-icon-chevron-right'></View>
-      </View> */}
     </View>
   )
 }

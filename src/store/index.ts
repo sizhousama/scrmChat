@@ -4,6 +4,7 @@ import { STORE_USERINFO, UserStore } from './user';
 import { STORE_FAN, FanStore } from './fan';
 import { STORE_ORDER, OrderStore } from './order';
 import { STORE_WSIO, WsioStore } from './socket';
+
 function createStores() {
   return {
     [STORE_NAVH]: new NavStore(),
