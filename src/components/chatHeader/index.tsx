@@ -73,8 +73,14 @@ const ChatHeader = (props, ref) => {
       serviceName: username,
       serviceAvatar: avatar
     }
+    if(type === 'messenger'){
+      delete params.whatsappUserList
+      delete params.instagramUserList
+    }
     upFanService(params).then(()=>{
       Toast('分配客服成功！','none')
+    }).catch((e)=>{
+      console.log(e)
     })
   }
 

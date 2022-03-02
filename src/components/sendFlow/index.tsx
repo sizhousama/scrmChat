@@ -3,6 +3,7 @@ import { View, Text, ScrollView } from '@tarojs/components'
 import { AtActivityIndicator, AtInput } from 'taro-ui'
 import { getMessengerFlows } from '@/api/messenger'
 import { getWaFlows } from '@/api/wa'
+import { getInsFlows } from '@/api/ins'
 import Taro from "@tarojs/taro";
 import { useUserStore } from '@/store'
 import './index.scss'
@@ -38,6 +39,7 @@ const SendFlow = (props, ref) => {
     switch(type){
       case 'messenger': return getMessengerFlows(data)
       case 'whatsapp': return getWaFlows(data)
+      case 'ins': return getInsFlows(data)
       default: return getMessengerFlows(data)
     }
   },[type])

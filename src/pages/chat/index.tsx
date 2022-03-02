@@ -190,8 +190,12 @@ const Chat = () => {
   })
 
   const search = () => {
-
     paramsref.current = { page: 1, pageSize: 10, current: 1, size: 10 }
+    for(let key in searchForm){
+      if(key === 'pageIds'){
+        searchForm[key] = [searchForm[key]]
+      }
+    }
     paramsref.current = {...paramsref.current, ...searchForm}
     console.log(paramsref.current)
   }

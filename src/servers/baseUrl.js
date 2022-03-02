@@ -2,8 +2,10 @@
 
 const urlObj = {
   'development':{
-    baseUrl: 'https://back.hivescrm3.top',
-    imgUrl: 'https://image.hivescrm.cn/image_test',
+    // baseUrl: 'https://back.hivescrm3.top',
+    // imgUrl: 'https://image.hivescrm.cn/image_test',
+    baseUrl: 'https://back.hivescrm.cn',
+    imgUrl: 'https://image.hivescrm.cn/image',
   },
   'production':{
     baseUrl: 'https://back.hivescrm.cn',

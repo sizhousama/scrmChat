@@ -318,7 +318,7 @@ const LiveChat = () => {
       msg,
       instagramUserId,
       instagramAccountId,
-      tag: moreThan && 'HUMAN_AGENT'
+      tag: moreThan ? 'HUMAN_AGENT' : ''
     }
     wsio.emit('INSTAGRAM_SEND_MSG', socketParams)
     // 假数据

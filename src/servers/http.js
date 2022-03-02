@@ -3,15 +3,30 @@ import qs from 'qs'
 import {getBaseUrl} from './baseUrl'
 import interceptors from './interceptors'
 
+import SignUtil from './sign'
+
+const ignoreSignWhiteList = [
+  '/scrm-admin/user/login',
+  '/scrm-admin/user/loginByWeiXin',
+  '/scrm-admin/user/loginByPhone'
+]
+
 interceptors.forEach(interceptorItem => Taro.addInterceptor(interceptorItem))
 
 class httpRequest {
   
-  baseOptions(params, method = "GET") {
-    let { url, data } = params;
+  baseOptions(reqParams, method = "GET") {
+    let { url, params, data } = reqParams;
     const BASE_URL = getBaseUrl(url);
     let contentType = "application/json";
-    contentType = params.contentType || contentType;
+    contentType = reqParams.contentType || contentType;
+    if (!ignoreSignWhiteList.includes(url || '')) {
+      const signParam = SignUtil.sign(url || '', params, data)
+      params = params ? params : {}
+      params['sign'] = signParam
+    }
+    const d = qs.stringify(params, { arrayFormat: 'repeat' })
+    url = url + '?' + d
     const option = {
       url: BASE_URL + url,
       data: data,
@@ -26,9 +41,8 @@ class httpRequest {
     return Taro.request(option);
   }
 
-  get(url, data = "") {
-    const d = qs.stringify(data, { arrayFormat: 'repeat' })
-    let option = { url: url + `?${d}`, data: '' }
+  get(url, params = "") {
+    let option = { url, params }
     return this.baseOptions(option);
   }
 

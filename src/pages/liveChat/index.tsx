@@ -222,6 +222,7 @@ const LiveChat = () => {
         
         const { delivery, read, userName, userId, translateText } = item
         if(item.msg){
+          console.log('-------->', item.msg)
         const parsedItem = JSON.parse(item.msg)
         let regroupItem: any = { ...parseMsg(parsedItem) }
         regroupItem.userId = userId
