@@ -297,7 +297,7 @@ const FanInfo = () => {
           <View className='name'>
             <Text className='fanname break'>{fanDetail.username}</Text>
           </View>
-          <Text className='pid break'>手机：{fanDetail.whatsappUserId}</Text>
+          <Text className='pid break'>手机：{fanDetail.whatsappUserIdShow}</Text>
         </View>
       )
     }

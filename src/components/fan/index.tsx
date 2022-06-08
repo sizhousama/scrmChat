@@ -58,7 +58,7 @@ const Fan = (props, ref) => {
         <Text className='newmsg break'>主页：{props.fan.pageName}</Text>
       )
       case 'whatsapp': return (
-        <Text className='newmsg break'>手机：{props.fan.whatsappUserId}</Text>
+        <Text className='newmsg break'>手机：{props.fan.whatsappUserIdShow}</Text>
       )
       case 'ins': return (
         <Text className='newmsg break'>所属账号：{props.fan.instagramAccountName}</Text>
